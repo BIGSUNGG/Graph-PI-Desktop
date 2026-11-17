@@ -15,6 +15,7 @@ tags: []
 | --- | --- | --- |
 | [[20-decisions/ADR-0001-standalone-ade-over-orca-plugin]] | active | ADE를 플러그인이 아닌 별도 데스크톱 앱으로 만든다 |
 | [[20-decisions/ADR-0002-pi-session-jsonl-data-source]] | active | 대화는 Pi JSONL, 제어는 Orca CLI를 함께 쓴다 |
+| [[20-decisions/ADR-0003-electron-and-sqlite-index]] | active | Electron + React + TS, 검색 인덱스는 SQLite FTS5 |
 
 ## 작성 규칙
 

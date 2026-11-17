@@ -52,6 +52,19 @@ if (!(fixRoots.length === 1 && fixRoots[0].id === 'wt-develop')) errs.push('fix 
 if (fixWts.filter((w) => w.parent === 'wt-develop').length !== 2) errs.push('develop child count !== 2');
 for (const c of ['.edge-flow', '.edge-dot', 'prefers-reduced-motion', 'animateMotion']) if (!html.includes(c)) errs.push('missing ' + c);
 if (html.includes('class="legend"')) errs.push('legend markup still present');
+
+// 애니메이션 판정: 혼합 상태 픽스처 + 루프 경로
+const MOTION = require('./motion.js');
+if (MOTION.liveEdge('running', 'running') !== true) errs.push('liveEdge: both running must move');
+if (MOTION.liveEdge('running', 'idle') !== false) errs.push('liveEdge: mixed must stay static');
+if (MOTION.allLive([true, true]) !== true) errs.push('allLive: all true must move');
+if (MOTION.allLive([true, false]) !== false) errs.push('allLive: mixed must stay static');
+if (MOTION.allLive([]) !== false) errs.push('allLive: empty must stay static');
+if (!/MOTION\.allLive\(\[topLive\]\.concat\(cols\.map/.test(js)) errs.push('trunk must require all children live');
+if (!/MOTION\.allLive\(\[topLive, liveWt\(c\.wt\.id\)\]\)/.test(js)) errs.push('stub must require both endpoints');
+if (!/class="loop-arc"[^;]*?marker-end="url\(#arwl\)"/.test(js)) errs.push('loop arc with marker-end missing');
+if (html.includes('function liveEdge')) errs.push('unused liveEdge still defined inline');
+if (!/<script src="\.\/motion\.js"><\/script>/.test(html)) errs.push('motion.js not loaded');
 console.log(
   errs.length
     ? 'FAIL\n' + errs.join('\n')

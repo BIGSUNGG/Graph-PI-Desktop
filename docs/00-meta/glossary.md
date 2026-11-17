@@ -30,6 +30,8 @@ tags: []
 | 워크스페이스 | Orca가 관리하는 작업 공간 단위. 이 프로젝트에서는 목록·그래프·히스토리를 묶는 기준 단위다. | [[SPEC-graph-pi-ade]] |
 | 워크트리 | 저장소에서 분기해 별도 폴더로 체크아웃한 Git worktree. Orca가 생성·삭제를 관리한다. | [[orca-cli-and-pi-sessions]] |
 | 오케스트레이션 Run | Orca가 여러 에이전트 작업을 묶는 단위. Task·Worker·Gate를 가진다. | [[SPEC-graph-pi-ade]] |
+| 그룹 | 여러 레포의 워크트리를 한 작업 단위로 묶은 것(예: `feature/login` = Server·Client·Contract). 앱이 직접 정의·저장하며 Orca 에는 없는 개념이다. | [[SPEC-graph-pi-ade]] |
+| 외부 세션 | Pi 세션 파일은 있으나 그 경로가 Orca 워크트리에 속하지 않는 세션. 목록에 `외부` 라벨로 남고 제어는 되지 않는다. | [[SPEC-graph-pi-ade]] |
 
 프로젝트 코드가 추가되면 채운다. 확인된 정의만 쓰고 추측으로 채우지 않는다.
 
