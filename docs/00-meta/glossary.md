@@ -1,0 +1,36 @@
+---
+type: meta
+status: active
+updated: 2026-11-17
+tags: []
+---
+
+# glossary
+
+용어 정의를 한 곳에 모은다. 이 저장소의 문서를 읽을 때 나오는 표현을 여기서 확인한다.
+
+## 문서 체계 용어
+
+| 용어 | 정의 | 관련 문서 |
+| --- | --- | --- |
+| ADR | Architecture Decision Record. 되돌리기 어려운 결정과 대안, 결과를 남기는 문서. | [[20-decisions/index]] |
+| MOC | Map of Contents. 폴더별 `index.md` 처럼 하위 문서 목록을 링크로 모은 노트. | [[INDEX]] |
+| frontmatter | 노트 최상단 `---` 사이의 메타데이터 블록. `type` `status` `updated` `tags` 4키를 쓴다. | [[conventions]] |
+| worklog | 날짜별 작업 기록. 변경 파일, 검증 결과, 남은 문제를 남긴다. | [[50-worklog/index]] |
+| spec | 기능의 동작·입출력·오류 정책을 확정한 명세. | [[30-specs/index]] |
+| wikilink | `[[노트명]]` 형태의 Obsidian 내부 링크. | [[conventions]] |
+| vault | Obsidian 이 문서 묶음으로 인식하는 폴더. 이 저장소에서는 `docs/` 가 vault 다. | [[INDEX]] |
+
+## 프로젝트 용어
+
+| 용어 | 정의 | 관련 문서 |
+| --- | --- | --- |
+| ADE | Agent Development Environment. 프로세스로 돌아가는 에이전트 세션을 한 화면에서 관찰·제어하는 개발 환경 앱. 이 저장소에서는 Pi 전용 데스크톱 앱을 가리킨다. | [[SPEC-graph-pi-ade]] |
+| Pi 세션 | Pi 에이전트가 한 번의 대화 흐름을 기록한 JSONL 파일. `~/.pi/agent/sessions/` 아래에 프로젝트 슬러그 폴더로 나뉘어 저장된다. | [[orca-cli-and-pi-sessions]] |
+| 워크스페이스 | Orca가 관리하는 작업 공간 단위. 이 프로젝트에서는 목록·그래프·히스토리를 묶는 기준 단위다. | [[SPEC-graph-pi-ade]] |
+| 워크트리 | 저장소에서 분기해 별도 폴더로 체크아웃한 Git worktree. Orca가 생성·삭제를 관리한다. | [[orca-cli-and-pi-sessions]] |
+| 오케스트레이션 Run | Orca가 여러 에이전트 작업을 묶는 단위. Task·Worker·Gate를 가진다. | [[SPEC-graph-pi-ade]] |
+
+프로젝트 코드가 추가되면 채운다. 확인된 정의만 쓰고 추측으로 채우지 않는다.
+
+상위: [[INDEX]]

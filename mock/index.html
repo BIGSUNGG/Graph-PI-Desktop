@@ -1,0 +1,1012 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Graph PI Desktop · 목업</title>
+<style>
+  @font-face{font-family:'Geist';src:url('./fonts/Geist-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+
+  /* Orca 다크 테마 토큰 — orca-main/src/renderer/src/assets/main.css */
+  :root{
+    --bg:#0a0a0a; --card:#171717; --panel:#171717; --panel-2:#262626;
+    --sidebar:#2a2a2a; --sidebar-accent:#353535;
+    --line:rgb(255 255 255 / .07); --input-line:rgb(255 255 255 / .15);
+    --text:#f0f0f0; --muted:#acacac; --dim:#737373;
+    --accent:#51a2ff; --primary:#e5e5e5; --primary-fg:#171717;
+    --green:#10b981; --amber:#d4a300; --red:#ff6568; --purple:#c084fc;
+    --radius:10px; --tb:36px; --sb:280px;
+    --shadow-sm:0 1px 2px rgb(0 0 0 / .3); --shadow-pop:0 16px 40px rgb(0 0 0 / .55);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font:13px/1.5 'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font:inherit;color:inherit}
+  .hidden{display:none !important}
+  .muted{color:var(--muted)}
+  .mono{font-family:'SF Mono',SFMono-Regular,ui-monospace,'Cascadia Code',Menlo,Consolas,monospace}
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-thumb{background:rgb(255 255 255 / .12);border-radius:999px}
+  ::-webkit-scrollbar-thumb:hover{background:rgb(255 255 255 / .2)}
+  ::-webkit-scrollbar-track{background:transparent}
+
+  .app{display:grid;grid-template-rows:var(--tb) minmax(0,1fr);height:100vh;overflow:hidden}
+  .workspace{display:grid;grid-template-columns:var(--sb) minmax(0,1fr);min-height:0;overflow:hidden}
+
+  /* ---------- titlebar (Orca: 36px, card surface, drag region) ---------- */
+  .titlebar{
+    display:flex;align-items:center;gap:10px;height:var(--tb);min-height:var(--tb);
+    padding:0 10px;background:var(--card);border-bottom:1px solid var(--line);
+    -webkit-app-region:drag;user-select:none;
+  }
+  .titlebar button,.titlebar input{-webkit-app-region:no-drag}
+  .tb-left{display:flex;align-items:center;gap:8px;min-width:0}
+  .mark{width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,var(--accent),var(--purple));flex:0 0 auto}
+  .tb-name{font-size:12.5px;font-weight:600;letter-spacing:-.01em}
+  .tb-tag{font-size:10px;font-weight:500;color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:0 6px;line-height:16px}
+  .tb-mid{flex:1;min-width:0}
+  .tb-right{display:flex;align-items:center;gap:8px}
+
+  /* ---------- sidebar (Orca worktree sidebar: #2a2a2a) ---------- */
+  .sidebar{display:flex;flex-direction:column;gap:6px;min-height:0;padding:8px;background:var(--sidebar);border-right:1px solid var(--line);overflow:hidden}
+  .nav-search{
+    display:flex;align-items:center;gap:8px;width:100%;padding:6px 8px;border:0;border-radius:8px;
+    background:rgb(255 255 255 / .05);color:rgb(240 240 240 / .6);font-size:13px;font-weight:500;
+    text-align:left;cursor:pointer;transition:background .12s ease;
+  }
+  .nav-search:hover{background:rgb(255 255 255 / .08)}
+  .nav-search svg{flex:0 0 auto;color:rgb(240 240 240 / .3)}
+  .nav-search .kbd{margin-left:auto;display:flex;gap:4px;font-size:9px;color:rgb(240 240 240 / .45)}
+  .nav-search .kbd i{font-style:normal;border:1px solid rgb(255 255 255 / .12);border-radius:4px;padding:0 4px;line-height:14px}
+  .nav{display:flex;flex-direction:column;gap:2px}
+  .nav-item{
+    display:flex;align-items:center;gap:8px;width:100%;padding:6px 8px;border:0;border-radius:8px;
+    background:transparent;color:rgb(240 240 240 / .6);font-size:13px;font-weight:500;letter-spacing:-.01em;
+    text-align:left;cursor:pointer;transition:background .12s ease,color .12s ease;
+  }
+  .nav-item svg{flex:0 0 auto;color:rgb(240 240 240 / .3);transition:color .12s ease}
+  .nav-item:hover{background:rgb(255 255 255 / .08);color:var(--text)}
+  .nav-item.is-active{background:var(--sidebar-accent);color:var(--text)}
+  .nav-item.is-active svg{color:var(--text)}
+  .nav-item b{margin-left:auto;font-size:10px;font-weight:500;color:rgb(240 240 240 / .45);font-variant-numeric:tabular-nums}
+  .side-sec{display:flex;flex-direction:column;gap:2px;flex:1 1 auto;min-height:0;margin-top:2px;padding-top:6px;border-top:1px solid var(--line);overflow:auto}
+  .side-head{display:flex;align-items:center;gap:6px;padding:4px 8px;font-size:11px;font-weight:500;color:rgb(240 240 240 / .45)}
+  .side-head span{margin-left:auto;font-variant-numeric:tabular-nums}
+  .wt-row{
+    display:flex;align-items:center;gap:6px;width:100%;height:28px;padding:0 6px;border:0;border-radius:8px;
+    background:transparent;color:var(--muted);font-size:11px;text-align:left;cursor:pointer;
+    transition:background .12s ease;
+  }
+  .wt-row:hover{background:var(--sidebar-accent);color:var(--text)}
+  .wt-row .d{flex:0 0 auto;width:6px;height:6px;border-radius:50%;background:var(--dim)}
+  .wt-row .d.running{background:var(--amber)} .wt-row .d.done{background:var(--green)}
+  .wt-row .d.idle{background:var(--dim)} .wt-row .d.failed{background:var(--red)}
+  .wt-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .wt-branch{margin-left:auto;font-size:10px;color:rgb(240 240 240 / .35);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:96px}
+  .wt-dirty{flex:0 0 auto;font-size:10px;color:var(--amber);font-variant-numeric:tabular-nums}
+  .side-foot{margin-top:auto;display:flex;flex-direction:column;gap:8px;padding-top:8px;border-top:1px solid var(--line)}
+  .field{display:flex;flex-direction:column;gap:4px;font-size:10px;color:rgb(240 240 240 / .45);padding:0 4px}
+  .hint{margin:0;padding:0 4px;font-size:10px;color:rgb(240 240 240 / .35);line-height:1.45}
+
+  /* ---------- controls (Orca button/input) ---------- */
+  select,input,textarea{
+    font:inherit;color:var(--text);background:rgb(255 255 255 / .05);
+    border:1px solid var(--input-line);border-radius:8px;padding:6px 9px;outline:none;width:100%;
+    transition:border-color .12s ease,box-shadow .12s ease;
+  }
+  select:hover,input:hover,textarea:hover{background:rgb(255 255 255 / .07)}
+  select:focus,input:focus,textarea:focus{border-color:var(--dim);box-shadow:0 0 0 3px rgb(115 115 115 / .5)}
+  .sidebar select{font-size:11px;padding:5px 8px}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;height:30px;padding:0 12px;
+    border:1px solid var(--input-line);border-radius:8px;background:rgb(255 255 255 / .05);
+    color:var(--text);font-size:12.5px;font-weight:500;white-space:nowrap;cursor:pointer;
+    transition:background .12s ease,border-color .12s ease;
+  }
+  .btn:hover{background:rgb(255 255 255 / .09);border-color:rgb(255 255 255 / .25)}
+  .btn.primary{background:var(--primary);border-color:transparent;color:var(--primary-fg)}
+  .btn.primary:hover{background:#d4d4d4}
+  .btn.danger{background:rgb(255 101 104 / .15);border-color:rgb(255 101 104 / .4);color:var(--red)}
+  .btn.danger:hover{background:rgb(255 101 104 / .22)}
+  .btn.ghost{background:transparent;border-color:transparent}
+  .btn.ghost:hover{background:rgb(255 255 255 / .08)}
+  .btn[disabled]{opacity:.5;cursor:not-allowed}
+
+  /* ---------- main ---------- */
+  .main{display:flex;flex-direction:column;min-width:0;overflow:hidden;background:var(--bg)}
+  .banner{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:11.5px;background:rgb(212 163 0 / .12);border-bottom:1px solid rgb(212 163 0 / .3);color:#f0d9a3}
+  .banner .dot{width:6px;height:6px;border-radius:50%;background:var(--amber)}
+  .banner button{margin-left:auto;height:24px;font-size:11.5px;padding:0 8px}
+
+  .topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:16px 16px 10px}
+  .topbar h1{margin:0;font-size:14px;font-weight:600;letter-spacing:-.01em}
+  .sub{margin:3px 0 0;font-size:11px;color:var(--dim)}
+  .actions{display:flex;gap:6px}
+
+  .views{flex:1;min-height:0;padding:0 16px 16px;overflow:auto}
+  .view{height:100%}
+
+  /* ---------- board ---------- */
+  .board{display:grid;grid-template-columns:minmax(0,1fr) 318px;gap:10px;align-content:start;min-height:520px}
+  .graph-wrap{
+    position:relative;border:1px solid var(--line);border-radius:12px;background:var(--card);
+    box-shadow:var(--shadow-sm);overflow:auto;display:flex;flex-direction:column;
+  }
+  .grp{border-bottom:1px solid var(--line)}
+  .grp-head{display:flex;align-items:center;gap:6px;width:100%;padding:8px 10px 6px;border:0;background:transparent;color:var(--muted);font-size:10.5px;cursor:pointer;text-align:left}
+  .grp-head:hover{color:var(--text)}
+  .grp-head .chev{font-size:9px;color:var(--dim);transition:transform .12s ease}
+  .grp.is-closed .grp-head .chev{transform:rotate(-90deg)}
+  .grp.is-active .grp-head{color:var(--text)}
+  .grp-head b{margin-left:auto;font-size:10px;font-weight:500;color:var(--dim)}
+  .grp-head em{margin-left:6px;font-style:normal;font-size:9.5px;color:var(--dim);opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .grp-body{display:flex;flex-direction:column;gap:1px;padding:0 6px 6px}
+  .grp.is-closed .grp-body{display:none}
+  #graph{display:block;width:100%;height:auto;max-height:100%;min-height:0}
+  #graph text{font-family:'Geist',-apple-system,'Segoe UI',sans-serif}
+  .node{cursor:pointer}
+  .node circle{transition:filter .15s ease}
+  .node:hover circle{filter:brightness(1.3)}
+  .node.is-sel circle{stroke:#fff;stroke-width:2}
+
+  .inspector{
+    border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--shadow-sm);
+    padding:14px;overflow:auto;
+  }
+  .insp-head{display:flex;align-items:flex-start;gap:8px}
+  .insp-head h2{margin:0;font-size:13px;font-weight:600;line-height:1.35;letter-spacing:-.01em}
+  .pill{
+    display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:500;line-height:16px;
+    padding:0 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted);
+    background:rgb(255 255 255 / .04);white-space:nowrap;
+  }
+  .pill .d{width:6px;height:6px;border-radius:50%;background:var(--dim)}
+  .pill.running .d{background:var(--amber)} .pill.running{color:#f0d9a3;border-color:rgb(212 163 0 / .35);background:rgb(212 163 0 / .12)}
+  .pill.done .d{background:var(--green)} .pill.done{color:#9fe8c8;border-color:rgb(16 185 129 / .35);background:rgb(16 185 129 / .12)}
+  .pill.idle .d{background:var(--dim)} .pill.idle{color:var(--muted)}
+  .pill.failed .d{background:var(--red)} .pill.failed{color:#ffb3b4;border-color:rgb(255 101 104 / .35);background:rgb(255 101 104 / .12)}
+  .kv{display:grid;grid-template-columns:78px 1fr;gap:6px 10px;margin:14px 0 0;font-size:11.5px}
+  .kv dt{color:var(--dim)} .kv dd{margin:0;color:var(--text)}
+  .insp-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+  .empty{padding:26px 6px;color:var(--dim);font-size:12px;text-align:center;line-height:1.7}
+
+  /* ---------- chat ---------- */
+  .chat{display:grid;grid-template-columns:212px minmax(0,1fr);gap:10px;height:100%;min-height:520px}
+  .chat-side{border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--shadow-sm);padding:8px;overflow:auto}
+  .side-head{padding:2px 4px 6px;font-size:10px;color:var(--dim)}
+  .chat-item{display:flex;gap:8px;width:100%;padding:6px 8px;border:0;border-radius:8px;background:transparent;color:var(--muted);text-align:left;cursor:pointer;font-size:11.5px;line-height:1.4;transition:background .12s ease}
+  .chat-item:hover{background:rgb(255 255 255 / .06);color:var(--text)}
+  .chat-item.is-active{background:var(--panel-2);color:var(--text)}
+  .chat-item .d{flex:0 0 auto;width:6px;height:6px;border-radius:50%;margin-top:5px;background:var(--dim)}
+  .chat-item.running .d{background:var(--amber)} .chat-item.done .d{background:var(--green)}
+  .chat-item.idle .d{background:var(--dim)} .chat-item.failed .d{background:var(--red)}
+  .chat-main{display:flex;flex-direction:column;min-height:0;border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--shadow-sm);overflow:hidden}
+  .chat-head{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:12px}
+  .chat-head .who{font-weight:600}
+  .chat-head .meta{margin-left:auto;color:var(--dim);font-size:10.5px}
+  .chat-log{flex:1;overflow:auto;padding:16px 16px 8px;display:flex;flex-direction:column;gap:12px}
+  .msg{max-width:760px}
+  .msg .role{font-size:10px;color:var(--dim);margin-bottom:4px;letter-spacing:.04em;text-transform:uppercase}
+  .msg .body{background:rgb(255 255 255 / .03);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:12.5px;line-height:1.65;white-space:pre-wrap}
+  .msg.user .body{background:rgb(255 255 255 / .06);border-color:rgb(255 255 255 / .1)}
+  .msg.tool .body{background:transparent;border-style:dashed;color:var(--muted);font-family:'SF Mono',SFMono-Regular,ui-monospace,'Cascadia Code',Consolas,monospace;font-size:11px}
+  .msg.assistant .body{background:transparent}
+  .divider{display:flex;align-items:center;gap:10px;color:var(--dim);font-size:10px}
+  .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+  .composer{border-top:1px solid var(--line);padding:10px 12px;background:var(--card)}
+  .composer textarea{resize:none;min-height:46px;font-size:12.5px;background:rgb(255 255 255 / .04)}
+  .composer-foot{display:flex;align-items:center;gap:8px;margin-top:8px}
+  .status{margin-left:auto;font-size:11px;color:var(--dim)}
+  .status.ok{color:var(--green)} .status.err{color:var(--red)}
+
+  /* ---------- orchestration ---------- */
+  .orch{display:flex;flex-direction:column;gap:10px;height:100%}
+  .orch-head{display:flex;align-items:center;gap:8px}
+  .orch-head select{width:auto;min-width:280px}
+  .readonly{color:#9fe8c8;border-color:rgb(16 185 129 / .35);background:rgb(16 185 129 / .12)}
+  .orch-grid{display:grid;grid-template-columns:1.25fr 1fr 1.1fr;gap:10px;flex:1;min-height:0}
+  .panel{border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--shadow-sm);padding:12px;overflow:auto}
+  .panel h3{margin:0 0 8px;font-size:10px;font-weight:600;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+  .panel h3.mt{margin-top:14px}
+  .task{display:flex;align-items:flex-start;gap:9px;padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:rgb(255 255 255 / .03);margin-bottom:6px}
+  .task .t-main{min-width:0}
+  .task .t-title{font-size:12px}
+  .task .deps{margin-top:3px;font-size:10px;color:var(--dim)}
+  .task.blocked{opacity:.9;border-color:rgb(212 163 0 / .3)}
+  .task.done{opacity:.7}
+  .worker{display:flex;align-items:center;gap:8px;padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:rgb(255 255 255 / .03);margin-bottom:6px;cursor:pointer;font-size:11.5px;transition:background .12s ease,border-color .12s ease}
+  .worker:hover{background:rgb(255 255 255 / .06)}
+  .worker.is-active{border-color:rgb(81 162 255 / .4);background:rgb(81 162 255 / .08)}
+  .worker .w-meta{margin-left:auto;display:flex;gap:6px;align-items:center;font-size:10px;color:var(--dim)}
+  .attention{color:#ffb3b4;border-color:rgb(255 101 104 / .35);background:rgb(255 101 104 / .12)}
+  pre.out{margin:0;padding:10px;border:1px solid var(--line);border-radius:9px;background:#111;color:var(--muted);font:11px/1.6 'SF Mono',SFMono-Regular,ui-monospace,'Cascadia Code',Consolas,monospace;white-space:pre-wrap;min-height:150px}
+  .gate{display:flex;align-items:center;gap:8px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;font-size:11.5px;margin-bottom:5px}
+
+  /* ---------- history ---------- */
+  .history{display:flex;flex-direction:column;gap:10px;max-width:980px}
+  .history-head{display:flex;gap:6px;align-items:center}
+  .history-head input{flex:1;height:30px}
+  .tabs{display:flex;gap:2px;padding:2px;border:1px solid var(--line);border-radius:9px;background:rgb(255 255 255 / .03)}
+  .tab{border:0;background:transparent;color:var(--muted);border-radius:7px;padding:4px 10px;font-size:11.5px;cursor:pointer;transition:background .12s ease}
+  .tab:hover{background:rgb(255 255 255 / .06);color:var(--text)}
+  .tab.is-active{background:var(--panel-2);color:var(--text)}
+  .indexbar{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--muted)}
+  .indexbar .bar{flex:1;height:4px;border-radius:999px;background:rgb(255 255 255 / .08);overflow:hidden}
+  .indexbar .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .18s ease}
+  .history-list{display:flex;flex-direction:column;gap:6px}
+  .h-row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);cursor:pointer;transition:border-color .12s ease,background .12s ease}
+  .h-row:hover{border-color:rgb(255 255 255 / .18);background:#1c1c1c}
+  .h-row .h-title{font-size:12.5px}
+  .h-row .h-meta{margin-top:3px;font-size:10.5px;color:var(--dim)}
+  .h-row .h-tok{font-size:10.5px;color:var(--dim);white-space:nowrap}
+  .hit{background:rgb(212 163 0 / .25);color:#f6e2b4;border-radius:3px;padding:0 2px}
+
+  /* ---------- dialog / toast (Orca floating surface) ---------- */
+  .backdrop{position:fixed;inset:0;background:rgb(0 0 0 / .55);display:flex;align-items:center;justify-content:center;z-index:20;backdrop-filter:blur(2px)}
+  .dialog{width:min(420px,92vw);border:1px solid rgb(255 255 255 / .1);border-radius:14px;background:rgb(23 23 23 / .97);padding:18px;box-shadow:var(--shadow-pop)}
+  .dialog h2{margin:0 0 10px;font-size:14px;font-weight:600}
+  .dialog p{margin:0 0 12px;font-size:12px;color:var(--muted);line-height:1.6}
+  .dialog .dlg-body{display:flex;flex-direction:column;gap:9px;margin-bottom:16px}
+  .dialog label{display:flex;flex-direction:column;gap:5px;font-size:10.5px;color:var(--dim)}
+  .dialog .warn{padding:8px 10px;border:1px solid rgb(212 163 0 / .3);border-radius:8px;background:rgb(212 163 0 / .12);color:#f0d9a3;font-size:11.5px}
+  .dlg-actions{display:flex;justify-content:flex-end;gap:6px}
+  .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);padding:8px 14px;border:1px solid rgb(255 255 255 / .1);border-radius:999px;background:rgb(23 23 23 / .97);box-shadow:var(--shadow-pop);font-size:12px;z-index:30}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="titlebar">
+    <div class="tb-left"><span class="mark"></span><span class="tb-name">Graph PI</span><span class="tb-tag">MOCKUP</span></div>
+    <div class="tb-mid"></div>
+    <div class="tb-right"><span class="pill" id="tb-status"><span class="d"></span><span id="tb-status-text">Orca 연결됨</span></span></div>
+  </header>
+  <div class="workspace">
+  <aside class="sidebar">
+    <button class="nav-search" type="button" id="nav-search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>검색<span class="kbd"><i>Ctrl</i><i>K</i></span></button>
+    <nav class="nav" id="nav">
+      <button class="nav-item is-active" data-view="board"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>상태 보드<b id="n-board">9</b></button>
+      <button class="nav-item" data-view="chat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 12a8 8 0 0 1-8 8H8l-5 3 1.6-5A8 8 0 1 1 21 12z"></path></svg>채팅<b id="n-chat">3</b></button>
+      <button class="nav-item" data-view="orch"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="6" cy="6" r="2.5"></circle><circle cx="6" cy="18" r="2.5"></circle><circle cx="18" cy="12" r="2.5"></circle><path d="M8.5 6H13a2.5 2.5 0 0 1 2.5 2.5v1M8.5 18H13a2.5 2.5 0 0 0 2.5-2.5v-1"></path></svg>오케스트레이션<b id="n-orch">4</b></button>
+      <button class="nav-item" data-view="history"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path></svg>히스토리<b id="n-history">9</b></button>
+    </nav>
+    <div class="side-sec">
+      <div class="side-head">워크스페이스<span id="wt-count">3</span></div>
+      <div id="wt-list"></div>
+    </div>
+    <div class="side-foot">
+      <label class="field">워크스페이스<select><option>graph-pi-ade</option><option>C:/Projects/orca-main</option></select></label>
+      <button class="btn ghost" id="orca-toggle">Orca 연결 끊기</button>
+      <p class="hint">더미 데이터 · Orca CLI 미연결<br>실제 파일은 읽지 않습니다.</p>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="banner hidden" id="banner"><span class="dot"></span><span>Orca 연결 없음 — 지난 세션만 표시합니다</span><button class="btn ghost" id="banner-retry">다시 연결</button></div>
+    <header class="topbar">
+      <div><h1 id="view-title">상태 보드</h1><p class="sub" id="view-sub"></p></div>
+      <div class="actions" id="top-actions"></div>
+    </header>
+    <div class="views">
+      <section class="view" id="view-board">
+        <div class="board">
+          <div class="graph-wrap">
+            <svg id="graph" viewBox="0 0 900 480" preserveAspectRatio="xMidYMin meet" role="img" aria-label="세션 그래프"></svg>
+          </div>
+          <aside class="inspector" id="inspector"></aside>
+        </div>
+      </section>
+
+      <section class="view hidden" id="view-chat">
+        <div class="chat">
+          <div class="chat-side"><div class="side-head">세션</div><div id="chat-list"></div></div>
+          <div class="chat-main">
+            <div class="chat-head"><span class="who" id="chat-who"></span><span class="pill" id="chat-pill"></span><span class="meta" id="chat-meta"></span></div>
+            <div class="chat-log" id="chat-log"></div>
+            <form class="composer" id="composer">
+              <textarea id="chat-input" rows="2" placeholder="프롬프트를 입력하세요 (Enter 전송 · Shift+Enter 줄바꿈)"></textarea>
+              <div class="composer-foot"><span class="status" id="chat-status"></span><button class="btn primary" type="submit" id="chat-send">전송</button></div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="view hidden" id="view-orch">
+        <div class="orch">
+          <div class="orch-head">
+            <select id="run-select"></select>
+            <span class="pill readonly">조회 전용 · 변경 없음</span>
+            <span class="muted" id="run-meta"></span>
+          </div>
+          <div class="orch-grid">
+            <div class="panel"><h3>Task</h3><div id="task-list"></div></div>
+            <div class="panel"><h3>Worker</h3><div id="worker-list"></div></div>
+            <div class="panel"><h3>Worker 출력</h3><pre class="out" id="worker-out"></pre><h3 class="mt">Gate</h3><div id="gate-list"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view hidden" id="view-history">
+        <div class="history">
+          <div class="history-head">
+            <input id="search" type="search" placeholder="세션 본문 검색 — 30일 이전 포함" />
+            <button class="btn primary" id="search-btn">검색</button>
+            <div class="tabs"><button class="tab is-active" data-range="30">최근 30일</button><button class="tab" data-range="all">전체</button></div>
+          </div>
+          <div class="indexbar hidden" id="index-bar"><div class="bar"><i id="index-fill"></i></div><span id="index-label">세션 검색 준비 중 0%</span></div>
+          <div class="history-list" id="history-list"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+  </div>
+</div>
+
+<div class="backdrop hidden" id="dialog">
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+    <h2 id="dlg-title"></h2>
+    <div class="dlg-body" id="dlg-body"></div>
+    <div class="dlg-actions">
+      <button class="btn ghost" id="dlg-cancel">취소</button>
+      <button class="btn danger" id="dlg-ok">확인</button>
+    </div>
+  </div>
+</div>
+<div class="toast hidden" id="toast"></div>
+
+<script src="./mock-data.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MOCK;
+  function $(id) { return document.getElementById(id); }
+  function esc(t) {
+    return String(t == null ? "" : t).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function byId(list, id) { return list.filter(function (x) { return x.id === id; })[0] || null; }
+  function short(model) { return String(model || "").split("/").pop(); }
+  function clip(t, n) { return t.length > n ? t.slice(0, n - 1) + "…" : t; }
+  function setHTML(el, markup) {
+    var doc = new DOMParser().parseFromString(markup, "text/html");
+    if (!el) return;
+    el.replaceChildren.apply(el, Array.prototype.slice.call(doc.body.childNodes));
+  }
+  function setSvg(el, markup) {
+    var doc = new DOMParser().parseFromString(
+      '<svg xmlns="http://www.w3.org/2000/svg">' + markup + "</svg>",
+      "image/svg+xml"
+    );
+    var root = document.importNode(doc.documentElement, true);
+    el.replaceChildren.apply(el, Array.prototype.slice.call(root.childNodes));
+  }
+
+  var STATE_LABEL = { running: "실행 중", done: "완료", idle: "대기", failed: "실패" };
+  var VIEW_META = {
+    board: ["상태 보드", "그룹 안 레포·워크트리와 관리 세션, 머지·루프 관계"],
+    chat: ["채팅", "세션 메시지 열람과 프롬프트 전송"],
+    orch: ["오케스트레이션", "run · task · worker 조회 (읽기 전용)"],
+    history: ["히스토리", "로컬 세션 본문 검색 · 인덱싱 진행"]
+  };
+
+  var state = {
+    view: "board", selected: { type: null, id: null }, chat: M.sessions[0].id,
+    group: (M.groups.filter(function (g) { return "#" + g.id === location.hash; })[0] || M.groups[0]).id,
+    closed: {}, orca: true,
+    run: M.runs[0].id, worker: M.workers[0].id, query: "", range: "30", results: null, indexed: 0
+  };
+
+  function pill(st) {
+    return '<span class="pill ' + st + '"><span class="d"></span>' + esc(STATE_LABEL[st] || st) + "</span>";
+  }
+
+  function groupWts(gid) {
+    return M.worktrees.filter(function (w) { return w.group === gid; });
+  }
+  function groupSessions(gid) {
+    var ids = {};
+    groupWts(gid).forEach(function (w) { ids[w.id] = 1; });
+    return M.sessions.filter(function (s) { return ids[s.wt]; });
+  }
+
+  function renderSidebar() {
+    var rows = M.groups.map(function (g) {
+      var wts = groupWts(g.id), closed = !!state.closed[g.id];
+      var body = wts.map(function (w) {
+        var ss = M.sessions.filter(function (s) { return s.wt === w.id; });
+        var st = ss.filter(function (s) { return s.state === "running"; }).length ? "running"
+          : ss.filter(function (s) { return s.state === "failed"; }).length ? "failed" : "done";
+        var sel = state.selected.type === "wt" && state.selected.id === w.id ? " is-sel" : "";
+        return '<button class="wt-row' + sel + '" data-wt="' + w.id + '"><span class="d ' + st + '"></span>'
+          + '<span class="wt-name">' + esc(w.repo) + ' · ' + esc(w.branch) + "</span>"
+          + (w.dirty ? '<span class="wt-meta">' + w.dirty + "</span>" : "") + "</button>";
+      }).join("");
+      return '<div class="grp' + (closed ? " is-closed" : "") + (state.group === g.id ? " is-active" : "") + '">'
+        + '<button class="grp-head" data-grp="' + g.id + '"><span class="chev">▾</span><span>' + esc(g.name) + "</span>"
+        + '<em>' + esc(g.note) + "</em>"
+        + "<b>" + wts.length + "</b></button>"
+        + '<div class="grp-body">' + body + "</div></div>";
+    }).join("");
+    setHTML($("wt-list"), rows);
+    $("wt-count").textContent = M.groups.length;
+    [].forEach.call($("wt-list").querySelectorAll("[data-grp]"), function (b) {
+      b.onclick = function () {
+        var gid = b.getAttribute("data-grp");
+        if (state.group === gid) state.closed[gid] = !state.closed[gid];
+        state.group = gid;
+        renderBoard();
+      };
+    });
+    [].forEach.call($("wt-list").querySelectorAll("[data-wt]"), function (b) {
+      b.onclick = function () {
+        state.selected = { type: "wt", id: b.getAttribute("data-wt") };
+        setView("board");
+      };
+    });
+  }
+
+  function renderTop() {
+    var acts = {
+      board: '<button class="btn" data-act="wt-new">워크트리</button><button class="btn primary" data-act="s-new">새 세션</button>',
+      chat: "", orch: "", history: ""
+    }[state.view];
+    setHTML($("top-actions"), acts);
+    [].forEach.call($("top-actions").querySelectorAll("[data-act]"), function (b) {
+      b.onclick = function () {
+        if (b.getAttribute("data-act") === "wt-new") return worktreeDialog();
+        newSessionDialog();
+      };
+    });
+  }
+
+  function setView(v) {
+    state.view = v;
+    [].forEach.call(document.querySelectorAll(".view"), function (s) { s.classList.add("hidden"); });
+    $("view-" + v).classList.remove("hidden");
+    [].forEach.call(document.querySelectorAll(".nav-item"), function (b) {
+      b.classList.toggle("is-active", b.getAttribute("data-view") === v);
+    });
+    $("view-title").textContent = VIEW_META[v][0];
+    $("view-sub").textContent = VIEW_META[v][1];
+    renderTop();
+    if (v === "board") renderBoard();
+    if (v === "chat") renderChat();
+    if (v === "orch") renderOrch();
+    if (v === "history") renderHistory();
+  }
+
+  function banner() {
+    $("banner").classList.toggle("hidden", state.orca);
+    $("tb-status").className = "pill" + (state.orca ? "" : " err");
+    $("tb-status-text").textContent = state.orca ? "Orca 연결됨" : "Orca 연결 없음";
+  }
+  function setOrca(on) {
+    state.orca = on;
+    banner();
+    $("orca-toggle").textContent = on ? "Orca 연결 끊기" : "Orca 다시 연결";
+    setView(state.view);
+    toast(on ? "Orca에 연결했습니다 (목업)" : "Orca 연결을 끊었습니다 (목업)");
+  }
+
+  /* ---------- board ---------- */
+  var G = { pad: 16, colW: 206, gap: 14, head: 46, rowH: 36, chipH: 18, hubH: 52 };
+
+  function hubOf(wts) {
+    var own = {}, best = null;
+    wts.forEach(function (w) { own[w.id] = 1; });
+    M.sessions.forEach(function (s) {
+      if (!own[s.wt]) return;
+      var spread = {};
+      M.sessions.forEach(function (k) {
+        if (k.parent === s.id && k.wt !== s.wt && own[k.wt]) spread[k.wt] = 1;
+      });
+      if (Object.keys(spread).length >= 2) best = s;
+    });
+    return best;
+  }
+
+  function boardCols(hub) {
+    var top = G.pad + (hub ? G.hubH + 26 : 0);
+    var x = G.pad, cols = [];
+    groupWts(state.group).forEach(function (wt) {
+      var ss = M.sessions.filter(function (s) {
+        return s.wt === wt.id && !(hub && s.id === hub.id);
+      }).sort(function (a, b) { return a.started < b.started ? -1 : 1; });
+      var rows = [], y = top + G.head + 4;
+      ss.forEach(function (s) {
+        var ags = M.agents.filter(function (a) { return a.session === s.id; });
+        rows.push({ s: s, agents: ags, y: y });
+        y += G.rowH + (ags.length ? G.chipH : 0);
+      });
+      cols.push({ wt: wt, x: x, y: top, w: G.colW, h: Math.max(y - top + 8, G.head + 42), rows: rows });
+      x += G.colW + G.gap;
+    });
+    return cols;
+  }
+
+  function renderBoard() {
+    renderSidebar();
+    var wts = groupWts(state.group);
+    var hub = hubOf(wts);
+    var cols = boardCols(hub);
+    var totalW = cols.length ? cols.length * (G.colW + G.gap) - G.gap + G.pad * 2 : 320;
+    var pos = {};
+    cols.forEach(function (c) {
+      c.rows.forEach(function (r) { pos[r.s.id] = { x: c.x + 20, y: r.y + 9, col: c }; });
+    });
+
+    var svg = [];
+    svg.push('<defs>'
+      + '<marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">'
+      + '<path d="M0 0 L10 5 L0 10 z" fill="#51a2ff"/></marker>'
+      + '<marker id="arwl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">'
+      + '<path d="M0 0 L10 5 L0 10 z" fill="#d4a300"/></marker></defs>');
+
+    var hubX = G.pad, hubY = G.pad, hubW = totalW - G.pad * 2;
+    if (hub && cols.length) {
+      var bx = hubX + hubW / 2, by = hubY + G.hubH, busY = by + 14;
+      var left = Math.min(cols[0].x + cols[0].w / 2, bx);
+      var right = Math.max(cols[cols.length - 1].x + cols[cols.length - 1].w / 2, bx);
+      svg.push('<path d="M' + bx + " " + by + " L" + bx + " " + busY + '" fill="none" stroke="#525252" stroke-width="1.4" opacity=".8"/>');
+      svg.push('<line x1="' + left + '" y1="' + busY + '" x2="' + right + '" y2="' + busY + '" stroke="#525252" stroke-width="1.4" opacity=".8"/>');
+      cols.forEach(function (c) {
+        var cx = c.x + c.w / 2;
+        svg.push('<line x1="' + cx + '" y1="' + busY + '" x2="' + cx + '" y2="' + c.y + '" stroke="#525252" stroke-width="1.4" opacity=".8"/>');
+      });
+    }
+
+    var overlay = [];
+    var bottomExtra = 0;
+    M.sessions.forEach(function (s) {
+      var p = pos[s.id];
+      if (!p) return;
+      if (s.loop) {
+        overlay.push('<path d="M' + (p.x - 6) + " " + (p.y - 4) + " A 8 8 0 1 1 " + (p.x + 6) + " " + (p.y - 14)
+          + '" fill="none" stroke="#d4a300" stroke-width="1.6" opacity=".95" marker-end="url(#arwl)"/>');
+        overlay.push('<text x="' + (p.x + 10) + '" y="' + (p.y - 16) + '" fill="#d4a300" font-size="9" font-weight="600">loop</text>');
+      }
+      if (s.mergeTo) {
+        var t = cols.filter(function (c) { return c.wt.id === s.mergeTo; })[0];
+        if (!t) return;
+        var sx = p.col.x + p.col.w, ex = t.x + t.w / 2, laneY = Math.max(p.col.y + p.col.h, t.y + t.h) + 14;
+        overlay.push('<path d="M' + sx + " " + p.y + " L" + (sx + 9) + " " + p.y + " L" + (sx + 9) + " " + laneY
+          + " L" + ex + " " + laneY + " L" + ex + " " + (t.y + t.h)
+          + '" fill="none" stroke="#51a2ff" stroke-width="1.5" opacity=".9" marker-end="url(#arw)"/>');
+        overlay.push('<text x="' + ((sx + 9 + ex) / 2) + '" y="' + (laneY - 6) + '" fill="#51a2ff" font-size="9" text-anchor="middle">merge</text>');
+        bottomExtra = Math.max(bottomExtra, laneY);
+      }
+    });
+
+    if (hub) {
+      svg.push('<g class="node" data-session="' + hub.id + '">'
+        + '<rect x="' + hubX + '" y="' + hubY + '" width="' + hubW + '" height="' + G.hubH + '" rx="10" fill="#171717" stroke="#ffffff1f"/>'
+        + '<circle cx="' + (hubX + 18) + '" cy="' + (hubY + 19) + '" r="4" fill="#d4a300"/>'
+        + '<text x="' + (hubX + 30) + '" y="' + (hubY + 23) + '" fill="#f0f0f0" font-size="12" font-weight="600">' + esc(hub.title) + '</text>'
+        + '<text x="' + (hubX + hubW - 14) + '" y="' + (hubY + 23) + '" fill="#737373" font-size="9.5" text-anchor="end">' + wts.length + ' 레포 관리</text>'
+        + '<text x="' + (hubX + 18) + '" y="' + (hubY + 41) + '" fill="#737373" font-size="9.5">'
+        + esc(short(hub.model)) + " · " + esc(hub.started) + " · " + Math.round(hub.tokens / 1000) + "k</text></g>");
+    }
+
+    cols.forEach(function (c) {
+      svg.push('<rect x="' + c.x + '" y="' + c.y + '" width="' + c.w + '" height="' + c.h + '" rx="10" fill="#171717" stroke="#ffffff12"/>');
+      svg.push('<text x="' + (c.x + 12) + '" y="' + (c.y + 17) + '" fill="#737373" font-size="10">' + esc(c.wt.repo) + '</text>');
+      svg.push('<text x="' + (c.x + 12) + '" y="' + (c.y + 33) + '" fill="#f0f0f0" font-size="12" font-weight="600">' + esc(c.wt.branch) + '</text>');
+      svg.push('<text x="' + (c.x + c.w - 12) + '" y="' + (c.y + 33) + '" fill="#737373" font-size="9.5" text-anchor="end">'
+        + c.rows.length + " 세션" + (c.wt.dirty ? " · " + c.wt.dirty + " 미커밋" : "") + "</text>");
+      if (!c.rows.length) {
+        svg.push('<text x="' + (c.x + c.w / 2) + '" y="' + (c.y + G.head + 16) + '" fill="#737373" font-size="10.5" text-anchor="middle">세션 없음</text>');
+      }
+      c.rows.forEach(function (r) {
+        var s = r.s;
+        var sel = state.selected.type === "session" && state.selected.id === s.id;
+        var fill = s.state === "failed" ? "#ff656826" : s.state === "running" ? "#d4a30026" : s.state === "idle" ? "#73737326" : "#10b98126";
+        var stroke = s.state === "failed" ? "#ff6568" : s.state === "running" ? "#d4a300" : s.state === "idle" ? "#a3a3a3" : "#51a2ff";
+        svg.push('<g class="node' + (sel ? " is-sel" : "") + '" data-session="' + s.id + '">');
+        svg.push('<circle cx="' + (c.x + 20) + '" cy="' + (r.y + 9) + '" r="5" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.4"/>');
+        svg.push('<text x="' + (c.x + 32) + '" y="' + (r.y + 13) + '" fill="#f0f0f0" font-size="11">' + esc(clip(s.title, 19)) + '</text>');
+        svg.push('<text x="' + (c.x + 32) + '" y="' + (r.y + 26) + '" fill="#737373" font-size="9">'
+          + esc(short(s.model)) + " · " + esc(s.started) + " · " + Math.round(s.tokens / 1000) + "k</text>");
+        svg.push("</g>");
+        if (!r.agents.length) return;
+        var ax = c.x + 32;
+        r.agents.slice(0, 2).forEach(function (a) {
+          var w = Math.min(78, 12 + a.title.length * 5.4);
+          if (ax + w > c.x + c.w - 10) return;
+          svg.push('<g class="node" data-agent="' + a.id + '">'
+            + '<rect x="' + ax + '" y="' + (r.y + 30) + '" width="' + w + '" height="15" rx="4" fill="#262626" stroke="#ffffff1f"/>'
+            + '<text x="' + (ax + 5) + '" y="' + (r.y + 41) + '" fill="#acacac" font-size="8.5">' + esc(a.title) + '</text></g>');
+          ax += w + 4;
+        });
+        if (r.agents.length > 2) {
+          svg.push('<text x="' + (c.x + c.w - 10) + '" y="' + (r.y + 41) + '" fill="#737373" font-size="8.5" text-anchor="end">+' + (r.agents.length - 2) + "</text>");
+        }
+      });
+    });
+
+    var maxBottom = G.pad;
+    cols.forEach(function (c) { maxBottom = Math.max(maxBottom, c.y + c.h); });
+    svg.push(overlay.join(""));
+    $("graph").setAttribute("viewBox", "0 0 " + totalW + " " + (Math.max(maxBottom, bottomExtra) + G.pad));
+    setSvg($("graph"), svg.join(""));
+    $("n-board").textContent = M.sessions.length;
+    renderInspector();
+  }
+
+  function renderInspector() {
+    var box = $("inspector");
+    if (state.selected.type === "wt") {
+      var wt = byId(M.worktrees, state.selected.id);
+      if (!wt) { setHTML(box, '<p class="empty">선택된 항목이 없습니다.</p>'); return; }
+      var parent = wt.parent ? byId(M.worktrees, wt.parent) : null;
+      setHTML(box,
+        '<div class="insp-head"><h2>' + esc(wt.name) + '</h2><span class="pill">워크트리</span></div>'
+        + '<dl class="kv"><dt>브랜치</dt><dd class="mono">' + esc(wt.branch) + "</dd>"
+        + "<dt>상위</dt><dd>" + (parent ? esc(parent.name) : "—") + "</dd>"
+        + "<dt>미커밋</dt><dd>" + (wt.dirty ? wt.dirty + "개" : "없음") + "</dd>"
+        + "<dt>세션</dt><dd>" + M.sessions.filter(function (s) { return s.wt === wt.id; }).length + "개</dd></dl>"
+        + '<div class="insp-actions">'
+        + '<button class="btn" data-act="wt-rename">이름 수정</button>'
+        + '<button class="btn" data-act="wt-hide">숨김</button>'
+        + '<button class="btn danger" data-act="wt-del">삭제</button></div>');
+      bindInspector();
+      return;
+    }
+    var s = byId(M.sessions, state.selected.id);
+    if (!s) { setHTML(box, '<p class="empty">노드를 선택하면 세션 상세가 보입니다.</p>'); return; }
+    var agents = M.agents.filter(function (a) { return a.session === s.id; });
+    setHTML(box,
+      '<div class="insp-head"><h2>' + esc(s.title) + "</h2>" + pill(s.state) + "</div>"
+      + '<dl class="kv"><dt>모델</dt><dd class="mono">' + esc(s.model) + "</dd>"
+      + "<dt>워크트리</dt><dd>" + esc(byId(M.worktrees, s.wt).name) + "</dd>"
+      + "<dt>시작</dt><dd>" + esc(s.started) + "</dd>"
+      + "<dt>마지막 활동</dt><dd>" + esc(s.last) + "</dd>"
+      + "<dt>토큰</dt><dd>" + s.tokens.toLocaleString() + "</dd>"
+      + "<dt>세션 ID</dt><dd class=\"mono\">" + esc(s.id) + "</dd>"
+      + (agents.length ? "<dt>서브에이전트</dt><dd>" + agents.map(function (a) { return esc(a.title); }).join(", ") + "</dd>" : "")
+      + "</dl>"
+      + '<div class="insp-actions">'
+      + '<button class="btn primary" data-act="resume">재개</button>'
+      + '<button class="btn" data-act="stop">중단</button>'
+      + '<button class="btn" data-act="open-chat">채팅 열기</button></div>');
+    bindInspector();
+  }
+
+  function bindInspector() {
+    [].forEach.call($("inspector").querySelectorAll("[data-act]"), function (b) {
+      b.onclick = function () {
+        var act = b.getAttribute("data-act");
+        if (!state.orca && act !== "open-chat") return toast("Orca 연결이 없어 실행할 수 없습니다");
+        if (act === "resume") return toast("목업: 재개 명령은 실제로 보내지 않습니다");
+        if (act === "stop") return toast("목업: 중단 명령은 실제로 보내지 않습니다");
+        if (act === "open-chat") { state.chat = state.selected.id; return setView("chat"); }
+        if (act === "wt-rename") return renameDialog(state.selected.id);
+        if (act === "wt-hide") return toast("목업: 숨김은 목록에서만 사라집니다");
+        if (act === "wt-del") return deleteDialog(state.selected.id);
+      };
+    });
+  }
+
+  /* ---------- chat ---------- */
+  function renderChat() {
+    setHTML($("chat-list"), M.sessions.map(function (s) {
+      return '<button class="chat-item ' + s.state + (s.id === state.chat ? " is-active" : "") + '" data-chat="' + s.id + '">'
+        + '<span class="d"></span><span>' + esc(s.title) + "</span></button>";
+    }).join(""));
+    [].forEach.call($("chat-list").querySelectorAll("[data-chat]"), function (b) {
+      b.onclick = function () { state.chat = b.getAttribute("data-chat"); renderChat(); };
+    });
+
+    var s = byId(M.sessions, state.chat);
+    if (!s) {
+      $("chat-who").textContent = "세션 없음";
+      $("chat-meta").textContent = "";
+      setHTML($("chat-log"), '<p class="empty">세션이 없습니다. 새 세션을 시작하세요.</p>');
+      return;
+    }
+    $("chat-who").textContent = s.title;
+    var cp = $("chat-pill");
+    cp.className = "pill " + s.state;
+    setHTML(cp, '<span class="d"></span>' + (STATE_LABEL[s.state] || s.state));
+    setHTML($("chat-meta"), esc(short(s.model)) + " · " + esc(s.started) + "–" + esc(s.last) + " · " + s.tokens.toLocaleString() + " tok");
+
+    var msgs = M.messages[s.id] || [];
+    var log = msgs.length ? msgs.map(msgHTML).join("") : '<p class="empty">저장된 메시지가 없습니다.</p>';
+    setHTML($("chat-log"), log);
+    $("chat-log").scrollTop = $("chat-log").scrollHeight;
+
+    $("chat-input").disabled = !state.orca;
+    $("chat-send").disabled = !state.orca;
+    $("chat-input").placeholder = state.orca
+      ? "프롬프트를 입력하세요 (Enter 전송 · Shift+Enter 줄바꿈)"
+      : "Orca 연결 없음 — 프롬프트를 보낼 수 없습니다";
+    $("chat-status").textContent = "";
+    $("chat-status").className = "status";
+  }
+
+  function msgHTML(m) {
+    if (m.role === "compaction") {
+      return '<div class="divider">' + esc(m.text) + " · " + esc(m.at) + "</div>";
+    }
+    return '<div class="msg ' + m.role + '"><div class="role">' + esc(m.role) + " · " + esc(m.at)
+      + '</div><div class="body">' + esc(m.text) + "</div></div>";
+  }
+
+  function sendPrompt(text) {
+    var s = byId(M.sessions, state.chat);
+    if (!s) return;
+    if (!M.messages[s.id]) M.messages[s.id] = [];
+    M.messages[s.id].push({ role: "user", at: now(), text: text });
+    renderChat();
+    var st = $("chat-status");
+    st.textContent = "전송 중…";
+    st.className = "status";
+    setTimeout(function () {
+      if (state.chat !== s.id) return;
+      st.textContent = "전달됨 · 터미널 입력 대기";
+      st.className = "status ok";
+      M.messages[s.id].push({ role: "assistant", at: now(), text: "목업 응답입니다. 실제 앱에서는 PTY로 전달되고 세션 파일에 user 레코드가 추가됩니다." });
+      if (state.chat === s.id) renderChat();
+    }, 1000);
+  }
+
+  /* ---------- orchestration ---------- */
+  function renderOrch() {
+    setHTML($("run-select"), M.runs.map(function (r) {
+      return '<option value="' + r.id + '"' + (r.id === state.run ? " selected" : "") + ">"
+        + esc(r.id) + " — " + esc(r.goal) + "</option>";
+    }).join(""));
+    $("run-select").onchange = function (e) { state.run = e.target.value; renderOrch(); };
+
+    var run = byId(M.runs, state.run);
+    $("run-meta").textContent = "status " + run.status + " · started " + run.started + " · tasks " + run.tasks;
+
+    var tasks = M.tasks.filter(function (t) { return t.run === state.run; });
+    setHTML($("task-list"), tasks.map(function (t) {
+      return '<div class="task ' + t.state + '"><span class="pill ' + (t.state === "running" ? "running" : t.state === "done" ? "done" : t.state === "blocked" ? "idle" : "") + '"><span class="d"></span>'
+        + esc(t.state) + '</span><div class="t-main"><div class="t-title">' + esc(t.id) + " · " + esc(t.title) + "</div>"
+        + '<div class="deps">' + (t.deps.length ? "deps " + esc(t.deps.join(", ")) : "deps 없음") + "</div></div></div>";
+    }).join("") || '<p class="empty">Task 없음</p>');
+
+    var workers = M.workers.filter(function (w) { return w.run === state.run; });
+    setHTML($("worker-list"), workers.map(function (w) {
+      return '<div class="worker ' + (w.id === state.worker ? "is-active" : "") + '" data-worker="' + w.id + '">'
+        + "<span>" + esc(w.id) + " · " + esc(w.task) + "</span>"
+        + '<span class="w-meta">' + (w.attention ? '<span class="pill attention">주의</span>' : "")
+        + '<span class="pill">' + esc(w.terminalState) + "</span>" + pill(w.state === "done" ? "done" : w.state === "waiting" ? "idle" : "running")
+        + "</span></div>";
+    }).join("") || '<p class="empty">Worker 없음</p>');
+    [].forEach.call($("worker-list").querySelectorAll("[data-worker]"), function (b) {
+      b.onclick = function () { state.worker = b.getAttribute("data-worker"); renderOrch(); };
+    });
+
+    $("worker-out").textContent = M.workerOutput[state.worker] || "(출력 없음)";
+    setHTML($("gate-list"), M.gates.filter(function (g) { return g.run === state.run; }).map(function (g) {
+      return '<div class="gate"><span>' + esc(g.name) + '</span><span class="pill ' + (g.state === "passed" ? "done" : "idle") + '"><span class="d"></span>' + esc(g.state) + "</span></div>";
+    }).join("") || '<p class="empty">Gate 없음</p>');
+    $("n-orch").textContent = tasks.filter(function (t) { return t.state !== "done"; }).length;
+  }
+
+  /* ---------- history ---------- */
+  function renderHistory() {
+    var list = state.results || M.sessions.slice();
+    list = list.slice().sort(function (a, b) { return a.last < b.last ? 1 : -1; });
+    setHTML($("history-list"), list.map(function (s) {
+      var hit = "";
+      if (state.query) {
+        var hay = (M.messages[s.id] || []).map(function (m) { return m.text; }).join(" ");
+        var i = hay.toLowerCase().indexOf(state.query.toLowerCase());
+        if (i >= 0) hit = '<div class="h-meta">…' + esc(hay.slice(Math.max(0, i - 30), i))
+          + '<span class="hit">' + esc(hay.slice(i, i + state.query.length)) + "</span>"
+          + esc(hay.slice(i + state.query.length, i + state.query.length + 40)) + "…</div>";
+      }
+      return '<div class="h-row" data-open="' + s.id + '"><div><div class="h-title">' + esc(s.title) + "</div>"
+        + '<div class="h-meta">' + esc(byId(M.worktrees, s.wt).name) + " · " + esc(short(s.model)) + " · " + esc(s.started) + "–" + esc(s.last) + "</div>"
+        + hit + '</div><div class="h-tok">' + s.tokens.toLocaleString() + " tok</div></div>";
+    }).join("") || '<p class="empty">조건에 맞는 세션이 없습니다.</p>');
+    [].forEach.call($("history-list").querySelectorAll("[data-open]"), function (b) {
+      b.onclick = function () { state.chat = b.getAttribute("data-open"); setView("chat"); };
+    });
+    $("n-history").textContent = list.length;
+  }
+
+  function runSearch() {
+    var q = $("search").value.trim();
+    if (!q) { state.query = ""; state.results = null; return renderHistory(); }
+    var apply = function () {
+      state.query = q;
+      state.results = M.sessions.filter(function (s) {
+        if (s.title.toLowerCase().indexOf(q.toLowerCase()) >= 0) return true;
+        return (M.messages[s.id] || []).some(function (m) { return m.text.toLowerCase().indexOf(q.toLowerCase()) >= 0; });
+      });
+      renderHistory();
+    };
+    if (state.indexed) return apply();
+    var bar = $("index-bar"), fill = $("index-fill"), label = $("index-label"), p = 0;
+    bar.classList.remove("hidden");
+    var timer = setInterval(function () {
+      p = Math.min(100, p + 7 + Math.random() * 9);
+      fill.style.width = p + "%";
+      label.textContent = "세션 검색 준비 중 " + Math.round(p) + "%";
+      if (p >= 100) {
+        clearInterval(timer);
+        state.indexed = true;
+        label.textContent = "색인 완료 · 2,272 세션 (목업)";
+        setTimeout(function () { bar.classList.add("hidden"); }, 900);
+        apply();
+      }
+    }, 90);
+  }
+
+  /* ---------- dialogs ---------- */
+  function openDialog(opts) {
+    $("dlg-title").textContent = opts.title;
+    setHTML($("dlg-body"), opts.body);
+    var ok = $("dlg-ok");
+    ok.textContent = opts.okLabel || "확인";
+    ok.className = "btn " + (opts.danger ? "danger" : "primary");
+    $("dialog").classList.remove("hidden");
+    $("dlg-cancel").onclick = closeDialog;
+    ok.onclick = function () {
+      var keep = opts.onOk && opts.onOk() === false;
+      if (!keep) closeDialog();
+    };
+    if (opts.onOpen) opts.onOpen();
+  }
+  function closeDialog() { $("dialog").classList.add("hidden"); }
+
+  function deleteDialog(wtId) {
+    var wt = byId(M.worktrees, wtId);
+    openDialog({
+      title: "워크트리 삭제",
+      okLabel: "삭제",
+      danger: true,
+      body: "<p><b>" + esc(wt.name) + "</b> 를 삭제합니다. 이 동작은 되돌릴 수 없습니다.</p>"
+        + (wt.dirty ? '<div class="warn">수정 ' + wt.dirty + "개가 남아 있습니다. 삭제할까요?</div>" : "")
+        + '<p class="muted">삭제 후 Orca 목록에서 사라집니다. 세션 파일은 건드리지 않습니다.</p>',
+      onOk: function () {
+        if (!state.orca) { toast("Orca 연결이 없어 삭제할 수 없습니다"); return false; }
+        M.worktrees = M.worktrees.filter(function (w) { return w.id !== wtId; });
+        M.sessions = M.sessions.filter(function (s) { return s.wt !== wtId; });
+        if (!byId(M.sessions, state.chat)) state.chat = M.sessions.length ? M.sessions[0].id : null;
+        state.selected = { type: "session", id: state.chat };
+        renderBoard();
+        toast("삭제 완료 — " + wt.name);
+      }
+    });
+  }
+
+  function renameDialog(wtId) {
+    var wt = byId(M.worktrees, wtId);
+    openDialog({
+      title: "워크트리 이름 수정",
+      okLabel: "저장",
+      body: '<label>표시 이름<input id="dlg-name" value="' + esc(wt.name) + '"></label>'
+        + '<label>메모<input id="dlg-note" placeholder="선택 사항"></label>',
+      onOk: function () {
+        var v = $("dlg-name").value.trim();
+        if (!v) { toast("이름은 비울 수 없습니다"); return false; }
+        wt.name = v;
+        renderBoard();
+        toast("이름 저장 — " + v);
+      }
+    });
+  }
+
+  function worktreeDialog() {
+    openDialog({
+      title: "워크트리 생성",
+      okLabel: "생성",
+      body: '<label>이름<input id="dlg-wt" placeholder="예: ade-chat"></label>'
+        + '<label>기본 브랜치<input id="dlg-base" value="main"></label>'
+        + "<label>상위 워크트리<select id=\"dlg-parent\"><option value=\"\">없음 (최상위)</option>"
+        + M.worktrees.map(function (w) { return '<option value="' + w.id + '">' + esc(w.name) + "</option>"; }).join("")
+        + "</select></label>",
+      onOk: function () {
+        var name = $("dlg-wt").value.trim();
+        if (!name) { toast("이름을 입력하세요"); return false; }
+        M.worktrees.push({ id: "wt-" + Date.now(), name: name, branch: "feat/" + name, parent: $("dlg-parent").value || null, dirty: 0 });
+        renderBoard();
+        toast("워크트리 생성 — " + name);
+      }
+    });
+  }
+
+  function newSessionDialog() {
+    openDialog({
+      title: "새 Pi 세션",
+      okLabel: "시작",
+      body: "<label>워크트리<select id=\"dlg-swt\">"
+        + M.worktrees.map(function (w) { return '<option value="' + w.id + '">' + esc(w.name) + "</option>"; }).join("")
+        + "</select></label>"
+        + '<label>이름 (선택)<input id="dlg-stitle" placeholder="비우면 첫 프롬프트로 짓습니다"></label>'
+        + '<label>모델<select id="dlg-smodel"><option>anthropic/claude-sonnet-4.5</option><option>openai/gpt-5</option></select></label>'
+        + '<label>첫 프롬프트<textarea id="dlg-sprompt" rows="3" placeholder="무엇을 할까요?"></textarea></label>',
+      onOk: function () {
+        if (!state.orca) { toast("Orca 연결이 없어 세션을 시작할 수 없습니다"); return false; }
+        var t = $("dlg-stitle").value.trim() || "새 세션";
+        var id = "s-" + (M.sessions.length + 1) + "-" + Date.now().toString().slice(-3);
+        M.sessions.push({
+          id: id, title: t, wt: $("dlg-swt").value, model: $("dlg-smodel").value,
+          state: "running", started: now(), last: now(), tokens: 0, parent: null
+        });
+        M.messages[id] = [{ role: "user", at: now(), text: $("dlg-sprompt").value || "(첫 프롬프트 없음)" }];
+        state.selected = { type: "session", id: id };
+        renderBoard();
+        toast("세션 시작 — " + t + " (목업)");
+      }
+    });
+  }
+
+  /* ---------- toast ---------- */
+  var toastTimer = null;
+  function toast(text) {
+    var t = $("toast");
+    t.textContent = text;
+    t.classList.remove("hidden");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.add("hidden"); }, 2400);
+  }
+
+  /* ---------- events ---------- */
+  $("nav-search").onclick = function () { toast("검색 팔레트는 목업 범위 밖입니다"); };
+  [].forEach.call(document.querySelectorAll(".nav-item"), function (b) {
+    b.onclick = function () { setView(b.getAttribute("data-view")); };
+  });
+  $("graph").addEventListener("click", function (e) {
+    var g = e.target.closest("[data-session]");
+    if (g) {
+      var id = g.getAttribute("data-session");
+      state.selected = { type: "session", id: id };
+      return renderBoard();
+    }
+    var a = e.target.closest("[data-agent]");
+    if (a) {
+      var ag = byId(M.agents, a.getAttribute("data-agent"));
+      state.selected = { type: "session", id: ag.session };
+      return renderBoard();
+    }
+    var w = e.target.closest(".wt-more");
+    if (w) {
+      state.selected = { type: "wt", id: w.getAttribute("data-wt") };
+      return renderBoard();
+    }
+  });
+  $("orca-toggle").onclick = function () { setOrca(!state.orca); };
+  $("banner-retry").onclick = function () { setOrca(true); };
+  $("composer").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var input = $("chat-input");
+    var text = input.value.trim();
+    if (!text || !state.orca) return;
+    input.value = "";
+    sendPrompt(text);
+  });
+  $("chat-input").addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      $("composer").dispatchEvent(new Event("submit", { cancelable: true }));
+    }
+  });
+  $("search-btn").onclick = runSearch;
+  $("search").addEventListener("keydown", function (e) { if (e.key === "Enter") runSearch(); });
+  [].forEach.call(document.querySelectorAll(".tab"), function (b) {
+    b.onclick = function () {
+      [].forEach.call(document.querySelectorAll(".tab"), function (x) { x.classList.remove("is-active"); });
+      b.classList.add("is-active");
+      state.range = b.getAttribute("data-range");
+      toast(state.range === "30" ? "최근 30일만 표시" : "전체 기간 표시 (목업 데이터는 전부 최근)");
+    };
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !$("dialog").classList.contains("hidden")) closeDialog();
+  });
+
+  banner();
+  setView("board");
+})();
+</script>
+</body>
+</html>
