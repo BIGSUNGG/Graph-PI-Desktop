@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ADE 애니메이션 전체 시안</title>
+<style>
+  @font-face{font-family:'Geist';src:url('./fonts/Geist-Variable.woff2') format('woff2');font-weight:100 900;font-display:swap}
+  :root{
+    --bg:#0a0a0a; --card:#171717; --panel:#1e1e1e; --panel-2:#262626; --line:rgb(255 255 255 / .07);
+    --text:#f0f0f0; --muted:#acacac; --dim:#737373; --accent:#51a2ff;
+    --run:#d4a300; --ok:#10b981; --bad:#ff6568;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:13px/1.55 'Geist',-apple-system,'Segoe UI',sans-serif}
+  header{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:10px;height:44px;padding:0 16px;
+    background:rgba(10,10,10,.88);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  header b{font-size:13px}
+  .tag{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 8px}
+  header .hint{font-size:11.5px;color:var(--dim);margin-left:auto}
+  main{padding:16px 16px 92px;max-width:1240px;margin:0 auto}
+  h2{font-size:12px;font-weight:600;color:var(--muted);margin:24px 0 8px;letter-spacing:.03em}
+  h2 i{font-style:normal;color:var(--dim);font-weight:400}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+  .card{position:relative;display:block;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;
+    cursor:pointer;transition:border-color .15s,background .15s}
+  .card:hover{border-color:rgb(255 255 255 / .16)}
+  .card input{position:absolute;opacity:0;pointer-events:none}
+  .card.is-on{border-color:rgb(81 162 255 / .55);background:#161b22}
+  .stage{height:96px;margin-bottom:8px;background:#101010;border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .stage svg{width:100%;height:100%}
+  .card b{display:block;font-size:12.5px}
+  .card span{display:block;font-size:11.5px;color:var(--dim)}
+  footer{position:fixed;left:0;right:0;bottom:0;display:flex;gap:10px;align-items:center;padding:10px 16px;
+    background:rgba(23,23,23,.97);border-top:1px solid var(--line)}
+  footer code{flex:1;font-family:'SF Mono',ui-monospace,monospace;font-size:11px;color:var(--muted);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  footer button{height:30px;padding:0 14px;border-radius:6px;border:1px solid #ffffff2a;background:#e5e5e5;color:#171717;
+    font:inherit;font-weight:600;cursor:pointer}
+
+  /* ---------- 1. node ---------- */
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--run);position:relative;display:inline-block}
+  @keyframes ringOut{0%{box-shadow:0 0 0 0 rgba(212,163,0,.75)}80%,100%{box-shadow:0 0 0 9px rgba(212,163,0,0)}}
+  .n1{animation:ringOut 2s ease-out infinite}
+  @keyframes breathe{0%,100%{box-shadow:0 0 0 2px rgba(212,163,0,.10);opacity:.85}50%{box-shadow:0 0 0 7px rgba(212,163,0,.18);opacity:1}}
+  .n2{animation:breathe 2.4s ease-in-out infinite}
+  @keyframes blink{0%,45%{opacity:1}50%,95%{opacity:.25}100%{opacity:1}}
+  .n3{animation:blink 1.6s ease-in-out infinite}
+
+  /* ---------- generic line flow ---------- */
+  @keyframes dash{to{stroke-dashoffset:-24}}
+  .flow{stroke-dasharray:7 5;animation:dash .9s linear infinite}
+  .flowfine{stroke-dasharray:1 4;animation:dash 1.4s linear infinite}
+
+  /* ---------- 5. card ---------- */
+  .mini{width:132px;border:1px solid var(--line);border-radius:7px;background:var(--panel);padding:7px 8px;font-size:10.5px;color:var(--muted)}
+  .mini em{display:block;font-style:normal;color:var(--text);font-size:11px;margin-bottom:3px}
+  @keyframes selPulse{0%,100%{border-color:#51a2ff5c}50%{border-color:#51a2ffcc}}
+  .c1{border-color:#51a2ff5c;animation:selPulse 2s ease-in-out infinite}
+  @keyframes lift{0%,100%{transform:translateY(0);box-shadow:0 0 0 rgba(0,0,0,0)}50%{transform:translateY(-2px);box-shadow:0 6px 14px rgba(0,0,0,.5)}}
+  .c2{animation:lift 2.6s ease-in-out infinite}
+  @keyframes badgeBlink{0%,100%{opacity:.45}50%{opacity:1}}
+  .c3 .badge{display:inline-block;margin-top:4px;font-size:10px;color:#d4a300;animation:badgeBlink 1.8s ease-in-out infinite}
+
+  /* ---------- 6. sidebar ---------- */
+  .side{width:150px;font-size:10.5px;color:var(--muted)}
+  .side .row{display:flex;align-items:center;gap:5px;height:21px;padding:0 6px;border-radius:5px;position:relative;overflow:hidden}
+  .side .row b{color:var(--text);font-size:11px;font-weight:500}
+  @keyframes barSlide{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
+  .s1 .row:nth-child(2)::before,.s1 .row:nth-child(3)::before{content:"";position:absolute;inset:auto 0 0 0;height:100%;
+    background:#353535;transform-origin:left;animation:barSlide .9s ease-out infinite alternate}
+  @keyframes edgeGlow{0%{box-shadow:inset 2px 0 0 0 transparent}40%{box-shadow:inset 2px 0 0 0 #51a2ff}100%{box-shadow:inset 2px 0 0 0 transparent}}
+  .s2 .row:nth-child(2){animation:edgeGlow 2s ease-out infinite}
+  @keyframes flashRow{0%{background:#51a2ff26}100%{background:transparent}}
+  .s3 .row:nth-child(1){animation:flashRow 2s ease-out infinite}
+
+  /* ---------- 7. inspector ---------- */
+  .panel{width:118px;height:74px;border:1px solid var(--line);border-radius:6px;background:var(--panel);padding:6px;
+    display:flex;flex-direction:column;gap:3px}
+  .panel i{display:block;height:6px;border-radius:3px;background:#ffffff14}
+  .panel i:first-child{width:56%}
+  @keyframes slideIn{0%{transform:translateX(24px);opacity:0}60%,100%{transform:translateX(0);opacity:1}}
+  .i1{animation:slideIn 1.8s ease-out infinite}
+  @keyframes fadePop{0%{opacity:0;transform:scale(.96)}60%,100%{opacity:1;transform:scale(1)}}
+  .i2{animation:fadePop 1.8s ease-out infinite}
+  @keyframes stagger{0%{opacity:0;transform:translateY(3px)}30%{opacity:1;transform:none}100%{opacity:1}}
+  .i3 i:nth-child(1){animation:stagger 2s ease-out infinite}
+  .i3 i:nth-child(2){animation:stagger 2s ease-out infinite;animation-delay:.12s}
+  .i3 i:nth-child(3){animation:stagger 2s ease-out infinite;animation-delay:.24s}
+  .i3 i:nth-child(4){animation:stagger 2s ease-out infinite;animation-delay:.36s}
+
+  /* ---------- 8. chat ---------- */
+  .chat{width:140px;display:flex;flex-direction:column;gap:5px}
+  .bubble{font-size:10px;color:#d4d4d4;background:var(--panel-2);border-radius:6px;padding:4px 7px;max-width:112px}
+  .bubble.me{margin-left:auto;background:#1d3b2e;color:#c9e9d5}
+  @keyframes fadeUp{0%{opacity:0;transform:translateY(5px)}60%,100%{opacity:1;transform:none}}
+  .t1 .bubble.me{animation:fadeUp 2s ease-out infinite}
+  @keyframes typing{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-2px)}}
+  .t2 .bubble.live span{display:inline-block;animation:typing 1.2s ease-in-out infinite}
+  .t2 .bubble.live span:nth-child(2){animation-delay:.15s}
+  .t2 .bubble.live span:nth-child(3){animation-delay:.3s}
+  @keyframes flashBubble{0%{background:#51a2ff33}100%{background:var(--panel-2)}}
+  .t3 .bubble.me{animation:flashBubble 2.2s ease-out infinite}
+
+  /* ---------- 9. orchestration ---------- */
+  .orch{width:146px;display:flex;flex-direction:column;gap:6px;font-size:10px;color:var(--muted)}
+  .track{height:6px;border-radius:3px;background:#ffffff14;overflow:hidden}
+  .track i{display:block;height:100%;background:var(--accent);border-radius:3px}
+  @keyframes fill{0%{width:8%}70%,100%{width:78%}}
+  .o1 .track i{animation:fill 2.4s ease-out infinite}
+  .pill{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:999px;padding:1px 8px}
+  .pill .dot{width:7px;height:7px}
+  @keyframes softPulse{0%,100%{opacity:.35}50%{opacity:1}}
+  .o2 .pill .dot{animation:softPulse 1.4s ease-in-out infinite}
+  @keyframes drawCheck{0%{stroke-dashoffset:22}60%,100%{stroke-dashoffset:0}}
+  .o3 svg{width:96px;height:40px}
+  .o3 .chk{stroke-dasharray:22;animation:drawCheck 2.2s ease-in-out infinite}
+
+  /* ---------- 10. history ---------- */
+  .hist{width:150px;display:flex;flex-direction:column;gap:5px}
+  .hrow{height:14px;border-radius:4px;background:#ffffff0d}
+  @keyframes shimmer{0%{background-position:-120px 0}100%{background-position:120px 0}}
+  .h3 .hrow{background:linear-gradient(90deg,#ffffff0d 0%,#ffffff1f 40%,#ffffff0d 80%);background-size:240px 100%;
+    animation:shimmer 1.4s linear infinite}
+  @keyframes staggerRow{0%{opacity:0;transform:translateY(4px)}40%,100%{opacity:1;transform:none}}
+  .h2 .hrow:nth-child(1){animation:staggerRow 1.8s ease-out infinite}
+  .h2 .hrow:nth-child(2){animation:staggerRow 1.8s ease-out infinite;animation-delay:.1s}
+  .h2 .hrow:nth-child(3){animation:staggerRow 1.8s ease-out infinite;animation-delay:.2s}
+  .h2 .hrow:nth-child(4){animation:staggerRow 1.8s ease-out infinite;animation-delay:.3s}
+  @keyframes growBar{0%{width:0}100%{width:100%}}
+  .h1 .hrow:first-child{background:#51a2ff55;animation:growBar 2.4s ease-out infinite}
+
+  /* ---------- 11. shell ---------- */
+  .shell{width:150px;display:flex;flex-direction:column;gap:6px;align-items:center}
+  @keyframes viewIn{0%{opacity:0;transform:translateY(6px) scale(.99)}55%,100%{opacity:1;transform:none}}
+  .v1 .view{width:126px;height:56px;border-radius:6px;background:var(--panel);border:1px solid var(--line);
+    animation:viewIn 2.2s ease-out infinite}
+  .toast{display:flex;align-items:center;gap:6px;padding:5px 9px;border-radius:6px;background:var(--panel-2);
+    border:1px solid var(--line);font-size:10.5px;color:#d4d4d4}
+  @keyframes toastIn{0%{opacity:0;transform:translateY(10px) scale(.98)}20%,80%{opacity:1;transform:none}100%{opacity:0;transform:translateY(6px)}}
+  .v2 .toast{animation:toastIn 3s ease-out infinite}
+  @keyframes backdrop{0%{opacity:0}40%,100%{opacity:.55}}
+  @keyframes dialogIn{0%{opacity:0;transform:scale(.94) translateY(4px)}45%,100%{opacity:1;transform:none}}
+  .v3 .modal{position:relative;width:126px;height:56px;border-radius:6px;background:var(--panel);border:1px solid #ffffff2e;
+    animation:dialogIn 2.6s ease-out infinite}
+  .v3 .modal::before{content:"";position:absolute;inset:-10px;border-radius:8px;background:#000;opacity:.55;z-index:-1;
+    animation:backdrop 2.6s ease-out infinite}
+
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation:none !important}
+    .track i{width:52%}
+  }
+</style>
+</head>
+<body>
+<header>
+  <b>ADE 애니메이션 전체 시안</b>
+  <span class="tag">33개</span>
+  <span class="hint">항목별로 하나씩 선택 → 아래 버튼으로 조합 확인</span>
+</header>
+
+<main>
+  <h2>1. 세션 노드 상태 <i>— 지금 목업엔 확산 링만 있음</i></h2>
+  <div class="grid" data-cat="node">
+    <label class="card"><input type="radio" name="node" value="N1" /><div class="stage"><span class="dot n1"></span></div><b>N1 · 확산 링</b><span>실행 중 점에서 링이 퍼짐</span></label>
+    <label class="card"><input type="radio" name="node" value="N2" /><div class="stage"><span class="dot n2"></span></div><b>N2 · 호흡 글로우</b><span>은은하게 커졌다 작아짐</span></label>
+    <label class="card"><input type="radio" name="node" value="N3" /><div class="stage"><span class="dot n3"></span></div><b>N3 · 점멸</b><span>가장 단순, 존재감 최소</span></label>
+  </div>
+
+  <h2>2. 부모-자식 연결선 <i>— 지금은 running 이면 dash 흐름</i></h2>
+  <div class="grid" data-cat="parent">
+    <label class="card"><input type="radio" name="parent" value="E1" /><div class="stage">
+      <svg viewBox="0 0 160 96"><path d="M40 78 L40 34 L120 34" fill="none" stroke="#525252" stroke-width="1.6" class="flow"/></svg></div>
+      <b>E1 · 점선 흐름</b><span>선만 흐르고 점은 없음</span></label>
+    <label class="card"><input type="radio" name="parent" value="E2" /><div class="stage">
+      <svg viewBox="0 0 160 96"><path id="e2p" d="M40 78 L40 34 L120 34" fill="none" stroke="#525252" stroke-width="1.4" stroke-dasharray="2 5"/>
+        <circle r="2.4" fill="#acacac"><animateMotion dur="2s" repeatCount="indefinite"><mpath href="#e2p"/></animateMotion></circle></svg></div>
+      <b>E2 · 이동 점</b><span>선은 고정, 점만 이동</span></label>
+    <label class="card"><input type="radio" name="parent" value="E3" /><div class="stage">
+      <svg viewBox="0 0 160 96"><path id="e3p" d="M40 78 L40 34 L120 34" fill="none" stroke="#525252" stroke-width="1.6" class="flow"/>
+        <circle r="2.4" fill="#acacac"><animateMotion dur="2s" repeatCount="indefinite"><mpath href="#e3p"/></animateMotion></circle></svg></div>
+      <b>E3 · 흐름 + 점</b><span>둘 다(현재 방식)</span></label>
+  </div>
+
+  <h2>3. 머지 (자식 → 부모)</h2>
+  <div class="grid" data-cat="merge">
+    <label class="card"><input type="radio" name="merge" value="M1" /><div class="stage">
+      <svg viewBox="0 0 160 96"><path id="m1p" d="M40 78 L40 34 L120 34" fill="none" stroke="#51a2ff" stroke-width="1.6" class="flow"/>
+        <circle r="2.4" fill="#51a2ff"><animateMotion dur="1.8s" repeatCount="indefinite"><mpath href="#m1p"/></animateMotion></circle></svg></div>
+      <b>M1 · 점선 흐름 + 점</b><span>점 하나가 따라감</span></label>
+    <label class="card"><input type="radio" name="merge" value="M2" /><div class="stage">
+      <svg viewBox="0 0 160 96"><path id="m2p" d="M40 78 L40 34 L120 34" fill="none" stroke="#51a2ff" stroke-width="1.6" class="flowfine"/>
+        <circle r="2.4" fill="#51a2ff"><animateMotion dur="1.8s" repeatCount="indefinite"><mpath href="#m2p"/></animateMotion></circle>
+        <circle r="1.8" fill="#51a2ff" opacity=".55"><animateMotion dur="1.8s" begin="-.25s" repeatCount="indefinite"><mpath href="#m2p"/></animateMotion></circle>
+        <circle r="1.2" fill="#51a2ff" opacity=".28"><animateMotion dur="1.8s" begin="-.5s" repeatCount="indefinite"><mpath href="#m2p"/></animateMotion></circle></svg></div>
+      <b>M2 · 꼬리 혜성</b><span>세 점이 시차를 두고 따라감(현재)</span></label>
+    <label class="card"><input type="radio" name="merge" value="M3" /><div class="stage">
+      <svg viewBox="0 0 160 96"><path d="M40 78 L40 34 L108 34" fill="none" stroke="#51a2ff" stroke-width="1.6" class="flow"/>
+        <path d="M108 27 L120 34 L108 41 z" fill="#51a2ff">
+          <animateTransform attributeName="transform" type="translate" values="0 -1.5;0 1.5;0 -1.5" dur="1.2s" repeatCount="indefinite"/></path></svg></div>
+      <b>M3 · 화살촉 맥동</b><span>화살촉이 오르내림</span></label>
+  </div>
+
+  <h2>4. 루프 (자기 반복)</h2>
+  <div class="grid" data-cat="loop">
+    <label class="card"><input type="radio" name="loop" value="L1" /><div class="stage">
+      <svg viewBox="0 0 160 96"><circle cx="80" cy="48" r="15" fill="none" stroke="#d4a300" stroke-width="1.6" stroke-dasharray="4 4" class="loopRing"/>
+        <circle cx="80" cy="48" r="5" fill="#d4a300"/></svg></div>
+      <b>L1 · 회전 링</b><span>점선 링이 돌아감(현재)</span></label>
+    <label class="card"><input type="radio" name="loop" value="L2" /><div class="stage">
+      <svg viewBox="0 0 160 96"><circle cx="80" cy="48" r="5" fill="#d4a300"/>
+        <circle r="2.6" fill="#d4a300"><animateMotion dur="1.4s" repeatCount="indefinite" path="M69 48 a 11 11 0 1 1 22 0 a 11 11 0 1 1 -22 0"/></circle></svg></div>
+      <b>L2 · 궤도 점</b><span>링 없이 점만 돎</span></label>
+    <label class="card"><input type="radio" name="loop" value="L3" /><div class="stage">
+      <svg viewBox="0 0 160 96"><path d="M68 48 A 12 12 0 0 1 92 48" fill="none" stroke="#d4a300" stroke-width="1.6" stroke-dasharray="3 4" class="flowfine"/>
+        <circle r="2.4" fill="#d4a300"><animateMotion dur="2s" repeatCount="indefinite" keyPoints="0;1;0" keyTimes="0;0.5;1" calcMode="linear" path="M68 48 A 12 12 0 0 1 92 48"/></circle></svg></div>
+      <b>L3 · 왕복 호</b><span>진자처럼 앞뒤로</span></label>
+  </div>
+
+  <h2>5. 워크트리 카드 <i>— 지금 애니메이션 없음</i></h2>
+  <div class="grid" data-cat="card">
+    <label class="card"><input type="radio" name="card" value="C1" /><div class="stage"><div class="mini c1"><em>feature/login · server</em>2 세션</div></div>
+      <b>C1 · 선택 테두리 맥동</b><span>선택된 카드 테두리가 은은히 밝아짐</span></label>
+    <label class="card"><input type="radio" name="card" value="C2" /><div class="stage"><div class="mini c2"><em>fix/security</em>1 세션</div></div>
+      <b>C2 · 호버 리프트</b><span>살짝 떠오르며 그림자</span></label>
+    <label class="card"><input type="radio" name="card" value="C3" /><div class="stage"><div class="mini c3"><em>fix/performance</em>1 세션<span class="badge">● 미커밋</span></div></div>
+      <b>C3 · dirty 배지 점멸</b><span>미커밋 표시가 깜빡임</span></label>
+  </div>
+
+  <h2>6. 사이드바 <i>— 지금 hover 만</i></h2>
+  <div class="grid" data-cat="sidebar">
+    <label class="card"><input type="radio" name="sidebar" value="S1" /><div class="stage">
+      <div class="side s1"><div class="row"><b>▾ feature/login</b></div><div class="row">· server</div><div class="row">· client</div></div></div>
+      <b>S1 · 접기/펼치기</b><span>그룹 열릴 때 행이 아래로 채워짐</span></label>
+    <label class="card"><input type="radio" name="sidebar" value="S2" /><div class="stage">
+      <div class="side s2"><div class="row"><b>▾ feature/login</b></div><div class="row">· server</div><div class="row">· client</div></div></div>
+      <b>S2 · 좌측 강조선</b><span>선택 행에 파란 세로선이 스윕</span></label>
+    <label class="card"><input type="radio" name="sidebar" value="S3" /><div class="stage">
+      <div class="side s3"><div class="row"><b>▾ feature/login</b></div><div class="row">· server</div><div class="row">· client</div></div></div>
+      <b>S3 · 새 그룹 플래시</b><span>새로 생긴 그룹 행이 한 번 반짝</span></label>
+  </div>
+
+  <h2>7. 상세 인스펙터 <i>— 지금 즉시 표시</i></h2>
+  <div class="grid" data-cat="inspector">
+    <label class="card"><input type="radio" name="inspector" value="I1" /><div class="stage">
+      <div class="panel i1"><i></i><i></i><i></i><i></i></div></div>
+      <b>I1 · 우측 슬라이드 인</b><span>패널이 오른쪽에서 들어옴</span></label>
+    <label class="card"><input type="radio" name="inspector" value="I2" /><div class="stage">
+      <div class="panel i2"><i></i><i></i><i></i><i></i></div></div>
+      <b>I2 · 페이드 + 살짝 확대</b><span>부드러운 교체</span></label>
+    <label class="card"><input type="radio" name="inspector" value="I3" /><div class="stage">
+      <div class="panel i3"><i></i><i></i><i></i><i></i></div></div>
+      <b>I3 · 필드 순차 등장</b><span>행이 시차를 두고 나타남</span></label>
+  </div>
+
+  <h2>8. 채팅 <i>— 지금 전송 시 즉시 추가</i></h2>
+  <div class="grid" data-cat="chat">
+    <label class="card"><input type="radio" name="chat" value="T1" /><div class="stage">
+      <div class="chat t1"><div class="bubble">로그인 플로우 확인 중…</div><div class="bubble me">세션 상태 보여줘</div></div></div>
+      <b>T1 · 메시지 페이드 업</b><span>새 말풍선이 아래에서 올라옴</span></label>
+    <label class="card"><input type="radio" name="chat" value="T2" /><div class="stage">
+      <div class="chat t2"><div class="bubble">로그인 플로우 확인 중</div><div class="bubble live"><span>·</span><span>·</span><span>·</span></div></div></div>
+      <b>T2 · 타이핑 점</b><span>응답 대기 중 점 3개가 튐</span></label>
+    <label class="card"><input type="radio" name="chat" value="T3" /><div class="stage">
+      <div class="chat t3"><div class="bubble">로그인 플로우 확인 중…</div><div class="bubble me">세션 상태 보여줘</div></div></div>
+      <b>T3 · 새 메시지 플래시</b><span>방금 추가된 말풍선이 파랗게 번쩍</span></label>
+  </div>
+
+  <h2>9. 오케스트레이션 <i>— 지금 정적 막대</i></h2>
+  <div class="grid" data-cat="orch">
+    <label class="card"><input type="radio" name="orch" value="O1" /><div class="stage">
+      <div class="orch o1"><div>태스크 진행 <span>4/6</span></div><div class="track"><i></i></div></div></div>
+      <b>O1 · 진행률 채움</b><span>막대가 차오르며 진행</span></label>
+    <label class="card"><input type="radio" name="orch" value="O2" /><div class="stage">
+      <div class="orch o2"><div class="pill"><span class="dot"></span>worker-2 실행 중</div><div class="pill"><span class="dot" style="background:#10b981"></span>worker-1 완료</div></div></div>
+      <b>O2 · 워커 상태 점</b><span>실행 중 워커 점만 숨쉬듯 깜빡</span></label>
+    <label class="card"><input type="radio" name="orch" value="O3" /><div class="stage">
+      <div class="orch o3"><svg viewBox="0 0 96 40"><circle cx="14" cy="20" r="7" fill="none" stroke="#10b981" stroke-width="1.8"/>
+        <path d="M10 20 L13 23.5 L19 16" fill="none" stroke="#10b981" stroke-width="1.8" class="chk" stroke-linecap="round"/></svg></div></div>
+      <b>O3 · 게이트 체크 드로우</b><span>통과할 때 체크가 그려짐</span></label>
+  </div>
+
+  <h2>10. 히스토리 <i>— 지금 즉시 갱신</i></h2>
+  <div class="grid" data-cat="history">
+    <label class="card"><input type="radio" name="history" value="H1" /><div class="stage">
+      <div class="hist h1"><div class="hrow"></div><div class="hrow"></div><div class="hrow"></div><div class="hrow"></div></div></div>
+      <b>H1 · 색인 진행률</b><span>상단 막대가 채워지며 진행 표시</span></label>
+    <label class="card"><input type="radio" name="history" value="H2" /><div class="stage">
+      <div class="hist h2"><div class="hrow"></div><div class="hrow"></div><div class="hrow"></div><div class="hrow"></div></div></div>
+      <b>H2 · 결과 순차 등장</b><span>검색 결과가 시차를 두고 채워짐</span></label>
+    <label class="card"><input type="radio" name="history" value="H3" /><div class="stage">
+      <div class="hist h3"><div class="hrow"></div><div class="hrow"></div><div class="hrow"></div><div class="hrow"></div></div></div>
+      <b>H3 · 스켈레톤 shimmer</b><span>검색 중 빛이 흐르는 자리표시</span></label>
+  </div>
+
+  <h2>11. 화면 전환 · 토스트 · 다이얼로그 <i>— 지금 즉시 교체</i></h2>
+  <div class="grid" data-cat="shell">
+    <label class="card"><input type="radio" name="shell" value="V1" /><div class="stage"><div class="shell v1"><div class="view"></div></div></div>
+      <b>V1 · 뷰 페이드 업</b><span>화면 전환 시 살짝 올라오며 등장</span></label>
+    <label class="card"><input type="radio" name="shell" value="V2" /><div class="stage"><div class="shell v2"><div class="toast">Orca 연결됨</div></div></div>
+      <b>V2 · 토스트 슬라이드</b><span>아래에서 올라왔다 사라짐</span></label>
+    <label class="card"><input type="radio" name="shell" value="V3" /><div class="stage"><div class="shell v3"><div class="modal"></div></div></div>
+      <b>V3 · 다이얼로그 등장</b><span>배경 어두워지고 창이 살짝 커짐</span></label>
+  </div>
+</main>
+
+<footer>
+  <code id="pick">선택 없음</code>
+  <button type="button" id="apply">선택 복사</button>
+</footer>
+
+<script>
+  var state = {};
+  function syncPick() {
+    var keys = Object.keys(state);
+    document.getElementById("pick").textContent = keys.length
+      ? keys.map(function (k) { return k + "=" + state[k]; }).join(" · ")
+      : "선택 없음";
+  }
+  Array.prototype.forEach.call(document.querySelectorAll(".grid"), function (grid) {
+    grid.addEventListener("change", function (e) {
+      var input = e.target;
+      if (!input || input.type !== "radio") return;
+      state[grid.dataset.cat] = input.value;
+      Array.prototype.forEach.call(grid.querySelectorAll(".card"), function (c) {
+        c.classList.toggle("is-on", c.contains(input));
+      });
+      syncPick();
+    });
+  });
+  document.getElementById("apply").addEventListener("click", function () {
+    var text = JSON.stringify(state);
+    var btn = this;
+    if (navigator.clipboard) navigator.clipboard.writeText(text);
+    btn.textContent = "복사됨";
+    setTimeout(function () { btn.textContent = "선택 복사"; }, 1500);
+  });
+  syncPick();
+</script>
+</body>
+</html>

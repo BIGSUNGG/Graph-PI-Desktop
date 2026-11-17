@@ -12,8 +12,8 @@ window.MOCK = {
     { id: "wt-login-server", group: "g-login", repo: "Server", name: "Server", branch: "feature/login", parent: null, dirty: 3 },
     { id: "wt-login-client", group: "g-login", repo: "Client", name: "Client", branch: "feature/login", parent: null, dirty: 0 },
     { id: "wt-login-contract", group: "g-login", repo: "Contract", name: "Contract", branch: "feature/login", parent: null, dirty: 1 },
-    { id: "wt-fix-sec", group: "g-fix", repo: "Server", name: "Server", branch: "fix/security", parent: null, dirty: 2 },
-    { id: "wt-fix-perf", group: "g-fix", repo: "Server", name: "Server", branch: "fix/performance", parent: null, dirty: 0 },
+    { id: "wt-fix-sec", group: "g-fix", repo: "Server", name: "Server", branch: "fix/security", parent: "wt-develop", dirty: 2 },
+    { id: "wt-fix-perf", group: "g-fix", repo: "Server", name: "Server", branch: "fix/performance", parent: "wt-develop", dirty: 0 },
     { id: "wt-develop", group: "g-fix", repo: "Server", name: "Server", branch: "develop", parent: null, dirty: 0 }
   ],
 

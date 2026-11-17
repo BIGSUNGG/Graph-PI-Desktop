@@ -5,6 +5,7 @@ global.window = {};
 eval(fs.readFileSync('mock/mock-data.js', 'utf8'));
 const M = global.window.MOCK;
 const errs = [];
+try { new Function(js); } catch (e) { errs.push('inline js syntax: ' + e.message); }
 const ids = [...js.matchAll(/\$\("([a-z0-9-]+)"\)/g)].map((m) => m[1]);
 const all = (html + js).replace(/\\"/g, '"');
 const declared = new Set([...all.matchAll(/id="([a-z0-9-]+)"/g)].map((m) => m[1]));
@@ -45,6 +46,11 @@ const hub = M.sessions.filter((s) => M.sessions.filter((k) => k.parent === s.id 
 if (!hub) errs.push('hub session missing');
 if (!M.sessions.some((s) => s.loop)) errs.push('loop session missing');
 if (!M.sessions.some((s) => s.mergeTo)) errs.push('merge session missing');
+const fixWts = M.worktrees.filter((w) => w.group === 'g-fix');
+const fixRoots = fixWts.filter((w) => fixWts.some((k) => k.parent === w.id));
+if (!(fixRoots.length === 1 && fixRoots[0].id === 'wt-develop')) errs.push('fix root must be wt-develop');
+if (fixWts.filter((w) => w.parent === 'wt-develop').length !== 2) errs.push('develop child count !== 2');
+for (const c of ['.edge-flow', '.edge-dot', 'prefers-reduced-motion', 'animateMotion']) if (!html.includes(c)) errs.push('missing ' + c);
 if (html.includes('class="legend"')) errs.push('legend markup still present');
 console.log(
   errs.length
