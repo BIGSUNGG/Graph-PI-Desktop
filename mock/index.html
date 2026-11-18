@@ -1093,7 +1093,7 @@
       onOk: function () {
         var name = $("dlg-wt").value.trim();
         if (!name) { toast("이름을 입력하세요"); return false; }
-        M.worktrees.push({ id: "wt-" + Date.now(), name: name, branch: "feat/" + name, parent: $("dlg-parent").value || null, dirty: 0 });
+        M.worktrees.push({ id: "wt-" + Date.now(), name: name, branch: "feat/" + name, parent: $("dlg-parent").value || null, dirty: 0, group: state.group });
         renderBoard();
         toast("워크트리 생성 — " + name);
       }
@@ -1116,7 +1116,8 @@
         var id = "s-" + (M.sessions.length + 1) + "-" + Date.now().toString().slice(-3);
         M.sessions.push({
           id: id, title: t, wt: $("dlg-swt").value, model: $("dlg-smodel").value,
-          state: "running", started: now(), last: now(), tokens: 0, parent: null
+          state: "running", started: now(), last: now(), tokens: 0, parent: null,
+          group: (M.worktrees.filter(function (w) { return w.id === $("dlg-swt").value; })[0] || {}).group || state.group
         });
         M.messages[id] = [{ role: "user", at: now(), text: $("dlg-sprompt").value || "(첫 프롬프트 없음)" }];
         state.selected = { type: "session", id: id };

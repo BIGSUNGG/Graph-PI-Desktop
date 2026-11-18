@@ -40,7 +40,17 @@ else {
   if (32 + chipMax > colW - 10) errs.push('agent chip overflows column: ' + (32 + chipMax) + ' > ' + (colW - 10));
   if (head + 4 + rowH < 40) errs.push('card header too short for one row');
 }
-if (!Array.isArray(M.groups) || M.groups.length !== 2) errs.push('groups missing');
+if (!Array.isArray(M.groups) || M.groups.length < 5) errs.push('groups missing');
+if (M.worktrees.length < 15) errs.push('worktrees < 15');
+if (M.sessions.length < 25) errs.push('sessions < 25');
+if (M.tasks.length < 15) errs.push('tasks < 15');
+if (M.workers.length < 8) errs.push('workers < 8');
+if (M.gates.length < 6) errs.push('gates < 6');
+if (!M.sessions.every((s) => s.group && M.worktrees.some((w) => w.id === s.wt && w.group === s.group))) errs.push('session group mismatch');
+if (!M.sessions.every((s) => Array.isArray(M.messages[s.id]) && M.messages[s.id].length >= 1)) errs.push('session messages missing');
+if (!M.worktrees.every((w) => w.loop == null || (w.loop.prompt && w.loop.maxRounds >= 1 && w.loop.round >= 0 && M.loopStates.includes(w.loop.status)))) errs.push('loop invalid');
+if (!M.orcaOnly.every((o) => !o.blockedBy || M.groups.some((g) => g.id === o.blockedBy))) errs.push('orcaOnly blockedBy orphan');
+if (!Object.keys(M.deletePreview).every((gid) => M.groups.some((g) => g.id === gid))) errs.push('deletePreview group orphan');
 if (!M.worktrees.every((w) => M.groups.some((g) => g.id === w.group))) errs.push('worktree group orphan');
 const hub = M.sessions.filter((s) => M.sessions.filter((k) => k.parent === s.id && k.wt !== s.wt).length >= 2)[0];
 if (!hub) errs.push('hub session missing');

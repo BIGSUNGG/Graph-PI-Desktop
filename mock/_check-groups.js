@@ -6,7 +6,7 @@ const vm = require('vm');
 
 const errs = [];
 const htmlPath = path.join(__dirname, 'groups.html');
-const dataPath = path.join(__dirname, 'groups-data.js');
+const dataPath = path.join(__dirname, 'mock-data.js');
 
 function readText(p, label) {
   try { return fs.readFileSync(p, 'utf8'); }
@@ -14,7 +14,7 @@ function readText(p, label) {
 }
 
 const html = readText(htmlPath, 'groups.html');
-const dataSrc = readText(dataPath, 'groups-data.js');
+const dataSrc = readText(dataPath, 'mock-data.js');
 
 /* ---------- 1) groups.html 마지막 인라인 script 문법 ---------- */
 const inline = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
@@ -24,21 +24,21 @@ else {
   catch (e) { errs.push('groups.html 인라인 script 문법 오류: ' + e.message); }
 }
 
-/* ---------- 2) groups-data.js 를 vm sandbox 에서 실행 ---------- */
+/* ---------- 2) mock-data.js 를 vm sandbox 에서 실행 ---------- */
 const sandbox = { window: {} };
 vm.createContext(sandbox);
 try {
-  vm.runInContext(dataSrc, sandbox, { filename: 'groups-data.js' });
+  vm.runInContext(dataSrc, sandbox, { filename: 'mock-data.js' });
 } catch (e) {
-  errs.push('groups-data.js 실행 오류: ' + e.message);
+  errs.push('mock-data.js 실행 오류: ' + e.message);
 }
 
-const G = sandbox.window.GROUPS_MOCK;
+const G = sandbox.window.MOCK;
 const LOOP_STATES = ['idle', 'running', 'waiting', 'paused', 'done', 'stopped'];
 const SESS_STATES = ['running', 'idle', 'done', 'failed'];
 
 if (!G) {
-  errs.push('window.GROUPS_MOCK 없음');
+  errs.push('window.MOCK 없음');
 } else {
   const groups = Array.isArray(G.groups) ? G.groups : [];
   const wts = Array.isArray(G.worktrees) ? G.worktrees : [];
@@ -53,7 +53,7 @@ if (!G) {
   if (!Array.isArray(G.presets) || G.presets.length !== 3) errs.push('presets 3개여야 함');
   if (!Array.isArray(G.models) || !G.models.length) errs.push('models 없음');
 
-  if (groups.length !== 3) errs.push('groups 3개여야 함: ' + groups.length);
+  if (groups.length < 5) errs.push('groups 5개 이상이어야 함: ' + groups.length);
   if (new Set(gids).size !== gids.length) errs.push('group id 중복');
   for (const g of groups) {
     if (!g.name) errs.push('group name 없음: ' + g.id);
@@ -156,7 +156,7 @@ if (!G) {
 
 /* ---------- 3) groups.html 필수 문자열 / 구조 ---------- */
 const srcs = [...html.matchAll(/<script[^>]*\bsrc="([^"]+)"/g)].map((m) => m[1]);
-if (srcs.length !== 1 || srcs[0] !== './groups-data.js') errs.push('groups-data.js 만 script 로 로드해야 함: ' + srcs.join(','));
+if (srcs.length !== 1 || srcs[0] !== './mock-data.js') errs.push('mock-data.js 만 script 로 로드해야 함: ' + srcs.join(','));
 for (let n = 1; n <= 6; n++) {
   if (!html.includes('data-screen="' + n + '"')) errs.push('화면 스위처 data-screen="' + n + '" 없음');
 }

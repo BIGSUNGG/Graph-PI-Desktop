@@ -295,12 +295,12 @@
 <div class="toast hidden" id="toast"></div>
 <div id="modal"></div>
 
-<script src="./groups-data.js"></script>
+<script src="./mock-data.js"></script>
 <script>
 (function () {
   "use strict";
 
-  var M = window.GROUPS_MOCK || {
+  var M = window.MOCK || {
     groups: [], worktrees: [], sessions: [], presets: [], models: [], bases: [],
     loopStates: [], orcaOnly: [], deletePreview: {}
   };
@@ -820,6 +820,12 @@
   function setScreen(s) {
     state.screen = String(s);
     state.dialog = null;
+    if (state.screen === "4" && !state.worktrees.some(function (w) { return w.group === state.groupId && w.loop; })) {
+      var lg = state.groups.filter(function (g) {
+        return state.worktrees.some(function (w) { return w.group === g.id && w.loop; });
+      })[0];
+      if (lg) state.groupId = lg.id;
+    }
     render();
   }
   function render() {
