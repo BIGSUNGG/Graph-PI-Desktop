@@ -1,0 +1,1187 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Graph PI Desktop · 그룹 프리셋 목업</title>
+<style>
+  @font-face{font-family:'Geist';src:url('./fonts/Geist-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+
+  /* Orca 다크 테마 토큰 — mock/index.html 과 동일 */
+  :root{
+    --bg:#0a0a0a; --card:#171717; --panel:#171717; --panel-2:#262626;
+    --sidebar:#2a2a2a; --sidebar-accent:#353535;
+    --line:rgb(255 255 255 / .07); --input-line:rgb(255 255 255 / .15);
+    --text:#f0f0f0; --muted:#acacac; --dim:#737373;
+    --accent:#51a2ff; --primary:#e5e5e5; --primary-fg:#171717;
+    --green:#10b981; --amber:#d4a300; --red:#ff6568; --purple:#c084fc;
+    --radius:10px; --tb:36px;
+    --shadow-sm:0 1px 2px rgb(0 0 0 / .3); --shadow-pop:0 16px 40px rgb(0 0 0 / .55);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font:13px/1.5 'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font:inherit;color:inherit}
+  .hidden{display:none !important}
+  .muted{color:var(--muted)}
+  .mono{font-family:'SF Mono',SFMono-Regular,ui-monospace,'Cascadia Code',Menlo,Consolas,monospace}
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-thumb{background:rgb(255 255 255 / .12);border-radius:999px}
+  ::-webkit-scrollbar-thumb:hover{background:rgb(255 255 255 / .2)}
+  ::-webkit-scrollbar-track{background:transparent}
+
+  .app{display:grid;grid-template-rows:var(--tb) auto minmax(0,1fr);height:100vh;overflow:hidden}
+
+  /* ---------- titlebar ---------- */
+  .titlebar{
+    display:flex;align-items:center;gap:10px;height:var(--tb);min-height:var(--tb);
+    padding:0 10px;background:var(--card);border-bottom:1px solid var(--line);
+    -webkit-app-region:drag;user-select:none;
+  }
+  .titlebar button{-webkit-app-region:no-drag}
+  .tb-left{display:flex;align-items:center;gap:8px;min-width:0}
+  .mark{width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,var(--accent),var(--purple));flex:0 0 auto}
+  .tb-name{font-size:12.5px;font-weight:600;letter-spacing:-.01em}
+  .tb-tag{font-size:10px;font-weight:500;color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:0 6px;line-height:16px}
+  .tb-mid{flex:1;min-width:0}
+  .tb-right{display:flex;align-items:center;gap:8px}
+
+  /* ---------- 화면 스위처 ①~⑥ ---------- */
+  .screenbar{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--card);border-bottom:1px solid var(--line);overflow-x:auto}
+  .screenbar .lead{font-size:10px;font-weight:500;color:var(--dim);letter-spacing:.06em;text-transform:uppercase;margin-right:4px;white-space:nowrap}
+  .scr-tab{
+    display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;white-space:nowrap;
+    border:1px solid var(--line);border-radius:999px;background:rgb(255 255 255 / .03);color:var(--muted);
+    font-size:11.5px;cursor:pointer;transition:background .12s ease,color .12s ease,border-color .12s ease;
+  }
+  .scr-tab:hover{background:rgb(255 255 255 / .07);color:var(--text)}
+  .scr-tab.is-active{background:var(--primary);border-color:transparent;color:var(--primary-fg);font-weight:600}
+  .scr-tab .no{font-variant-numeric:tabular-nums;opacity:.75}
+  .scr-tab.is-active .no{opacity:.9}
+
+  .stage{min-height:0;overflow:auto;padding:14px 16px 28px}
+  .screen{max-width:1180px;margin:0 auto}
+
+  /* ---------- topbar / actions ---------- */
+  .topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:12px}
+  .topbar h1{margin:0;font-size:15px;font-weight:600;letter-spacing:-.01em}
+  .sub{margin:3px 0 0;font-size:11px;color:var(--dim)}
+  .actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+
+  /* ---------- controls (index.html 과 동일) ---------- */
+  select,input,textarea{
+    font:inherit;color:var(--text);background:rgb(255 255 255 / .05);
+    border:1px solid var(--input-line);border-radius:8px;padding:6px 9px;outline:none;width:100%;
+    transition:border-color .12s ease,box-shadow .12s ease;
+  }
+  select:hover,input:hover,textarea:hover{background:rgb(255 255 255 / .07)}
+  select:focus,input:focus,textarea:focus{border-color:var(--dim);box-shadow:0 0 0 3px rgb(115 115 115 / .5)}
+  textarea{resize:vertical;min-height:52px;font-size:12px;line-height:1.55}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;height:30px;padding:0 12px;
+    border:1px solid var(--input-line);border-radius:8px;background:rgb(255 255 255 / .05);
+    color:var(--text);font-size:12.5px;font-weight:500;white-space:nowrap;cursor:pointer;
+    transition:background .12s ease,border-color .12s ease;
+  }
+  .btn:hover{background:rgb(255 255 255 / .09);border-color:rgb(255 255 255 / .25)}
+  .btn.primary{background:var(--primary);border-color:transparent;color:var(--primary-fg)}
+  .btn.primary:hover{background:#d4d4d4}
+  .btn.danger{background:rgb(255 101 104 / .15);border-color:rgb(255 101 104 / .4);color:var(--red)}
+  .btn.danger:hover{background:rgb(255 101 104 / .22)}
+  .btn.ghost{background:transparent;border-color:transparent}
+  .btn.ghost:hover{background:rgb(255 255 255 / .08)}
+  .btn[disabled]{opacity:.5;cursor:not-allowed}
+
+  /* ---------- pill ---------- */
+  .pill{
+    display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:500;line-height:16px;
+    padding:0 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted);
+    background:rgb(255 255 255 / .04);white-space:nowrap;
+  }
+  .pill .d{width:6px;height:6px;border-radius:50%;background:var(--dim);flex:0 0 auto}
+  .pill.running .d{background:var(--amber)} .pill.running{color:#f0d9a3;border-color:rgb(212 163 0 / .35);background:rgb(212 163 0 / .12)}
+  .pill.done .d{background:var(--green)} .pill.done{color:#9fe8c8;border-color:rgb(16 185 129 / .35);background:rgb(16 185 129 / .12)}
+  .pill.idle .d{background:var(--dim)} .pill.idle{color:var(--muted)}
+  .pill.failed .d{background:var(--red)} .pill.failed{color:#ffb3b4;border-color:rgb(255 101 104 / .35);background:rgb(255 101 104 / .12)}
+  .pill.waiting .d{background:var(--accent)} .pill.waiting{color:#bfdcff;border-color:rgb(81 162 255 / .35);background:rgb(81 162 255 / .12)}
+  .pill.paused .d{background:var(--amber)} .pill.paused{color:#f0d9a3;border-color:rgb(212 163 0 / .3);background:rgb(212 163 0 / .08)}
+  .pill.stopped .d{background:var(--red)} .pill.stopped{color:#ffb3b4;border-color:rgb(255 101 104 / .3);background:rgb(255 101 104 / .08)}
+  .pill.hub{color:#e6d4ff;border-color:rgb(192 132 252 / .4);background:rgb(192 132 252 / .14)}
+  .pill.missing{color:#ffb3b4;border-color:rgb(255 101 104 / .4);background:rgb(255 101 104 / .12)}
+  .pill.missing .d{background:var(--red)}
+  .pill.dirty{color:#f0d9a3;border-color:rgb(212 163 0 / .3);background:rgb(212 163 0 / .08)}
+  .pill.dirty .d{background:var(--amber)}
+  .pill.mini{font-size:9.5px;line-height:15px;padding:0 6px;color:var(--dim)}
+
+  /* ---------- surfaces ---------- */
+  .card{border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--shadow-sm);padding:14px;overflow:auto}
+  .panel{border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--shadow-sm);padding:12px;overflow:auto}
+  .panel h3{margin:0 0 8px;font-size:10px;font-weight:600;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+  .card-h{margin:0 0 10px;font-size:10px;font-weight:600;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+  .card-h.mt{margin-top:16px}
+  .empty{padding:26px 6px;color:var(--dim);font-size:12px;text-align:center;line-height:1.8}
+
+  /* ---------- wizard ---------- */
+  .wizard{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:10px;align-items:start}
+  .preset-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .preset{
+    display:flex;flex-direction:column;gap:5px;padding:12px;text-align:left;cursor:pointer;
+    border:1px solid var(--line);border-radius:12px;background:rgb(255 255 255 / .03);
+    transition:border-color .12s ease,background .12s ease;
+  }
+  .preset:hover{border-color:rgb(255 255 255 / .2);background:rgb(255 255 255 / .05)}
+  .preset.is-active{border-color:rgb(81 162 255 / .55);background:rgb(81 162 255 / .08)}
+  .preset .p-name{font-size:13px;font-weight:600;letter-spacing:-.01em}
+  .preset .p-desc{font-size:11px;color:var(--muted);line-height:1.5}
+  .preset .p-tag{margin-top:2px;font-size:9.5px;color:var(--dim)}
+  .preset.is-active .p-tag{color:var(--accent)}
+  .form{display:flex;flex-direction:column;gap:10px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .field{display:flex;flex-direction:column;gap:5px;font-size:10.5px;color:var(--dim);min-width:0}
+  .field .lbl{font-size:10.5px;color:var(--dim)}
+  .field.err input{border-color:rgb(255 101 104 / .6);box-shadow:0 0 0 3px rgb(255 101 104 / .12)}
+  .err-txt{font-size:10.5px;color:var(--red)}
+  .hintx{font-size:10.5px;color:var(--dim);line-height:1.55;margin:0}
+  .notice{display:flex;align-items:flex-start;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:rgb(255 255 255 / .03);font-size:11px;color:var(--muted);line-height:1.55}
+  .side-actions{display:flex;flex-direction:column;gap:6px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+  .kv{display:grid;grid-template-columns:78px 1fr;gap:6px 10px;margin:0;font-size:11.5px}
+  .kv dt{color:var(--dim)} .kv dd{margin:0;color:var(--text)}
+
+  /* ---------- board ---------- */
+  .board{display:grid;grid-template-columns:210px minmax(0,1fr);gap:10px;align-items:start}
+  .side{display:flex;flex-direction:column;gap:4px;padding:8px;border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--shadow-sm)}
+  .side-head{display:flex;align-items:center;gap:6px;padding:2px 6px 6px;font-size:10px;color:var(--dim);letter-spacing:.04em}
+  .side-head span{margin-left:auto;font-variant-numeric:tabular-nums}
+  .g-item{
+    display:flex;align-items:center;gap:6px;width:100%;padding:7px 8px;border:0;border-radius:8px;
+    background:transparent;color:var(--muted);font-size:12px;text-align:left;cursor:pointer;
+    transition:background .12s ease,color .12s ease;
+  }
+  .g-item:hover{background:rgb(255 255 255 / .06);color:var(--text)}
+  .g-item.is-active{background:var(--sidebar-accent);color:var(--text)}
+  .g-item .g-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .g-item b{font-size:10px;font-weight:500;color:var(--dim);font-variant-numeric:tabular-nums}
+  .side-add{margin-top:4px;justify-content:flex-start;color:var(--muted)}
+  .board-main{border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--shadow-sm);padding:12px;min-height:520px}
+
+  /* ---------- tree ---------- */
+  .tree{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start}
+  .branch{display:flex;flex-direction:column;gap:8px;flex:1 1 320px;min-width:280px;max-width:540px}
+  .kids{display:flex;flex-direction:column;gap:8px;margin-left:14px;padding-left:14px;border-left:1px solid var(--line)}
+  .kids > .wt-box{position:relative}
+  .kids > .wt-box::before{content:"";position:absolute;left:-15px;top:22px;width:14px;height:1px;background:var(--line)}
+  .wt-box{border:1px solid var(--line);border-radius:12px;background:rgb(255 255 255 / .02);padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+  .wt-box.is-hub{border-color:rgb(192 132 252 / .35);background:linear-gradient(180deg,rgb(192 132 252 / .08),transparent 58%),rgb(255 255 255 / .02)}
+  .wt-box.is-missing{border-color:rgb(255 101 104 / .4);background:linear-gradient(180deg,rgb(255 101 104 / .08),transparent 58%),rgb(255 255 255 / .02)}
+  .wt-head{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+  .wt-head b{font-size:12.5px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wt-branch{font-size:10px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}
+  .wt-badges{display:flex;align-items:center;gap:4px;margin-left:auto;flex-wrap:wrap}
+  .wt-foot{display:flex;align-items:center;gap:6px;padding-top:6px;border-top:1px solid var(--line)}
+  .wt-foot .hintx{margin-left:auto}
+  .miss{margin:0;font-size:11.5px;color:#ffb3b4;line-height:1.55}
+  .sess-list{display:flex;flex-direction:column;gap:5px}
+  .sess{border:1px solid var(--line);border-radius:9px;background:rgb(255 255 255 / .03);padding:7px 8px;display:flex;flex-direction:column;gap:3px;min-width:0}
+  .s-title{font-size:11.5px;color:var(--text);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .s-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:10px;color:var(--dim)}
+  .s-meta .tok{font-variant-numeric:tabular-nums}
+  .s-meta .rel{color:var(--dim);opacity:.85}
+
+  /* ---------- dialog / backdrop (index.html 과 동일) ---------- */
+  .backdrop{position:fixed;inset:0;background:rgb(0 0 0 / .55);display:flex;align-items:center;justify-content:center;z-index:20;backdrop-filter:blur(2px);animation:fade-in .18s ease-out both}
+  .dialog{width:min(420px,92vw);border:1px solid rgb(255 255 255 / .1);border-radius:14px;background:rgb(23 23 23 / .97);padding:18px;box-shadow:var(--shadow-pop);animation:dialog-in .2s ease-out both}
+  .dialog h2{margin:0 0 10px;font-size:14px;font-weight:600}
+  .dialog p{margin:0 0 12px;font-size:12px;color:var(--muted);line-height:1.6}
+  .dialog .dlg-body{display:flex;flex-direction:column;gap:10px;margin:12px 0 14px}
+  .dialog .warn{padding:8px 10px;border:1px solid rgb(212 163 0 / .3);border-radius:8px;background:rgb(212 163 0 / .12);color:#f0d9a3;font-size:11.5px;line-height:1.55;margin:0 0 8px}
+  .dlg-actions{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-top:12px}
+  .dlg-actions .muted{margin-right:auto;font-size:10.5px}
+  .dialog-wide{width:min(560px,94vw);max-height:82vh;overflow:auto}
+  .dialog-solo{display:flex;justify-content:center;padding:6px 0 0}
+
+  /* ---------- tabs ---------- */
+  .tabs{display:flex;gap:2px;padding:2px;border:1px solid var(--line);border-radius:9px;background:rgb(255 255 255 / .03);width:max-content;max-width:100%}
+  .tab{border:0;background:transparent;color:var(--muted);border-radius:7px;padding:4px 10px;font-size:11.5px;cursor:pointer;white-space:nowrap}
+  .tab:hover{background:rgb(255 255 255 / .06);color:var(--text)}
+  .tab.is-active{background:var(--panel-2);color:var(--text)}
+
+  /* ---------- import list ---------- */
+  .imp-row{display:flex;align-items:center;gap:8px;padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:rgb(255 255 255 / .03);font-size:11.5px;margin-bottom:6px}
+  .imp-row.is-blocked{opacity:.55}
+  .imp-main{min-width:0;flex:1}
+  .imp-name{font-size:12px}
+  .imp-meta{margin-top:2px;font-size:10px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* ---------- loop panel ---------- */
+  .loop-wrap{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:10px;align-items:start}
+  .loop-cfg{border:1px solid var(--line);border-radius:10px;background:rgb(255 255 255 / .03);padding:10px;margin-bottom:8px;display:flex;flex-direction:column;gap:8px}
+  .loop-head{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .loop-head b{font-size:12px;font-weight:600}
+  .loop-round{margin-left:auto;font-size:10.5px;color:var(--dim)}
+  .loop-line{display:flex;align-items:center;gap:8px;font-size:10.5px;color:var(--muted);flex-wrap:wrap}
+  .loop-line .inline{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--dim)}
+  .loop-line .inline input[type=number]{width:66px;padding:4px 6px}
+  .loop-actions{display:flex;gap:6px;flex-wrap:wrap}
+  .loop-actions .btn{height:27px;font-size:11.5px;padding:0 9px}
+  .loop-add{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+  .loop-add .lbl{font-size:10.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+  .hintbox{border:1px solid var(--line);border-radius:9px;background:rgb(255 255 255 / .03);padding:9px 10px;font-size:10.5px;color:var(--muted);line-height:1.65;margin-top:8px}
+  .hintbox b{color:var(--text);font-weight:600}
+
+  /* ---------- delete dialog ---------- */
+  .del-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+  .del-list{display:flex;flex-direction:column;gap:5px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:rgb(255 255 255 / .03)}
+  .del-item{display:flex;align-items:center;gap:6px;font-size:11.5px;flex-wrap:wrap}
+  .del-item b{font-weight:600}
+  .del-item .d{width:6px;height:6px;border-radius:50%;background:var(--dim);flex:0 0 auto}
+  .del-item .d.dirty{background:var(--amber)}
+  .stats{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+  .banner{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:11.5px;background:rgb(212 163 0 / .12);border:1px solid rgb(212 163 0 / .3);border-radius:10px;color:#f0d9a3}
+  .banner .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);flex:0 0 auto}
+  .tips{margin:0;padding-left:16px;font-size:11px;color:var(--muted);line-height:1.7}
+  .tips li{margin-bottom:4px}
+  .tips b{color:var(--text);font-weight:600}
+
+  /* ---------- toast ---------- */
+  .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);padding:8px 14px;border:1px solid rgb(255 255 255 / .1);border-radius:999px;background:rgb(23 23 23 / .97);box-shadow:var(--shadow-pop);font-size:12px;z-index:30;animation:toast-in .28s ease-out both}
+
+  @keyframes view-in{from{opacity:0;transform:translateY(4px)}}
+  @keyframes toast-in{from{opacity:0;transform:translate(-50%,10px) scale(.98)}to{opacity:1;transform:translateX(-50%)}}
+  @keyframes fade-in{from{opacity:0}}
+  @keyframes dialog-in{from{opacity:0;transform:scale(.96) translateY(4px)}to{opacity:1;transform:none}}
+  .screen:not(.hidden){animation:view-in .22s ease-out both}
+
+  @media (max-width:1100px){
+    .wizard,.loop-wrap{grid-template-columns:minmax(0,1fr)}
+    .board{grid-template-columns:minmax(0,1fr)}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .screen,.toast,.backdrop,.dialog{animation:none !important}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="titlebar">
+    <div class="tb-left"><span class="mark"></span><span class="tb-name">Graph PI</span><span class="tb-tag">MOCKUP · GROUPS</span></div>
+    <div class="tb-mid"></div>
+    <div class="tb-right"><span class="pill" id="tb-state">그룹 3 · 워크트리 9 · 세션 9</span></div>
+  </header>
+
+  <div class="screenbar" id="screenbar">
+    <span class="lead">화면</span>
+    <button class="scr-tab" type="button" data-screen="1"><span class="no">①</span>그룹 생성</button>
+    <button class="scr-tab is-active" type="button" data-screen="2"><span class="no">②</span>그룹 보드</button>
+    <button class="scr-tab" type="button" data-screen="3"><span class="no">③</span>워크트리 추가</button>
+    <button class="scr-tab" type="button" data-screen="4"><span class="no">④</span>Loop 설정</button>
+    <button class="scr-tab" type="button" data-screen="5"><span class="no">⑤</span>삭제 확인</button>
+    <button class="scr-tab" type="button" data-screen="6"><span class="no">⑥</span>Orca 불일치</button>
+  </div>
+
+  <main class="stage">
+    <section class="screen" id="screen-1" data-screen="1"></section>
+    <section class="screen" id="screen-2" data-screen="2"></section>
+    <section class="screen hidden" id="screen-3" data-screen="3"></section>
+    <section class="screen hidden" id="screen-4" data-screen="4"></section>
+    <section class="screen hidden" id="screen-5" data-screen="5"></section>
+    <section class="screen hidden" id="screen-6" data-screen="6"></section>
+  </main>
+</div>
+
+<div class="toast hidden" id="toast"></div>
+<div id="modal"></div>
+
+<script src="./groups-data.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var M = window.GROUPS_MOCK || {
+    groups: [], worktrees: [], sessions: [], presets: [], models: [], bases: [],
+    loopStates: [], orcaOnly: [], deletePreview: {}
+  };
+
+  var PRESET_LABEL = { feature: "Feature", loop: "Loop", manual: "Manual" };
+  var SESS_LABEL = { running: "실행 중", idle: "유휴", done: "완료", failed: "실패" };
+  var LOOP_LABEL = { idle: "유휴", running: "실행 중", waiting: "대기", paused: "일시정지", done: "완료", stopped: "중단" };
+
+  function esc(t) {
+    return String(t == null ? "" : t).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function $(id) { return document.getElementById(id); }
+  function setHTML(node, markup) {
+    if (!node) return;
+    var doc = new DOMParser().parseFromString(markup, "text/html");
+    node.replaceChildren.apply(node, Array.prototype.slice.call(doc.body.childNodes));
+  }
+  function clone(v) {
+    try { return JSON.parse(JSON.stringify(v || null)); }
+    catch (err) { return null; }
+  }
+  function byId(list, id) { return (list || []).filter(function (x) { return x.id === id; })[0] || null; }
+  function clip(t, n) {
+    var s = String(t == null ? "" : t);
+    return s.length > n ? s.slice(0, n - 1) + "…" : s;
+  }
+  function slug(t) {
+    var s = String(t == null ? "" : t).toLowerCase().replace(/[^a-z0-9가-힣]+/g, "-").replace(/^-+|-+$/g, "");
+    return s || "group";
+  }
+  function now() { return new Date().toTimeString().slice(0, 5); }
+  function shortModel(m) { return String(m == null ? "" : m).split("/").pop(); }
+  function fmtTokens(n) {
+    n = Number(n) || 0;
+    return n >= 1000 ? (n / 1000).toFixed(1) + "k" : String(n);
+  }
+
+  var state = {
+    screen: "2",
+    groupId: "g-feature",
+    delGroup: "g-feature",
+    addTab: "new",
+    dialog: null,
+    seq: 0,
+    groups: clone(M.groups) || [],
+    worktrees: clone(M.worktrees) || [],
+    sessions: clone(M.sessions) || [],
+    orcaOnly: clone(M.orcaOnly) || [],
+    wizard: {
+      preset: "feature",
+      name: "",
+      repo: M.repo || "graph-pi",
+      branch: "feature/login",
+      model: (M.models && M.models[0]) || "anthropic/claude-sonnet-4.5",
+      prompt: "",
+      error: ""
+    }
+  };
+  if (state.groups.length && !byId(state.groups, state.groupId)) state.groupId = state.groups[0].id;
+  state.delGroup = state.groupId;
+
+  /* ---------- 데이터 helpers ---------- */
+  function groupWts(gid) {
+    return state.worktrees.filter(function (w) { return w.group === gid; });
+  }
+  function groupSessions(gid) {
+    var ids = groupWts(gid).map(function (w) { return w.id; });
+    return state.sessions.filter(function (s) { return s.group === gid || ids.indexOf(s.wt) >= 0; });
+  }
+  function groupStats(gid) {
+    var wts = groupWts(gid);
+    var sess = groupSessions(gid);
+    return {
+      wts: wts,
+      sessions: sess,
+      running: sess.filter(function (s) { return s.state === "running"; }).length,
+      dirty: wts.filter(function (w) { return w.dirty; }).length
+    };
+  }
+  function descendants(wid, list) {
+    var out = [];
+    var queue = [wid];
+    while (queue.length) {
+      var cur = queue.shift();
+      list.forEach(function (w) {
+        if (w.parent === cur && out.indexOf(w.id) < 0) {
+          out.push(w.id);
+          queue.push(w.id);
+        }
+      });
+    }
+    return out;
+  }
+  function field(label, control) {
+    return '<label class="field"><span class="lbl">' + esc(label) + "</span>" + control + "</label>";
+  }
+  function options(list, selected) {
+    return (list || []).map(function (v) {
+      var val = typeof v === "string" ? v : v.id;
+      var txt = typeof v === "string" ? v : v.name;
+      return '<option value="' + esc(val) + '"' + (val === selected ? " selected" : "") + ">" + esc(txt) + "</option>";
+    }).join("");
+  }
+
+  /* ---------- 화면 ① 그룹 생성 마법사 ---------- */
+  function wizardError() {
+    var name = state.wizard.name.trim();
+    if (!name) return "그룹 이름을 입력하세요.";
+    if (state.groups.some(function (g) { return g.name === name; })) return "이미 있는 그룹 이름입니다.";
+    return "";
+  }
+
+  function renderScreen1() {
+    var w = state.wizard;
+    var isFeature = w.preset === "feature";
+
+    var presets = (M.presets || []).map(function (p) {
+      return '<button type="button" class="preset' + (p.id === w.preset ? " is-active" : "") + '"'
+        + ' data-act="preset" data-preset="' + esc(p.id) + '">'
+        + '<span class="p-name">' + esc(p.name) + "</span>"
+        + '<span class="p-desc">' + esc(p.desc) + "</span>"
+        + '<span class="p-tag">' + (p.id === w.preset ? "선택됨" : "선택") + "</span></button>";
+    }).join("");
+
+    var nameField = '<label class="field' + (w.error ? " err" : "") + '"><span class="lbl">그룹 이름</span>'
+      + '<input data-f="wiz-name" value="' + esc(w.name) + '" placeholder="예: 로그인 기능" />'
+      + (w.error ? '<span class="err-txt">' + esc(w.error) + "</span>" : "")
+      + "</label>";
+
+    var fields = "";
+    if (isFeature) {
+      fields = '<div class="grid2">'
+        + field("부모 저장소", '<select data-f="wiz-repo">' + options(["graph-pi", "orca-main"], w.repo) + "</select>")
+        + field("브랜치", '<input data-f="wiz-branch" value="' + esc(w.branch) + '" placeholder="feature/login" />')
+        + "</div>"
+        + '<div class="grid2">'
+        + field("모델", '<select data-f="wiz-model">' + options(M.models, w.model) + "</select>")
+        + field("첫 프롬프트", '<input data-f="wiz-prompt" value="' + esc(w.prompt) + '" placeholder="부모 세션에 보낼 첫 지시" />')
+        + "</div>"
+        + '<div class="notice"><span class="pill hub">허브</span><span>부모 워크트리와 세션을 함께 시작합니다. 자식 워크트리는 보드에서 추가합니다.</span></div>';
+    } else {
+      fields = '<div class="notice"><span class="pill">빈 그룹</span><span>빈 그룹으로 시작합니다. 워크트리는 보드에서 직접 추가합니다.</span></div>';
+    }
+
+    var preview = '<dl class="kv">'
+      + "<dt>프리셋</dt><dd>" + esc(PRESET_LABEL[w.preset] || w.preset) + "</dd>"
+      + "<dt>이름</dt><dd>" + (w.name.trim() ? esc(w.name.trim()) : '<span class="muted">아직 없음</span>') + "</dd>"
+      + "<dt>시작 상태</dt><dd>" + (isFeature ? "부모 워크트리 + 세션" : "빈 그룹") + "</dd>"
+      + "<dt>워크트리</dt><dd>" + (isFeature ? "1개" : "0개") + "</dd>"
+      + "</dl>";
+
+    var html = '<div class="topbar"><div><h1>그룹 생성 마법사</h1>'
+      + '<p class="sub">프리셋을 고르면 필요한 필드만 나타납니다 · 화면①</p></div>'
+      + '<div class="actions"><button type="button" class="btn" data-act="goto-board">보드로</button></div></div>'
+      + '<div class="wizard"><section class="card">'
+      + '<h2 class="card-h">프리셋</h2><div class="preset-grid">' + presets + "</div>"
+      + '<h2 class="card-h mt">그룹 정보</h2><div class="form">' + nameField + fields + "</div>"
+      + "</section><aside class=\"panel\">"
+      + "<h3>미리보기</h3>" + preview
+      + '<div class="side-actions">'
+      + '<button type="button" class="btn" data-act="wiz-demo-dup">중복 이름 예시</button>'
+      + '<button type="button" class="btn primary" data-act="create-group">그룹 만들기</button>'
+      + "</div>"
+      + '<p class="hintx">중복 이름 예시를 누르면 이름 필드에 인라인 오류가 표시됩니다.</p>'
+      + "</aside></div>";
+    setHTML($("screen-1"), html);
+  }
+
+  /* ---------- 워크트리 트리 ---------- */
+  function sessCard(s) {
+    var rel = s.parent ? '<span class="rel mono">↳ ' + esc(s.parent) + "</span>" : "";
+    return '<div class="sess">'
+      + '<div class="s-title">' + esc(s.title) + "</div>"
+      + '<div class="s-meta"><span class="pill ' + esc(s.state) + '"><span class="d"></span>'
+      + esc(SESS_LABEL[s.state] || s.state) + "</span>"
+      + '<span class="mono">' + esc(shortModel(s.model)) + "</span>"
+      + "<span>" + esc(s.started) + "–" + esc(s.last) + "</span>"
+      + '<span class="tok">' + fmtTokens(s.tokens) + " tok</span>" + rel + "</div></div>";
+  }
+
+  function wtBox(wt, isRoot) {
+    var sess = state.sessions.filter(function (s) { return s.wt === wt.id; });
+    var g = byId(state.groups, wt.group);
+    var isHub = !!(g && g.hubSessionId && sess.some(function (s) { return s.id === g.hubSessionId; }));
+    var kids = groupWts(wt.group).filter(function (x) { return x.parent === wt.id; });
+
+    var badges = "";
+    if (isHub) badges += '<span class="pill hub">허브</span>';
+    if (wt.orcaMissing) badges += '<span class="pill missing"><span class="d"></span>없음</span>';
+    if (wt.loop) {
+      badges += '<span class="pill ' + esc(wt.loop.status) + '">' + wt.loop.round + "/" + wt.loop.maxRounds
+        + " · " + esc(LOOP_LABEL[wt.loop.status] || wt.loop.status) + "</span>";
+    }
+    if (wt.dirty) badges += '<span class="pill dirty"><span class="d"></span>미커밋</span>';
+
+    var foot = "";
+    if (wt.orcaMissing) {
+      foot = '<div class="wt-foot">'
+        + '<button type="button" class="btn primary" data-act="orca-recreate" data-wt="' + esc(wt.id) + '">다시 만들기</button>'
+        + '<button type="button" class="btn danger" data-act="orca-remove" data-wt="' + esc(wt.id) + '">그룹에서 제거</button>'
+        + "</div>";
+    } else {
+      var bits = [];
+      if (isRoot) bits.push('<button type="button" class="btn ghost" data-act="change-parent" data-wt="' + esc(wt.id) + '">부모 변경</button>');
+      if (g && !g.hubSessionId) bits.push('<button type="button" class="btn ghost" data-act="hub-start" data-wt="' + esc(wt.id) + '">허브로 지정</button>');
+      if (isRoot && kids.length) bits.push('<span class="hintx">자식 ' + kids.length + "개 감시 중</span>");
+      if (bits.length) foot = '<div class="wt-foot">' + bits.join("") + "</div>";
+    }
+
+    var body = wt.orcaMissing
+      ? '<p class="miss">Orca에서 이 워크트리를 찾을 수 없습니다.</p>'
+      : '<div class="sess-list">' + (sess.length ? sess.map(sessCard).join("") : '<p class="hintx">세션 없음</p>') + "</div>";
+
+    return '<article class="wt-box' + (isHub ? " is-hub" : "") + (wt.orcaMissing ? " is-missing" : "") + '">'
+      + '<header class="wt-head"><b>' + esc(wt.name) + "</b>"
+      + '<span class="wt-branch mono">' + esc(wt.branch) + "</span>"
+      + '<span class="wt-badges">' + badges + "</span></header>"
+      + body + foot + "</article>";
+  }
+
+  function renderTree(gid) {
+    var wts = groupWts(gid);
+    if (!wts.length) return "";
+    var ids = wts.map(function (w) { return w.id; });
+    var roots = wts.filter(function (w) { return !w.parent || ids.indexOf(w.parent) < 0; });
+    return '<div class="tree">' + roots.map(function (root) {
+      var kids = wts.filter(function (w) { return w.parent === root.id; });
+      return '<div class="branch">' + wtBox(root, true)
+        + (kids.length ? '<div class="kids">' + kids.map(function (k) { return wtBox(k, false); }).join("") + "</div>" : "")
+        + "</div>";
+    }).join("") + "</div>";
+  }
+
+  /* ---------- 화면 ② 그룹 보드 ---------- */
+  function renderScreen2() {
+    var groups = state.groups;
+    var g = byId(groups, state.groupId) || groups[0] || null;
+    if (g && g.id !== state.groupId) state.groupId = g.id;
+
+    var sidebar = groups.length
+      ? groups.map(function (x) {
+          var n = groupWts(x.id).length;
+          return '<button type="button" class="g-item' + (g && x.id === g.id ? " is-active" : "") + '"'
+            + ' data-act="pick-group" data-group="' + esc(x.id) + '">'
+            + '<span class="g-name">' + esc(x.name) + "</span>"
+            + "<b>" + n + "</b></button>";
+        }).join("")
+      : '<p class="empty">그룹이 없습니다</p>';
+
+    var head;
+    var body;
+    if (!g) {
+      head = '<div><h1>그룹 보드</h1><p class="sub">그룹이 없습니다 · 화면②</p></div>'
+        + '<div class="actions"><button type="button" class="btn primary" data-act="new-group">그룹 만들기</button></div>';
+      body = '<div class="empty">그룹이 없습니다.<br><br><button type="button" class="btn primary" data-act="new-group">그룹 만들기</button></div>';
+    } else {
+      var wts = groupWts(g.id);
+      var sess = groupSessions(g.id);
+      var running = sess.filter(function (s) { return s.state === "running"; }).length;
+      head = '<div><h1>' + esc(g.name) + "</h1>"
+        + '<p class="sub">워크트리 ' + wts.length + " · 세션 " + sess.length + " · 실행 중 " + running
+        + (g.hubSessionId ? ' · 허브 <span class="mono">' + esc(g.hubSessionId) + "</span>" : "") + "</p></div>"
+        + '<div class="actions">'
+        + '<button type="button" class="btn" data-act="add-wt">워크트리 추가</button>'
+        + '<button type="button" class="btn primary" data-act="new-group">그룹 만들기</button>'
+        + '<button type="button" class="btn danger" data-act="del-group" data-group="' + esc(g.id) + '">그룹 삭제</button>'
+        + "</div>";
+      body = wts.length
+        ? renderTree(g.id)
+        : '<div class="empty">아직 워크트리가 없습니다<br><br>'
+          + '<button type="button" class="btn primary" data-act="add-wt">+ 새 워크트리</button> '
+          + '<button type="button" class="btn" data-act="import-wt">+ 기존 불러오기</button></div>';
+    }
+
+    var html = '<div class="topbar">' + head + "</div>"
+      + '<div class="board"><aside class="side">'
+      + '<div class="side-head">그룹<span>' + groups.length + "</span></div>"
+      + sidebar
+      + '<button type="button" class="btn ghost side-add" data-act="new-group">+ 그룹 만들기</button>'
+      + '</aside><section class="board-main">' + body + "</section></div>";
+    setHTML($("screen-2"), html);
+  }
+
+  /* ---------- 화면 ③ 워크트리 추가 다이얼로그 ---------- */
+  function addDialogBody() {
+    var g = byId(state.groups, state.groupId) || state.groups[0] || null;
+    var tab = state.addTab === "import" ? "import" : "new";
+    var head = "<h2>워크트리 추가" + (g ? " · " + esc(g.name) : "") + "</h2>";
+    var tabs = '<div class="tabs">'
+      + '<button type="button" class="tab' + (tab === "new" ? " is-active" : "") + '" data-act="add-tab" data-tab="new">새 워크트리</button>'
+      + '<button type="button" class="tab' + (tab === "import" ? " is-active" : "") + '" data-act="add-tab" data-tab="import">기존 불러오기</button>'
+      + "</div>";
+
+    if (!g) {
+      return head + tabs + '<p class="empty">먼저 그룹을 만들어야 워크트리를 추가할 수 있습니다.</p>'
+        + '<div class="dlg-actions"><button type="button" class="btn" data-act="dl-close">닫기</button>'
+        + '<button type="button" class="btn primary" data-act="new-group">그룹 만들기</button></div>';
+    }
+
+    var body = tab === "new" ? newWtForm(g) : importList();
+    var foot = tab === "new"
+      ? '<div class="dlg-actions"><span class="muted">추가하면 보드 카드가 바로 붙습니다</span>'
+        + '<button type="button" class="btn" data-act="dl-close">취소</button>'
+        + '<button type="button" class="btn primary" data-act="wt-create">추가</button></div>'
+      : '<div class="dlg-actions"><span class="muted">Orca 워크트리 · 이미 다른 그룹에 있으면 불러올 수 없습니다</span>'
+        + '<button type="button" class="btn" data-act="dl-close">닫기</button></div>';
+    return head + tabs + body + foot;
+  }
+
+  function newWtForm(g) {
+    var parents = groupWts(g.id);
+    return '<div class="dlg-body">'
+      + '<div class="grid2">'
+      + field("이름", '<input data-f="wt-name" placeholder="예: login-api" />')
+      + field("브랜치", '<input data-f="wt-branch" placeholder="feature/login-api" />')
+      + "</div><div class=\"grid2\">"
+      + field("베이스 브랜치", '<select data-f="wt-base">' + options(M.bases || ["main"], "") + "</select>")
+      + field("모델", '<select data-f="wt-model">' + options(M.models, "") + "</select>")
+      + "</div>"
+      + field("부모 워크트리", '<select data-f="wt-parent"><option value="">없음 (루트로 추가)</option>'
+        + parents.map(function (w) {
+            return '<option value="' + esc(w.id) + '">' + esc(w.name) + " · " + esc(w.branch) + "</option>";
+          }).join("") + "</select>")
+      + field("첫 프롬프트", '<textarea rows="2" data-f="wt-prompt" placeholder="선택 · 입력하면 세션도 함께 만듭니다"></textarea>')
+      + "</div>";
+  }
+
+  function importList() {
+    if (!state.orcaOnly.length) return '<p class="empty">불러올 워크트리가 없습니다.</p>';
+    return '<div class="dlg-body">' + state.orcaOnly.map(function (x) {
+      var blocked = !!x.blockedBy;
+      var reason = blocked ? esc(x.note || ("다른 그룹(" + x.blockedBy + ")에 이미 있음")) : "";
+      return '<div class="imp-row' + (blocked ? " is-blocked" : "") + '">'
+        + '<div class="imp-main"><div class="imp-name">' + esc(x.name) + "</div>"
+        + '<div class="imp-meta">' + esc(x.repo) + ' · <span class="mono">' + esc(x.branch) + "</span> · " + esc(x.recent)
+        + (reason ? " · " + reason : "") + "</div></div>"
+        + (blocked
+          ? '<button type="button" class="btn" disabled title="' + esc(x.blockedBy) + ' 그룹 소속">불가</button>'
+          : '<button type="button" class="btn" data-act="wt-import" data-id="' + esc(x.id) + '">불러오기</button>')
+        + "</div>";
+    }).join("") + "</div>";
+  }
+
+  function renderScreen3() {
+    var g = byId(state.groups, state.groupId) || state.groups[0] || null;
+    var html = '<div class="topbar"><div><h1>워크트리 추가</h1>'
+      + '<p class="sub">' + (g ? esc(g.name) + " 그룹에 추가합니다" : "그룹이 없습니다") + " · 화면③</p></div>"
+      + '<div class="actions"><button type="button" class="btn" data-act="goto-board">보드로</button></div></div>'
+      + '<div class="dialog-solo"><div class="dialog dialog-wide" data-act="noop">' + addDialogBody() + "</div></div>";
+    setHTML($("screen-3"), html);
+  }
+
+  /* ---------- 화면 ④ Loop 설정 패널 ---------- */
+  function loopStartLabel(L) {
+    if (L.status === "running") return L.round >= L.maxRounds ? "마지막 회차" : "다음 회차";
+    if (L.status === "waiting") return "응답 도착";
+    if (L.status === "done") return "완료됨";
+    if (L.status === "stopped") return "다시 시작";
+    if (L.status === "paused") return "재개";
+    return "시작";
+  }
+
+  function loopCfg(wt) {
+    var L = wt.loop;
+    var done = L.status === "done";
+    return '<div class="loop-cfg">'
+      + '<div class="loop-head"><b>' + esc(wt.name) + "</b>"
+      + '<span class="pill ' + esc(L.status) + '"><span class="d"></span>' + esc(LOOP_LABEL[L.status] || L.status) + "</span>"
+      + '<span class="loop-round mono">' + L.round + "/" + L.maxRounds + "</span></div>"
+      + '<label class="field"><span class="lbl">프롬프트</span><textarea rows="2" data-f="loop-prompt:' + esc(wt.id) + '">' + esc(L.prompt) + "</textarea></label>"
+      + '<div class="loop-line"><label class="inline">최대 회차'
+      + '<input type="number" min="1" max="20" value="' + L.maxRounds + '" data-f="loop-max:' + esc(wt.id) + '" /></label>'
+      + "<span>현재 " + L.round + "회차 · " + esc(LOOP_LABEL[L.status] || L.status) + "</span></div>"
+      + '<div class="loop-line">' + esc(L.lastEvent || "") + "</div>"
+      + '<div class="loop-actions">'
+      + '<button type="button" class="btn primary" data-act="loop-start" data-wt="' + esc(wt.id) + '"' + (done ? " disabled" : "") + ">"
+      + esc(loopStartLabel(L)) + "</button>"
+      + '<button type="button" class="btn" data-act="loop-pause" data-wt="' + esc(wt.id) + '">일시정지</button>'
+      + '<button type="button" class="btn danger" data-act="loop-stop" data-wt="' + esc(wt.id) + '">중단</button>'
+      + "</div></div>";
+  }
+
+  function renderScreen4() {
+    var gid = state.groupId || (state.groups[0] && state.groups[0].id);
+    var g = byId(state.groups, gid);
+    var own = state.worktrees.filter(function (w) { return w.group === gid; });
+    var kids = own.filter(function (w) { return w.loop; });
+    var canAdd = own.filter(function (w) { return !w.loop && !w.orcaMissing; });
+    var panel = kids.length
+      ? kids.map(loopCfg).join("")
+      : '<p class="empty">Loop 설정이 있는 워크트리가 없습니다.</p>';
+    panel += canAdd.length
+      ? '<div class="loop-add"><span class="lbl">Loop 켜기</span>' + canAdd.map(function (w) {
+          return '<button type="button" class="btn" data-act="loop-enable" data-wt="' + esc(w.id) + '">' + esc(w.name) + "</button>";
+        }).join("") + "</div>"
+      : "";
+    var html = '<div class="topbar"><div><h1>Loop 설정</h1>'
+      + '<p class="sub">' + (g ? esc(g.name) + " · " : "") + "워크트리별 반복 실행 · 화면④</p></div>"
+      + '<div class="actions"><button type="button" class="btn" data-act="goto-board">보드로</button></div></div>'
+      + '<div class="loop-wrap"><section class="card">'
+      + (g ? renderTree(gid) : '<div class="empty">그룹이 없습니다</div>')
+      + "</section><aside class=\"panel\"><h3>Loop 설정</h3>" + panel
+      + '<div class="hintbox"><b>상태 전이</b><br>대기 → 실행 → 응답 대기 순서로 진행합니다.<br>'
+      + "30분 동안 응답이 없으면 1회 재시도 후 일시정지합니다.<br>중단은 즉시 적용되고 회차는 유지됩니다.</div>"
+      + "</aside></div>";
+    setHTML($("screen-4"), html);
+  }
+
+  /* ---------- 화면 ⑤ 삭제 확인 ---------- */
+  function deleteDialogBody(gid) {
+    var g = byId(state.groups, gid);
+    if (!g) {
+      return "<h2>그룹 삭제</h2><p>삭제할 그룹이 없습니다.</p>"
+        + '<div class="dlg-actions"><button type="button" class="btn" data-act="goto-board">닫기</button></div>';
+    }
+    var st = groupStats(gid);
+    var rows = st.wts.map(function (w) {
+      return '<div class="del-item"><span class="d' + (w.dirty ? " dirty" : "") + '"></span><b>' + esc(w.name) + "</b>"
+        + '<span class="mono muted">' + esc(w.branch) + "</span>"
+        + (w.dirty ? '<span class="pill dirty"><span class="d"></span>미커밋</span>' : "")
+        + (w.orcaMissing ? '<span class="pill missing"><span class="d"></span>없음</span>' : "")
+        + "</div>";
+    }).join("");
+    return '<h2>"' + esc(g.name) + '" 그룹을 삭제할까요?</h2>'
+      + "<p>이 그룹의 워크트리 " + st.wts.length + "개가 Orca에서 함께 삭제됩니다. 세션 기록은 히스토리에 남습니다.</p>"
+      + '<div class="del-list">' + (rows || '<span class="muted">워크트리 없음</span>') + "</div>"
+      + '<div class="stats"><span class="pill running"><span class="d"></span>실행 중 세션 ' + st.running + "개</span>"
+      + '<span class="pill dirty"><span class="d"></span>미커밋 변경 ' + st.dirty + "개</span>"
+      + '<span class="pill"><span class="d"></span>세션 ' + st.sessions.length + "개</span></div>"
+      + (st.running ? '<div class="warn">실행 중인 세션이 ' + st.running + "개 있습니다. 먼저 중단하지 않으면 응답이 끊길 수 있습니다.</div>" : "")
+      + (st.dirty ? '<div class="warn">미커밋 변경이 있는 워크트리 ' + st.dirty + "개. 삭제하면 변경 내용이 사라집니다.</div>" : "")
+      + '<div class="dlg-actions"><button type="button" class="btn" data-act="del-cancel">취소</button>'
+      + '<button type="button" class="btn danger" data-act="del-confirm" data-group="' + esc(gid) + '">그룹 삭제</button></div>';
+  }
+
+  function renderScreen5() {
+    if (!byId(state.groups, state.delGroup)) state.delGroup = state.groupId;
+    var picker = '<div class="tabs">' + state.groups.map(function (g) {
+      return '<button type="button" class="tab' + (g.id === state.delGroup ? " is-active" : "") + '"'
+        + ' data-act="del-pick" data-group="' + esc(g.id) + '">' + esc(g.name) + "</button>";
+    }).join("") + "</div>";
+    var html = '<div class="topbar"><div><h1>삭제 확인</h1>'
+      + '<p class="sub">그룹 삭제 시 함께 사라지는 범위 · 화면⑤</p></div>'
+      + '<div class="actions"><button type="button" class="btn" data-act="goto-board">보드로</button></div></div>'
+      + '<div class="del-toolbar">' + picker + '<span class="muted">그룹을 골라 삭제 범위를 확인하세요</span></div>'
+      + '<div class="dialog-solo"><div class="dialog dialog-wide" data-act="noop">' + deleteDialogBody(state.delGroup) + "</div></div>";
+    setHTML($("screen-5"), html);
+  }
+
+  /* ---------- 화면 ⑥ Orca 불일치 ---------- */
+  function renderScreen6() {
+    var wt = state.worktrees.filter(function (w) { return w.orcaMissing; })[0] || null;
+    var gid = wt ? wt.group : state.groupId;
+    var g = byId(state.groups, gid);
+    var target = wt
+      ? '대상: <span class="mono">' + esc(wt.name) + '</span> · <span class="mono">' + esc(wt.branch) + "</span>"
+      : "불일치 워크트리가 없습니다.";
+    var html = '<div class="topbar"><div><h1>Orca 불일치</h1>'
+      + '<p class="sub">Orca에서 사라진 워크트리는 보드에 "없음"으로 표시됩니다 · 화면⑥</p></div>'
+      + '<div class="actions"><button type="button" class="btn" data-act="reset-demo">데모 초기화</button>'
+      + '<button type="button" class="btn" data-act="goto-board">보드로</button></div></div>'
+      + '<div class="banner"><span class="dot"></span><span>Orca 상태와 보드가 어긋난 워크트리 ' + (wt ? 1 : 0) + "개</span></div>"
+      + '<div class="loop-wrap" style="margin-top:10px"><section class="card">'
+      + (g ? renderTree(gid) : '<div class="empty">그룹이 없습니다</div>')
+      + "</section><aside class=\"panel\"><h3>무엇을 할 수 있나</h3>"
+      + '<ul class="tips"><li><b>다시 만들기</b> — 같은 이름·브랜치로 Orca에 워크트리를 다시 만듭니다.</li>'
+      + "<li><b>그룹에서 제거</b> — Orca에 이미 없으므로 보드 기록만 정리합니다.</li>"
+      + "<li>세션 기록은 제거해도 히스토리에 남습니다.</li></ul>"
+      + '<div class="hintbox">' + target + "</div>"
+      + "</aside></div>";
+    setHTML($("screen-6"), html);
+  }
+
+  /* ---------- 다이얼로그(모달) ---------- */
+  function parentDialogBody(wid) {
+    var wt = byId(state.worktrees, wid);
+    if (!wt) return '<h2>부모 변경</h2><p>워크트리를 찾을 수 없습니다.</p>';
+    var list = groupWts(wt.group);
+    var banned = descendants(wt.id, list).concat([wt.id]);
+    var usable = list.filter(function (w) { return banned.indexOf(w.id) < 0; });
+    return "<h2>부모 변경 · " + esc(wt.name) + "</h2>"
+      + "<p>자기 자신과 하위 워크트리는 부모 후보에서 제외했습니다.</p>"
+      + field("부모 워크트리", '<select data-f="parent-target"><option value="">없음 (루트로)</option>'
+        + usable.map(function (w) {
+            return '<option value="' + esc(w.id) + '"' + (wt.parent === w.id ? " selected" : "") + ">"
+              + esc(w.name) + " · " + esc(w.branch) + "</option>";
+          }).join("") + "</select>")
+      + '<div class="dlg-actions"><button type="button" class="btn" data-act="dl-close">취소</button>'
+      + '<button type="button" class="btn primary" data-act="parent-apply" data-wt="' + esc(wid) + '">적용</button></div>';
+  }
+
+  function renderModal() {
+    var root = $("modal");
+    if (!state.dialog) { setHTML(root, ""); return; }
+    var body = "";
+    if (state.dialog.type === "add") body = addDialogBody();
+    else if (state.dialog.type === "delete") body = deleteDialogBody(state.dialog.groupId);
+    else if (state.dialog.type === "parent") body = parentDialogBody(state.dialog.wt);
+    setHTML(root, '<div class="backdrop" data-act="dl-close"><div class="dialog dialog-wide" data-act="noop">' + body + "</div></div>");
+  }
+
+  /* ---------- 상태 helpers ---------- */
+  function applyScreen() {
+    for (var i = 1; i <= 6; i++) {
+      var sec = $("screen-" + i);
+      if (sec) sec.classList.toggle("hidden", String(i) !== String(state.screen));
+    }
+  }
+  function renderTabs() {
+    [].forEach.call(document.querySelectorAll(".scr-tab"), function (t) {
+      t.classList.toggle("is-active", t.getAttribute("data-screen") === String(state.screen));
+    });
+    var pill = $("tb-state");
+    if (pill) pill.textContent = "그룹 " + state.groups.length + " · 워크트리 " + state.worktrees.length + " · 세션 " + state.sessions.length;
+  }
+  function setScreen(s) {
+    state.screen = String(s);
+    state.dialog = null;
+    render();
+  }
+  function render() {
+    renderScreen1();
+    renderScreen2();
+    renderScreen3();
+    renderScreen4();
+    renderScreen5();
+    renderScreen6();
+    renderModal();
+    applyScreen();
+    renderTabs();
+  }
+
+  var toastTimer = null;
+  function toast(text) {
+    var t = $("toast");
+    if (!t) return;
+    t.textContent = text;
+    t.classList.remove("hidden");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.add("hidden"); }, 2400);
+  }
+
+  function activeDialog() {
+    var modal = document.querySelector("#modal .dialog");
+    if (modal) return modal;
+    return document.querySelector("#screen-3 .dialog") || document.querySelector("#screen-5 .dialog");
+  }
+  function fv(root, name) {
+    if (!root) return "";
+    var node = root.querySelector('[data-f="' + name + '"]');
+    return node ? String(node.value == null ? "" : node.value) : "";
+  }
+
+  /* ---------- 액션 ---------- */
+  function createGroup() {
+    var w = state.wizard;
+    w.error = wizardError();
+    if (w.error) { render(); return; }
+    var name = w.name.trim();
+    state.seq += 1;
+    var gid = "g-new-" + state.seq;
+    var made = "빈 그룹으로 시작합니다";
+    var group = { id: gid, name: name, hubSessionId: null, note: "" };
+    state.groups.push(group);
+    if (w.preset === "feature") {
+      var wid = "wt-new-" + state.seq;
+      var sid = "s-new-" + state.seq;
+      state.worktrees.push({
+        id: wid, group: gid, repo: w.repo, name: slug(name),
+        branch: w.branch.trim() || "feature/" + slug(name),
+        parent: null, dirty: false, orcaMissing: false
+      });
+      state.sessions.push({
+        id: sid, title: w.prompt.trim() ? clip(w.prompt.trim(), 40) : name + " 부모 세션",
+        wt: wid, model: w.model, state: "idle", started: now(), last: now(),
+        tokens: 0, parent: null, group: gid
+      });
+      group.hubSessionId = sid;
+      made = "부모 워크트리와 세션을 함께 시작했습니다";
+    }
+    state.groupId = gid;
+    state.delGroup = gid;
+    state.wizard = {
+      preset: "feature", name: "", repo: M.repo || "graph-pi", branch: "feature/login",
+      model: (M.models && M.models[0]) || "", prompt: "", error: ""
+    };
+    state.dialog = null;
+    state.screen = "2";
+    toast("'" + name + "' 그룹 생성 · " + made);
+    render();
+  }
+
+  function createWorktree() {
+    var root = activeDialog();
+    var name = fv(root, "wt-name").trim();
+    if (!name) { toast("워크트리 이름을 입력하세요"); return; }
+    var g = byId(state.groups, state.groupId) || state.groups[0] || null;
+    if (!g) { toast("그룹이 없습니다"); return; }
+    var branch = fv(root, "wt-branch").trim();
+    var parent = fv(root, "wt-parent");
+    var model = fv(root, "wt-model") || (M.models && M.models[0]) || "";
+    var prompt = fv(root, "wt-prompt").trim();
+    state.seq += 1;
+    var wid = "wt-new-" + state.seq;
+    state.worktrees.push({
+      id: wid, group: g.id, repo: M.repo || "graph-pi", name: name,
+      branch: branch || "feature/" + slug(name), parent: parent || null,
+      dirty: false, orcaMissing: false
+    });
+    if (prompt) {
+      state.sessions.push({
+        id: "s-new-" + state.seq, title: clip(prompt, 40), wt: wid, model: model,
+        state: "idle", started: now(), last: now(), tokens: 0, parent: null, group: g.id
+      });
+    }
+    state.dialog = null;
+    state.screen = "2";
+    toast("워크트리 '" + name + "'을 " + g.name + "에 추가했습니다");
+    render();
+  }
+
+  function importWorktree(id) {
+    var item = byId(state.orcaOnly, id);
+    if (!item) return;
+    if (item.blockedBy) { toast("다른 그룹(" + item.blockedBy + ")에 이미 있습니다"); return; }
+    var g = byId(state.groups, state.groupId) || state.groups[0] || null;
+    if (!g) { toast("그룹이 없습니다"); return; }
+    state.seq += 1;
+    state.worktrees.push({
+      id: "wt-imp-" + state.seq, group: g.id, repo: item.repo, name: item.name,
+      branch: item.branch, parent: null, dirty: false, orcaMissing: false
+    });
+    state.orcaOnly = state.orcaOnly.filter(function (x) { return x.id !== id; });
+    state.dialog = null;
+    state.screen = "2";
+    toast("기존 워크트리 '" + item.name + "'을 " + g.name + "에 불러왔습니다");
+    render();
+  }
+
+  function deleteGroup(gid) {
+    var g = byId(state.groups, gid);
+    if (!g) return;
+    var ids = groupWts(gid).map(function (w) { return w.id; });
+    state.groups = state.groups.filter(function (x) { return x.id !== gid; });
+    state.worktrees = state.worktrees.filter(function (w) { return w.group !== gid; });
+    state.sessions = state.sessions.filter(function (s) {
+      return s.group !== gid && ids.indexOf(s.wt) < 0;
+    });
+    if (state.groupId === gid) state.groupId = state.groups.length ? state.groups[0].id : "";
+    state.delGroup = state.groupId;
+    state.dialog = null;
+    state.screen = "2";
+    toast("'" + g.name + "' 그룹을 삭제했습니다 · 세션 기록은 히스토리에 남습니다");
+    render();
+  }
+
+  function loopStart(wid) {
+    var wt = byId(state.worktrees, wid);
+    if (!wt || !wt.loop) return;
+    var L = wt.loop;
+    if (L.status === "done") { toast(wt.name + " · 이미 완료된 루프입니다"); return; }
+    if (L.status === "running" || L.status === "waiting") {
+      if (L.round >= L.maxRounds) {
+        L.status = "done";
+        L.lastEvent = now() + " · 최대 회차 도달 → 완료";
+        toast(wt.name + " · " + L.round + "/" + L.maxRounds + " 마지막 회차 완료");
+      } else {
+        L.round += 1;
+        L.status = "running";
+        L.lastEvent = now() + " · 응답 도착 → " + L.round + "회차 시작";
+        toast(wt.name + " · " + L.round + "/" + L.maxRounds + "회차 시작");
+      }
+    } else {
+      if (!L.round) L.round = 1;
+      L.status = "running";
+      L.lastEvent = now() + " · 시작";
+      toast(wt.name + " · 루프 시작 (" + L.round + "/" + L.maxRounds + ")");
+    }
+    render();
+  }
+
+  function loopPause(wid) {
+    var wt = byId(state.worktrees, wid);
+    if (!wt || !wt.loop) return;
+    var L = wt.loop;
+    if (L.status !== "running" && L.status !== "waiting") {
+      toast(wt.name + " · 실행 중일 때만 일시정지할 수 있습니다");
+      return;
+    }
+    L.status = "paused";
+    L.lastEvent = now() + " · 일시정지";
+    toast(wt.name + " · 일시정지");
+    render();
+  }
+
+  function loopStop(wid) {
+    var wt = byId(state.worktrees, wid);
+    if (!wt || !wt.loop) return;
+    wt.loop.status = "stopped";
+    wt.loop.lastEvent = now() + " · 즉시 중단";
+    toast(wt.name + " · 중단 (회차 " + wt.loop.round + " 유지)");
+    render();
+  }
+
+  document.addEventListener("click", function (e) {
+    var target = e.target;
+    if (!target || !target.closest) return;
+
+    var tabBtn = target.closest(".scr-tab");
+    if (tabBtn) { setScreen(tabBtn.getAttribute("data-screen")); return; }
+
+    var btn = target.closest("[data-act]");
+    if (!btn) return;
+    var act = btn.getAttribute("data-act");
+    var gid = btn.getAttribute("data-group");
+    var wid = btn.getAttribute("data-wt");
+
+    if (act === "noop") return;
+
+    if (act === "goto-board") return setScreen("2");
+    if (act === "new-group") { state.dialog = null; return setScreen("1"); }
+
+    if (act === "preset") {
+      state.wizard.preset = btn.getAttribute("data-preset") || "feature";
+      state.wizard.error = "";
+      render();
+      return;
+    }
+    if (act === "wiz-demo-dup") {
+      var first = state.groups[0];
+      state.wizard.name = first ? first.name : "로그인 기능";
+      state.wizard.error = wizardError() || "이미 있는 그룹 이름입니다.";
+      render();
+      return;
+    }
+    if (act === "create-group") return createGroup();
+
+    if (act === "pick-group") { state.groupId = gid || state.groupId; render(); return; }
+    if (act === "add-wt") { state.dialog = { type: "add" }; state.addTab = "new"; render(); return; }
+    if (act === "import-wt") { state.dialog = { type: "add" }; state.addTab = "import"; render(); return; }
+    if (act === "add-tab") { state.addTab = btn.getAttribute("data-tab") || "new"; render(); return; }
+    if (act === "dl-close") {
+      state.dialog = null;
+      if (state.screen === "3") state.screen = "2";
+      render();
+      return;
+    }
+    if (act === "wt-create") return createWorktree();
+    if (act === "wt-import") return importWorktree(btn.getAttribute("data-id"));
+
+    if (act === "del-group") { state.dialog = { type: "delete", groupId: gid || state.groupId }; render(); return; }
+    if (act === "del-pick") { state.delGroup = gid || state.delGroup; render(); return; }
+    if (act === "del-cancel") {
+      state.dialog = null;
+      if (state.screen === "5") state.screen = "2";
+      render();
+      return;
+    }
+    if (act === "del-confirm") return deleteGroup(gid || state.delGroup || state.groupId);
+
+    if (act === "change-parent") { state.dialog = { type: "parent", wt: wid }; render(); return; }
+    if (act === "parent-apply") {
+      var wt = byId(state.worktrees, wid);
+      if (!wt) return;
+      var picked = fv(activeDialog(), "parent-target");
+      var pickedWt = picked ? byId(state.worktrees, picked) : null;
+      wt.parent = picked || null;
+      state.dialog = null;
+      toast("'" + wt.name + "' 부모를 " + (pickedWt ? "'" + pickedWt.name + "'" : "없음") + "으로 변경했습니다");
+      render();
+      return;
+    }
+
+    if (act === "loop-start") return loopStart(wid);
+    if (act === "loop-pause") return loopPause(wid);
+    if (act === "loop-stop") return loopStop(wid);
+    if (act === "loop-enable") {
+      var wl = byId(state.worktrees, wid);
+      if (!wl) return;
+      wl.loop = { prompt: "", maxRounds: 3, round: 0, status: "idle", lastEvent: "수동으로 켠 루프", manual: true };
+      toast("'" + wl.name + "'에 Loop를 켰습니다");
+      render();
+      return;
+    }
+    if (act === "hub-start") {
+      var wh = byId(state.worktrees, wid);
+      var gh = wh ? byId(state.groups, wh.group) : null;
+      if (!wh || !gh || gh.hubSessionId) return;
+      state.seq += 1;
+      var hid = "s-new-" + state.seq;
+      state.sessions.push({
+        id: hid, title: wh.name + " 허브 세션", wt: wh.id,
+        model: (M.models && M.models[0]) || "", state: "idle",
+        started: now(), last: now(), tokens: 0, parent: null, group: gh.id
+      });
+      gh.hubSessionId = hid;
+      toast("'" + wh.name + "'에 허브 세션을 시작했습니다");
+      render();
+      return;
+    }
+
+    if (act === "orca-recreate") {
+      var w1 = byId(state.worktrees, wid);
+      if (!w1) return;
+      w1.orcaMissing = false;
+      toast("'" + w1.name + "' 워크트리를 Orca에 다시 만들었습니다");
+      render();
+      return;
+    }
+    if (act === "orca-remove") {
+      var w2 = byId(state.worktrees, wid);
+      if (!w2) return;
+      state.worktrees.forEach(function (x) { if (x.parent === w2.id) x.parent = w2.parent; });
+      state.worktrees = state.worktrees.filter(function (x) { return x.id !== w2.id; });
+      state.sessions = state.sessions.filter(function (s) { return s.wt !== w2.id; });
+      state.groups.forEach(function (gg) {
+        if (gg.hubSessionId && !state.sessions.some(function (s) { return s.id === gg.hubSessionId; })) gg.hubSessionId = null;
+      });
+      toast("'" + w2.name + "'을 그룹에서 제거했습니다 · 세션 기록은 히스토리에 남습니다");
+      render();
+      return;
+    }
+    if (act === "reset-demo") {
+      state.groups = clone(M.groups) || [];
+      state.worktrees = clone(M.worktrees) || [];
+      state.sessions = clone(M.sessions) || [];
+      state.orcaOnly = clone(M.orcaOnly) || [];
+      state.seq = 0;
+      state.groupId = state.groups.length ? state.groups[0].id : "";
+      state.delGroup = state.groupId;
+      toast("데모 데이터를 초기화했습니다");
+      render();
+      return;
+    }
+  });
+
+  document.addEventListener("input", function (e) {
+    var t = e.target;
+    if (!t || !t.getAttribute) return;
+    var f = t.getAttribute("data-f") || "";
+    if (f === "wiz-name") {
+      state.wizard.name = t.value;
+      if (state.wizard.error) {
+        state.wizard.error = "";
+        var wrap = t.closest(".field");
+        if (wrap) {
+          wrap.classList.remove("err");
+          var err = wrap.querySelector(".err-txt");
+          if (err) err.remove();
+        }
+      }
+      return;
+    }
+    if (f === "wiz-branch") { state.wizard.branch = t.value; return; }
+    if (f === "wiz-prompt") { state.wizard.prompt = t.value; return; }
+    if (f.indexOf("loop-prompt:") === 0) {
+      var wt = byId(state.worktrees, f.slice("loop-prompt:".length));
+      if (wt && wt.loop) wt.loop.prompt = t.value;
+    }
+  });
+
+  document.addEventListener("change", function (e) {
+    var t = e.target;
+    if (!t || !t.getAttribute) return;
+    var f = t.getAttribute("data-f") || "";
+    if (f === "wiz-repo") { state.wizard.repo = t.value; return; }
+    if (f === "wiz-model") { state.wizard.model = t.value; return; }
+    if (f.indexOf("loop-max:") === 0) {
+      var wt = byId(state.worktrees, f.slice("loop-max:".length));
+      if (!wt || !wt.loop) return;
+      var n = Math.max(1, Math.min(20, Number(t.value) || 1));
+      wt.loop.maxRounds = n;
+      if (wt.loop.round > n) wt.loop.round = n;
+      toast("'" + wt.name + "' 최대 회차 " + n + "회");
+      render();
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
