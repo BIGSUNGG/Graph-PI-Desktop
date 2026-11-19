@@ -17,6 +17,7 @@ for (const v of ['board', 'chat', 'orch', 'history']) {
 if (!/window\.MOCK/.test(fs.readFileSync('mock/mock-data.js', 'utf8'))) errs.push('MOCK not exported');
 if (!M.sessions.every((s) => M.worktrees.some((w) => w.id === s.wt))) errs.push('session wt orphan');
 if (!M.sessions.some((s) => (M.messages[s.id] || []).some((m) => m.role === 'tool'))) errs.push('no tool messages');
+if ((M.messages['s-onb-hub'] || []).filter((m) => m.think).length < 1) errs.push('s-onb-hub think missing');
 if (!M.tasks.every((t) => M.runs.some((r) => r.id === t.run))) errs.push('task run orphan');
 if (!M.workers.every((w) => M.tasks.some((t) => t.id === w.task))) errs.push('worker task orphan');
 const legacy = html.match(/#(?:7aa2f7|14171d|262b33|e7e9ee|5f6672|191d24|8a919e|5a6474|4a5160|3a1f24|1d3b2e|2e2717|1d2637|f07178|6ed3a1|e0af68|3a4150|a9b1c1)/g) || [];
@@ -80,6 +81,14 @@ for (const c of ['#dialog .dialog-wide', '#dialog .dialog-xl', '#dialog .wizard'
 for (const c of ['insp-tools', '세션별 최근 도구', 'tool-row', 'data-tool']) if (!html.includes(c)) errs.push('missing ' + c);
 for (const f of ['function lastTool', 'function toolName', 'function toolTextW', 'var maxW = c.w - 42', 'measureText']) if (!js.includes(f)) errs.push('missing ' + f);
 for (const f of ['function applyView', 'function setZoom', 'function resetView', 'state.nodePts =', 'pointerdown']) if (!js.includes(f)) errs.push('missing ' + f);
+for (const f of ['function sessionRoot', 'function defaultChat', 'function chatTarget', 'groupSessions(state.group)']) if (!js.includes(f)) errs.push('missing ' + f);
+for (const c of ['.msg.user .bubble', '.think', '.think-line', '.tool-row', '.think-count', '.think .think-at', '.msg.agent .answer-at', '.tool-at']) if (!html.includes(c)) errs.push('missing ' + c);
+if (html.includes('class="agent-head"')) errs.push('agent-head still rendered');
+if (html.includes('<b>나</b>')) errs.push('user label still rendered');
+if (html.includes('.msg.user .head b')) errs.push('user label style still present');
+for (const f of ['function turnsOf', 'function thinkHTML', 'function turnHTML', 'function toolParts', 'function toolIcon', 'Thought for ', 'Thinking...', 'class="think"', 'msg user']) if (!js.includes(f)) errs.push('missing ' + f);
+if (!M.sessions.some((s) => (M.messages[s.id] || []).some((m) => m.role === 'assistant' && m.think))) errs.push('no assistant think text');
+if (!M.sessions.some((s) => (M.messages[s.id] || []).some((m) => m.role === 'assistant' && m.thinkFor > 0))) errs.push('no thinkFor data');
 for (const f of ["function dfield", "function dopts", "size: 'dialog-xl'", "size: 'dialog-wide'", 'id="dlg-gdup"', 'id="dlg-gprompt"', 'id="dlg-wtbase"', 'id="dlg-wtmodel"', 'id="dlg-wtprompt"', 'data-loop-act="start"']) if (!js.includes(f)) errs.push('missing ' + f);
 console.log(
   errs.length

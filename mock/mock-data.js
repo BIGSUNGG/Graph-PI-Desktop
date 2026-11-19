@@ -102,18 +102,18 @@ window.MOCK = {
   messages: {
     "s-onb-hub": [
       { role: "user", at: "09:02", text: "Nimbus 온보딩을 web, api, shared, worker 네 레포에 한 번에 붙여줘. 공통 단계 정의는 이 세션에서 관리해." },
-      { role: "assistant", at: "09:04", text: "레포별 워크트리 4개와 자식 세션을 만들었습니다. 단계 정의는 shared에 두고 나머지는 참조만 하게 했습니다." },
+      { role: "assistant", at: "09:04", thinkFor: 3, think: "네 레포가 같은 단계 정의를 봐야 하니 shared를 기준으로 두고, 각 레포는 참조만 하게 한다.", text: "레포별 워크트리 4개와 자식 세션을 만들었습니다. 단계 정의는 shared에 두고 나머지는 참조만 하게 했습니다." },
       { role: "tool", at: "09:11", text: "orca worktree create --json × 4\n→ onb-web, onb-api, onb-shared, onb-worker 준비 완료" },
       { role: "assistant", at: "09:58", text: "web은 위저드 3단계까지, api는 단계 저장까지 통과했습니다. worker는 메일 템플릿 확인 중입니다." }
     ],
     "s-onb-web": [
       { role: "user", at: "09:10", text: "위저드 1단계(회사 정보)부터 만들고, 단계별로 저장 가능하게 해줘." },
-      { role: "assistant", at: "09:12", text: "단계 상태를 URL이 아니라 shared 스키마의 step id로 관리하도록 잡았습니다. 새로고침해도 이어집니다." },
+      { role: "assistant", at: "09:12", thinkFor: 6, think: "단계 상태를 URL에 두면 새로고침과 공유에서 깨진다. step id를 저장하는 쪽이 안전하다.", text: "단계 상태를 URL이 아니라 shared 스키마의 step id로 관리하도록 잡았습니다. 새로고침해도 이어집니다." },
       { role: "tool", at: "09:41", text: "playwright: onboarding wizard 3 steps\n→ 9 passed, 0 failed" }
     ],
     "s-onb-api": [
       { role: "user", at: "09:12", text: "단계 저장 API를 만들고, 같은 회사가 두 번 시작하면 이어서 하게 해줘." },
-      { role: "assistant", at: "09:15", text: "company_id + step_id 유니크 키로 upsert합니다. 완료 시 onboarding.completed 이벤트를 발행합니다." },
+      { role: "assistant", at: "09:15", thinkFor: 4, think: "회사와 단계의 유니크 키를 먼저 잡고, 완료 이벤트를 분리한다.", text: "company_id + step_id 유니크 키로 upsert합니다. 완료 시 onboarding.completed 이벤트를 발행합니다." },
       { role: "tool", at: "09:47", text: "api contract test\n→ 14 passed, 0 failed" }
     ],
     "s-onb-shared": [
@@ -136,7 +136,7 @@ window.MOCK = {
 
     "s-bill-hub": [
       { role: "user", at: "10:02", text: "구독 결제를 web, api, worker에 붙여줘. 웹훅 검증은 api에서만." },
-      { role: "assistant", at: "10:04", text: "결제 웹훅은 api의 단일 엔드포인트로 모으고, web은 플랜 선택만, worker는 인보이스만 담당하게 나눴습니다." },
+      { role: "assistant", at: "10:04", thinkFor: 7, think: "웹훅 검증은 api 한 곳에 모으고, web과 worker는 각자의 책임만 갖게 나눈다.", text: "결제 웹훅은 api의 단일 엔드포인트로 모으고, web은 플랜 선택만, worker는 인보이스만 담당하게 나눴습니다." },
       { role: "tool", at: "10:11", text: "orca worktree create --json × 3\n→ bill-web, bill-api, bill-worker 준비 완료" },
       { role: "assistant", at: "10:58", text: "웹훅 재시도 큐까지 연결했습니다. worker는 Orca에서 사라져 보드에 없음으로 표시됩니다." }
     ],
@@ -165,7 +165,7 @@ window.MOCK = {
     ],
     "s-perf-query": [
       { role: "user", at: "11:05", text: "느린 쿼리 상위 3개를 찾아 제거하고 p95를 다시 측정해." },
-      { role: "assistant", at: "11:18", text: "1회차에서 orders 조회 2건을 제거했습니다. p95 412ms → 287ms." },
+      { role: "assistant", at: "11:18", thinkFor: 8, think: "상위 3개를 먼저 EXPLAIN으로 확인하고, 인덱스보다 쿼리 제거가 싼 것부터 손본다.", text: "1회차에서 orders 조회 2건을 제거했습니다. p95 412ms → 287ms." },
       { role: "tool", at: "11:52", text: "loop round 2/5\n→ EXPLAIN diff 3건, 다음 회차 대기" }
     ],
     "s-perf-cache": [
@@ -228,7 +228,7 @@ window.MOCK = {
     ],
     "s-fix-sec": [
       { role: "user", at: "15:02", text: "세션 고정 취약점을 재현하고 수정해줘." },
-      { role: "assistant", at: "15:18", text: "로그인 후 세션 id를 회전하지 않는 문제를 재현했습니다. 쿠키 재사용을 차단했습니다." },
+      { role: "assistant", at: "15:18", thinkFor: 5, think: "로그인 후 세션 id가 그대로면 쿠키 재사용이 가능하다. 회전과 재사용 차단을 같이 넣는다.", text: "로그인 후 세션 id를 회전하지 않는 문제를 재현했습니다. 쿠키 재사용을 차단했습니다." },
       { role: "tool", at: "15:41", text: "merge queue: fix/security → develop\n→ 리뷰 대기" }
     ],
     "s-fix-perf": [
