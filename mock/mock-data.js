@@ -247,11 +247,11 @@ window.MOCK = {
   },
 
   runs: [
-    { id: "run_nimbus_onboarding", goal: "온보딩 플로우 구축", status: "running", started: "09:02", tasks: 5 },
-    { id: "run_nimbus_billing", goal: "구독 결제 안정화", status: "running", started: "10:02", tasks: 4 },
-    { id: "run_nimbus_perf", goal: "API 성능 루프", status: "running", started: "11:02", tasks: 4 },
-    { id: "run_nimbus_infra", goal: "인프라 마이그레이션", status: "done", started: "14:02", tasks: 4 },
-    { id: "run_nimbus_release", goal: "릴리스 안정화", status: "running", started: "15:02", tasks: 2 }
+    { id: "run_nimbus_onboarding", group: "g-feature", goal: "온보딩 플로우 구축", status: "running", started: "09:02", tasks: 5 },
+    { id: "run_nimbus_billing", group: "g-billing", goal: "구독 결제 안정화", status: "running", started: "10:02", tasks: 4 },
+    { id: "run_nimbus_perf", group: "g-loop", goal: "API 성능 루프", status: "running", started: "11:02", tasks: 4 },
+    { id: "run_nimbus_infra", group: "g-infra", goal: "인프라 마이그레이션", status: "done", started: "14:02", tasks: 4 },
+    { id: "run_nimbus_release", group: "g-fix", goal: "릴리스 안정화", status: "running", started: "15:02", tasks: 2 }
   ],
 
   tasks: [

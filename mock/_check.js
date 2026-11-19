@@ -82,6 +82,8 @@ for (const c of ['insp-tools', '세션별 최근 도구', 'tool-row', 'data-tool
 for (const f of ['function lastTool', 'function toolName', 'function toolTextW', 'var maxW = c.w - 42', 'measureText']) if (!js.includes(f)) errs.push('missing ' + f);
 for (const f of ['function applyView', 'function setZoom', 'function resetView', 'state.nodePts =', 'pointerdown']) if (!js.includes(f)) errs.push('missing ' + f);
 for (const f of ['function sessionRoot', 'function defaultChat', 'function chatTarget', 'groupSessions(state.group)']) if (!js.includes(f)) errs.push('missing ' + f);
+if (!M.runs.every((r) => M.groups.some((g) => g.id === r.group))) errs.push('run group missing');
+for (const f of ['M.runs.filter(function (r) { return r.group === state.group; })', '(s.group || "") === state.group', 'histOpen', 'h-item', 'h-detail', 'h-ev', 'h-toggle', 'data-hist']) if (!html.includes(f)) errs.push('missing ' + f);
 for (const c of ['.msg.user .bubble', '.think', '.think-line', '.tool-row', '.think-count', '.think .think-at', '.msg.agent .answer-at', '.tool-at']) if (!html.includes(c)) errs.push('missing ' + c);
 if (html.includes('class="agent-head"')) errs.push('agent-head still rendered');
 if (html.includes('<b>나</b>')) errs.push('user label still rendered');

@@ -294,8 +294,20 @@
   .indexbar .bar{flex:1;height:4px;border-radius:999px;background:rgb(255 255 255 / .08);overflow:hidden}
   .indexbar .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .18s ease}
   .history-list{display:flex;flex-direction:column;gap:6px}
-  .h-row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);cursor:pointer;transition:border-color .12s ease,background .12s ease}
-  .h-row:hover{border-color:rgb(255 255 255 / .18);background:#1c1c1c}
+  .h-item{border:1px solid var(--line);border-radius:10px;background:var(--card);overflow:hidden}
+  .h-row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;cursor:pointer;transition:background .12s ease}
+  .h-row:hover{background:#1c1c1c}
+  .h-side{display:flex;align-items:center;gap:8px}
+  .h-toggle{width:22px;height:22px;display:grid;place-items:center;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--muted);font-size:11px;line-height:1;cursor:pointer;padding:0}
+  .h-toggle:hover{border-color:rgb(255 255 255 / .22);color:var(--text)}
+  .h-detail{border-top:1px solid var(--line);padding:9px 12px 11px;max-height:320px;overflow:auto;display:flex;flex-direction:column;gap:6px}
+  .h-ev{display:grid;grid-template-columns:36px 54px minmax(0,1fr);gap:8px;font-size:11px;line-height:1.55}
+  .h-at{color:var(--dim);font-size:10px;font-variant-numeric:tabular-nums}
+  .h-kind{color:var(--dim);font-size:10px}
+  .h-kind.user{color:var(--accent)}
+  .h-kind.assistant{color:var(--green)}
+  .h-kind.tool{color:var(--amber)}
+  .h-text{color:var(--muted);white-space:pre-wrap;word-break:break-word}
   .h-row .h-title{font-size:12.5px}
   .h-row .h-meta{margin-top:3px;font-size:10.5px;color:var(--dim)}
   .h-row .h-tok{font-size:10.5px;color:var(--dim);white-space:nowrap}
@@ -523,7 +535,7 @@
       <section class="view hidden" id="view-history">
         <div class="history">
           <div class="history-head">
-            <input id="search" type="search" placeholder="세션 본문 검색 — 30일 이전 포함" />
+            <input id="search" type="search" placeholder="현재 그룹 세션 본문 검색 — 30일 이전 포함" />
             <button class="btn primary" id="search-btn">검색</button>
             <div class="tabs"><button class="tab is-active" data-range="30">최근 30일</button><button class="tab" data-range="all">전체</button></div>
           </div>
@@ -589,7 +601,7 @@
   var state = {
     view: "board", selected: { type: null, id: null }, chat: M.sessions[0].id,
     group: (M.groups.filter(function (g) { return "#" + g.id === location.hash; })[0] || M.groups[0]).id,
-    closed: {}, orca: true,
+    closed: {}, histOpen: {}, orca: true,
     run: M.runs[0].id, worker: M.workers[0].id, query: "", range: "30", results: null, indexed: 0,
     zoom: 1, vx: 0, vy: 0, boardW: 0, boardH: 0, nodePts: [], pan: null, dragMoved: false, _lastGroup: null
   };
@@ -691,8 +703,12 @@
           state.group = gid;
           state.selected = { type: null, id: null };
           state.chat = (defaultChat(gid) || {}).id || null;
+          state.query = ""; state.results = null;
+          if ($("search")) $("search").value = "";
         }
         if (state.view === "chat") { renderSidebar(); renderChat(); return; }
+        if (state.view === "orch") { renderSidebar(); renderOrch(); return; }
+        if (state.view === "history") { renderSidebar(); renderHistory(); return; }
         renderBoard();
       };
     });
@@ -711,6 +727,8 @@
         var root = sessionRoot(wid);
         state.chat = root ? root.id : null;
         if (state.view === "chat") { renderSidebar(); renderChat(); return; }
+        if (state.view === "orch") { renderSidebar(); renderOrch(); return; }
+        if (state.view === "history") { renderSidebar(); renderHistory(); return; }
         setView("board");
       };
     });
@@ -1326,16 +1344,18 @@
 
   /* ---------- orchestration ---------- */
   function renderOrch() {
-    setHTML($("run-select"), M.runs.map(function (r) {
+    var runs = M.runs.filter(function (r) { return r.group === state.group; });
+    if (!runs.some(function (r) { return r.id === state.run; })) state.run = runs.length ? runs[0].id : null;
+    setHTML($("run-select"), runs.length ? runs.map(function (r) {
       return '<option value="' + r.id + '"' + (r.id === state.run ? " selected" : "") + ">"
         + esc(r.id) + " — " + esc(r.goal) + "</option>";
-    }).join(""));
-    $("run-select").onchange = function (e) { state.run = e.target.value; renderOrch(); };
+    }).join("") : '<option value="">이 그룹에 실행 없음</option>');
+    $("run-select").onchange = function (e) { state.run = e.target.value || null; renderOrch(); };
 
     var run = byId(M.runs, state.run);
-    $("run-meta").textContent = "status " + run.status + " · started " + run.started + " · tasks " + run.tasks;
+    $("run-meta").textContent = run ? "status " + run.status + " · started " + run.started + " · tasks " + run.tasks : "이 그룹에 실행 없음";
 
-    var tasks = M.tasks.filter(function (t) { return t.run === state.run; });
+    var tasks = run ? M.tasks.filter(function (t) { return t.run === state.run; }) : [];
     var doneN = tasks.filter(function (t) { return t.state === "done"; }).length;
     var pct = tasks.length ? Math.round((doneN / tasks.length) * 100) : 0;
     setHTML($("task-list"), tasks.length
@@ -1345,33 +1365,36 @@
           + esc(t.state) + '</span><div class="t-main"><div class="t-title">' + esc(t.id) + " · " + esc(t.title) + "</div>"
           + '<div class="deps">' + (t.deps.length ? "deps " + esc(t.deps.join(", ")) : "deps 없음") + "</div></div></div>";
       }).join("")
-      : '<p class="empty">Task 없음</p>');
+      : '<p class="empty">' + (run ? "Task 없음" : "이 그룹에 실행 없음") + '</p>');
 
-    var workers = M.workers.filter(function (w) { return w.run === state.run; });
+    var workers = run ? M.workers.filter(function (w) { return w.run === state.run; }) : [];
+    if (!workers.some(function (w) { return w.id === state.worker; })) state.worker = workers.length ? workers[0].id : null;
     setHTML($("worker-list"), workers.map(function (w) {
       return '<div class="worker ' + (w.id === state.worker ? "is-active" : "") + '" data-worker="' + w.id + '">'
         + "<span>" + esc(w.id) + " · " + esc(w.task) + "</span>"
         + '<span class="w-meta">' + (w.attention ? '<span class="pill attention">주의</span>' : "")
         + '<span class="pill">' + esc(w.terminalState) + "</span>" + pill(w.state === "done" ? "done" : w.state === "waiting" ? "idle" : "running")
         + "</span></div>";
-    }).join("") || '<p class="empty">Worker 없음</p>');
+    }).join("") || '<p class="empty">' + (run ? "Worker 없음" : "이 그룹에 실행 없음") + '</p>');
     [].forEach.call($("worker-list").querySelectorAll("[data-worker]"), function (b) {
       b.onclick = function () { state.worker = b.getAttribute("data-worker"); renderOrch(); };
     });
 
-    $("worker-out").textContent = M.workerOutput[state.worker] || "(출력 없음)";
-    setHTML($("gate-list"), M.gates.filter(function (g) { return g.run === state.run; }).map(function (g) {
+    $("worker-out").textContent = state.worker ? (M.workerOutput[state.worker] || "(출력 없음)") : "(출력 없음)";
+    setHTML($("gate-list"), run ? (M.gates.filter(function (g) { return g.run === state.run; }).map(function (g) {
       return '<div class="gate">'
         + (g.state === "passed" ? '<svg class="chk" viewBox="0 0 16 16"><path d="M3 8.5 6.5 12 13 4.5"/></svg>' : "")
         + '<span>' + esc(g.name) + '</span><span class="pill ' + (g.state === "passed" ? "done" : "idle") + '"><span class="d"></span>' + esc(g.state) + "</span></div>";
-    }).join("") || '<p class="empty">Gate 없음</p>');
+    }).join("") || '<p class="empty">Gate 없음</p>') : '<p class="empty">이 그룹에 실행 없음</p>');
     $("n-orch").textContent = tasks.filter(function (t) { return t.state !== "done"; }).length;
   }
 
   /* ---------- history ---------- */
   function renderHistory() {
-    var list = state.results || M.sessions.slice();
+    var base = state.results || M.sessions.slice();
+    var list = base.filter(function (s) { return (s.group || "") === state.group; });
     list = list.slice().sort(function (a, b) { return a.last < b.last ? 1 : -1; });
+    var ROLE = { user: "사용자", assistant: "에이전트", tool: "도구", compaction: "압축" };
     setHTML($("history-list"), list.map(function (s) {
       var hit = "";
       if (state.query) {
@@ -1381,12 +1404,24 @@
           + '<span class="hit">' + esc(hay.slice(i, i + state.query.length)) + "</span>"
           + esc(hay.slice(i + state.query.length, i + state.query.length + 40)) + "…</div>";
       }
-      return '<div class="h-row" data-open="' + s.id + '"><div><div class="h-title">' + esc(s.title) + "</div>"
+      var openH = !!state.histOpen[s.id];
+      var evs = (M.messages[s.id] || []).map(function (m) {
+        return '<div class="h-ev"><span class="h-at">' + esc(m.at) + '</span>'
+          + '<span class="h-kind ' + esc(m.role) + '">' + esc(ROLE[m.role] || m.role) + '</span>'
+          + '<span class="h-text">' + esc(m.text) + "</span></div>";
+      }).join("") || '<p class="empty">메시지 없음</p>';
+      return '<div class="h-item' + (openH ? " is-open" : "") + '">'
+        + '<div class="h-row" data-open="' + s.id + '"><div><div class="h-title">' + esc(s.title) + "</div>"
         + '<div class="h-meta">' + esc(s.wtName || (byId(M.worktrees, s.wt) || {}).name || s.wt) + " · " + esc(short(s.model)) + " · " + esc(s.started) + "–" + esc(s.last) + (s.removed ? ' · <span class="hit">삭제됨</span>' : "") + "</div>"
-        + hit + '</div><div class="h-tok">' + s.tokens.toLocaleString() + " tok</div></div>";
+        + hit + '</div><div class="h-side"><span class="h-tok">' + s.tokens.toLocaleString() + " tok</span>"
+        + '<button type="button" class="h-toggle" data-hist="' + s.id + '" aria-expanded="' + (openH ? "true" : "false") + '" aria-label="히스토리 ' + (openH ? "접기" : "펼치기") + '">' + (openH ? "▾" : "▸") + "</button></div></div>"
+        + '<div class="h-detail' + (openH ? "" : " hidden") + '" id="hist-' + s.id + '">' + evs + "</div></div>";
     }).join("") || '<p class="empty">조건에 맞는 세션이 없습니다.</p>');
     [].forEach.call($("history-list").querySelectorAll("[data-open]"), function (b) {
       b.onclick = function () { var s = byId(M.sessions, b.getAttribute("data-open")); if (!s) return; state.group = s.group || state.group; state.selected = { type: "session", id: s.id }; state.chat = s.id; setView("chat"); };
+    });
+    [].forEach.call($("history-list").querySelectorAll("[data-hist]"), function (b) {
+      b.onclick = function (e) { e.stopPropagation(); var sid = b.getAttribute("data-hist"); state.histOpen[sid] = !state.histOpen[sid]; renderHistory(); };
     });
     $("n-history").textContent = list.length;
   }
@@ -1397,6 +1432,7 @@
     var apply = function () {
       state.query = q;
       state.results = M.sessions.filter(function (s) {
+        if ((s.group || "") !== state.group) return false;
         if (s.title.toLowerCase().indexOf(q.toLowerCase()) >= 0) return true;
         return (M.messages[s.id] || []).some(function (m) { return m.text.toLowerCase().indexOf(q.toLowerCase()) >= 0; });
       });
