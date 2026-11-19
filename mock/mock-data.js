@@ -3,7 +3,7 @@
 window.MOCK = {
   workspace: "graph-pi",
   product: "Nimbus",
-  repo: "C:/Projects/nimbus",
+  workspacesRoot: "C:\\Users\\DAESUNG\\orca\\workspaces",
   repos: ["web", "api", "worker", "infra", "shared", "docs"],
   bases: ["main", "develop"],
   models: [
@@ -20,12 +20,12 @@ window.MOCK = {
   loopStates: ["idle", "running", "waiting", "paused", "done", "stopped"],
 
   groups: [
-    { id: "g-feature", name: "고객 온보딩", note: "web · api · shared · worker", hubSessionId: "s-onb-hub" },
-    { id: "g-billing", name: "구독 결제", note: "web · api · worker", hubSessionId: "s-bill-hub" },
-    { id: "g-loop", name: "API 성능 루프", note: "query · cache · index" },
-    { id: "g-manual", name: "보안 점검", note: "api · web · audit" },
-    { id: "g-infra", name: "인프라 마이그레이션", note: "core · k8s · db · obs", hubSessionId: "s-infra-hub" },
-    { id: "g-fix", name: "릴리스 안정화", note: "develop · security · performance" }
+    { id: "g-feature", name: "고객 온보딩", note: "web · api · shared · worker", hubSessionId: "s-onb-hub", parentRepo: "C:\\Users\\DAESUNG\\orca\\workspaces\\gogaek-onboding" },
+    { id: "g-billing", name: "구독 결제", note: "web · api · worker", hubSessionId: "s-bill-hub", parentRepo: "C:\\Users\\DAESUNG\\orca\\workspaces\\gudok-gyeolje" },
+    { id: "g-loop", name: "API 성능 루프", note: "query · cache · index", parentRepo: "C:\\Users\\DAESUNG\\orca\\workspaces\\api-seongneung-rupeu" },
+    { id: "g-manual", name: "보안 점검", note: "api · web · audit", parentRepo: "C:\\Users\\DAESUNG\\orca\\workspaces\\boan-jeomgeom" },
+    { id: "g-infra", name: "인프라 마이그레이션", note: "core · k8s · db · obs", hubSessionId: "s-infra-hub", parentRepo: "C:\\Users\\DAESUNG\\orca\\workspaces\\inpeura-maigeureisyeon" },
+    { id: "g-fix", name: "릴리스 안정화", note: "develop · security · performance", parentRepo: "C:\\Users\\DAESUNG\\orca\\workspaces\\rilliseu-anjeonghwa" }
   ],
 
   worktrees: [
@@ -336,3 +336,34 @@ window.MOCK = {
     "g-fix": { worktreeIds: ["wt-develop", "wt-fix-sec", "wt-fix-perf"], runningSessions: 2, dirtyWorktrees: 2, sessionCount: 5 }
   }
 };
+
+// 그룹 최상위 폴더·워크트리 폴더 이름: 한글 → 로마자 슬러그
+window.MOCK.slug = (function () {
+  var INI = ["g","kk","n","d","tt","r","m","b","pp","s","ss","","j","jj","ch","k","t","p","h"];
+  var MED = ["a","ae","ya","yae","eo","e","yeo","ye","o","wa","wae","oe","yo","u","wo","we","wi","yu","eu","ui","i"];
+  var FIN = ["","k","k","k","n","n","n","t","l","k","m","p","l","l","p","l","m","p","p","t","t","ng","t","t","k","t","p","t"];
+  var OPEN = ["","g","kk","ks","n","nj","nh","d","r","lg","lm","lb","ls","lt","lp","lh","m","b","bs","s","ss","ng","j","ch","k","t","p","h"];
+  return function slug(name) {
+    var ch = String(name || "").split(""), out = "", prevFin = 0;
+    for (var i = 0; i < ch.length; i++) {
+      var c = ch[i].charCodeAt(0);
+      if (c >= 0xac00 && c <= 0xd7a3) {
+        var n = c - 0xac00, nx = ch[i + 1] ? ch[i + 1].charCodeAt(0) : 0;
+        var nini = nx >= 0xac00 && nx <= 0xd7a3 ? Math.floor((nx - 0xac00) / 588) : -1;
+        var ini = Math.floor(n / 588), fin = n % 28;
+        // 표준 로마자: 받침 ㄹ 뒤의 ㄹ은 l, 받침 ㅇ은 항상 ng
+        out += (ini === 5 && prevFin === 8 ? "l" : INI[ini]) + MED[Math.floor((n % 588) / 28)];
+        if (fin) out += nini === 11 ? OPEN[fin] : FIN[fin];
+        prevFin = fin;
+      } else if (/[a-z0-9]/i.test(ch[i])) { out += ch[i].toLowerCase(); prevFin = 0; }
+      else { out += "-"; prevFin = 0; }
+    }
+    return out.replace(/-+/g, "-").replace(/^-|-$/g, "");
+  };
+})();
+
+// 시드 워크트리 폴더 = 그룹 부모 저장소 아래
+window.MOCK.worktrees.forEach(function (w) {
+  var g = window.MOCK.groups.filter(function (x) { return x.id === w.group; })[0];
+  if (g && !w.path) w.path = g.parentRepo + "\\" + w.name;
+});

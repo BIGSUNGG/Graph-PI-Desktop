@@ -96,9 +96,39 @@ for (const f of ["function dfield", "function dopts", "size: 'dialog-xl'", "size
 // 워크트리 추가 팝업의 레포지토리 선택
 const REPOS = M.repos || [];
 if (REPOS.length !== 6) errs.push('M.repos must list 6 repositories');
-for (const w of M.worktrees.concat(M.orcaOnly)) if (!REPOS.includes(w.repo)) errs.push('seeded repo not in M.repos: ' + w.repo);
+for (const w of M.worktrees.concat(M.orcaOnly)) if (w.repo !== 'hub' && !REPOS.includes(w.repo)) errs.push('seeded repo not in M.repos: ' + w.repo);
 for (const f of ['id="dlg-wtrepo"', 'id="dlg-wtfilter"', "dfield('레포지토리'", '<option value="">전체</option>']) if (!js.includes(f)) errs.push('missing ' + f);
 if (js.includes('repo: M.repo,')) errs.push('worktree create still hardcodes M.repo');
+
+// 부모 저장소 + 허브
+if (!M.workspacesRoot) errs.push('M.workspacesRoot missing');
+if (typeof M.slug !== 'function') errs.push('M.slug missing');
+for (const [name, want] of [
+  ['고객 온보딩', 'gogaek-onboding'],
+  ['구독 결제', 'gudok-gyeolje'],
+  ['API 성능 루프', 'api-seongneung-rupeu'],
+  ['릴리스 안정화', 'rilliseu-anjeonghwa'],
+  ['결제 화면', 'gyeolje-hwamyeon'],
+  ['보안 점검', 'boan-jeomgeom'],
+  ['v2 스프린트', 'v2-seupeurinteu'],
+  ['A  B!', 'a-b'],
+  ['!!!', ''],
+  ['🎉', '']
+]) {
+  const got = typeof M.slug === 'function' ? M.slug(name) : '';
+  if (got !== want) errs.push('slug(' + name + '): ' + got);
+}
+for (const g of M.groups) if (g.parentRepo !== M.workspacesRoot + '\\' + M.slug(g.name)) errs.push('group parentRepo: ' + g.id + ' = ' + g.parentRepo);
+for (const w of M.worktrees) {
+  const g = M.groups.filter((x) => x.id === w.group)[0];
+  if (!g) continue;
+  const want = w.hub ? g.parentRepo : M.workspacesRoot + '\\' + M.slug(g.name) + '\\' + M.slug(w.name);
+  if (!w.path) errs.push('worktree path missing: ' + w.id);
+  else if (w.path !== want) errs.push('worktree path mismatch: ' + w.id + ' = ' + w.path);
+}
+if (/M\.repo(?!s)/.test(js)) errs.push('M.repo still referenced');
+if (!js.includes('id="dlg-grepo"')) errs.push('missing id="dlg-grepo"');
+if (!js.includes('id="dlg-grepo-edit"')) errs.push('missing id="dlg-grepo-edit"');
 console.log(
   errs.length
     ? 'FAIL\n' + errs.join('\n')

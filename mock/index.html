@@ -1575,42 +1575,49 @@
     return M.worktrees.filter(function (w) { return w.group === gid; });
   }
 
+  function hubWtOf(gid) {
+    return M.worktrees.filter(function (w) { return w.group === gid && w.hub; })[0] || null;
+  }
+
   function dfield(label, control) { return '<label class="field"><span class="lbl">' + label + '</span>' + control + '</label>'; }
   function dopts(list, selected) { return list.map(function (v) { return '<option' + (v === selected ? ' selected' : '') + '>' + esc(v) + '</option>'; }).join(''); }
 
   function groupCreateDialog() {
     var preset = 'feature';
-    var draft = { name: '', error: '' };
+    var draft = { name: '', parentRepo: '', repoTouched: false, error: '' };
+
+    function repoValue() {
+      return draft.repoTouched ? draft.parentRepo : M.workspacesRoot + '\\' + M.slug(draft.name);
+    }
 
     function previewHTML() {
-      var isFeature = preset === 'feature';
       return '<dl class="kv">'
         + '<dt>프리셋</dt><dd>' + esc(PRESET_INFO[preset].name) + '</dd>'
         + '<dt>이름</dt><dd id="dlg-preview-name">' + (draft.name.trim() ? esc(draft.name.trim()) : '<span class="muted">아직 없음</span>') + '</dd>'
-        + '<dt>시작 상태</dt><dd>' + (isFeature ? '부모 워크트리 + 세션' : '빈 그룹') + '</dd>'
-        + '<dt>워크트리</dt><dd>' + (isFeature ? '1개' : '0개') + '</dd>'
+        + '<dt>시작 상태</dt><dd>부모 워크트리 + 세션</dd>'
+        + '<dt>워크트리</dt><dd>1개</dd>'
         + '</dl>';
     }
 
     function body() {
-      var isFeature = preset === 'feature';
       var presets = Object.keys(PRESET_INFO).map(function (k) {
         return '<button type="button" class="preset' + (k === preset ? ' is-active' : '') + '" data-preset="' + k + '">'
           + '<span class="p-name">' + PRESET_INFO[k].name + '</span>'
           + '<span class="p-desc">' + PRESET_INFO[k].desc + '</span>'
           + '<span class="p-tag">' + (k === preset ? '선택됨' : '선택') + '</span></button>';
       }).join('');
-      var fields = isFeature
-        ? '<div class="grid2">'
-          + dfield('부모 저장소', '<select id="dlg-grepo">' + dopts([M.repo, 'orca-main'], M.repo) + '</select>')
-          + dfield('브랜치', '<input id="dlg-gbranch" placeholder="비우면 feature/&lt;그룹 이름&gt;">')
-          + '</div>'
-          + '<div class="grid2">'
-          + dfield('모델', '<select id="dlg-gmodel">' + dopts(M.models, M.models[0]) + '</select>')
-          + dfield('첫 프롬프트', '<input id="dlg-gprompt" placeholder="부모 세션에 보낼 첫 지시">')
-          + '</div>'
-          + '<div class="notice"><span class="pill hub">허브</span><span>부모 워크트리와 세션을 함께 시작합니다. 자식 워크트리는 보드에서 추가합니다.</span></div>'
-        : '<div class="notice"><span class="pill">빈 그룹</span><span>빈 그룹으로 시작합니다. 워크트리는 보드에서 직접 추가합니다.</span></div>';
+      var notice = preset === 'feature'
+        ? '부모 워크트리와 세션을 함께 시작합니다. 자식 워크트리는 보드에서 추가합니다.'
+        : '부모 워크트리(허브)와 세션을 함께 시작합니다. 워크트리는 보드에서 추가합니다.';
+      var fields = '<div class="grid2">'
+        + dfield('부모 저장소', '<input id="dlg-grepo" value="' + esc(repoValue()) + '">')
+        + dfield('브랜치', '<select id="dlg-gbranch">' + dopts(M.bases, M.bases[0]) + '</select>')
+        + '</div>'
+        + '<div class="grid2">'
+        + dfield('모델', '<select id="dlg-gmodel">' + dopts(M.models, M.models[0]) + '</select>')
+        + dfield('첫 프롬프트', '<textarea id="dlg-gprompt" rows="2" placeholder="부모 세션에 보낼 첫 지시"></textarea>')
+        + '</div>'
+        + '<div class="notice"><span class="pill hub">허브</span><span>' + notice + ' 허브는 그룹 최상위 폴더(부모 저장소)에서 시작합니다.</span></div>';
       var nameField = '<label class="field' + (draft.error ? ' err' : '') + '"><span class="lbl">그룹 이름</span>'
         + '<input id="dlg-gname" value="' + esc(draft.name) + '" placeholder="예: 결제 리팩터링">'
         + (draft.error ? '<span class="err-txt">' + esc(draft.error) + '</span>' : '')
@@ -1629,6 +1636,8 @@
         b.onclick = function () {
           var n = $('dlg-gname');
           if (n) draft.name = n.value;
+          var r0 = $('dlg-grepo');
+          if (r0) draft.parentRepo = r0.value;
           preset = b.getAttribute('data-preset');
           draft.error = '';
           setHTML($('dlg-body'), body());
@@ -1640,7 +1649,13 @@
         draft.name = n.value;
         var p = $('dlg-preview-name');
         if (p) setHTML(p, draft.name.trim() ? esc(draft.name.trim()) : '<span class="muted">아직 없음</span>');
+        if (!draft.repoTouched) {
+          var r = $('dlg-grepo');
+          if (r) r.value = M.workspacesRoot + '\\' + M.slug(draft.name);
+        }
       };
+      var repoField = $('dlg-grepo');
+      if (repoField) repoField.oninput = function () { draft.parentRepo = repoField.value; draft.repoTouched = true; };
       var dup = $('dlg-gdup');
       if (dup) dup.onclick = function () {
         var first = M.groups[0];
@@ -1660,22 +1675,20 @@
       onOk: function () {
         var name = $('dlg-gname').value.trim();
         if (!name) { draft.name = ''; draft.error = '그룹 이름을 입력하세요.'; setHTML($('dlg-body'), body()); bind(); return false; }
+        if (!M.slug(name)) { draft.name = name; draft.error = '폴더로 쓸 수 있는 문자를 포함하세요.'; setHTML($('dlg-body'), body()); bind(); return false; }
         if (M.groups.some(function (g) { return g.name === name; })) { draft.name = name; draft.error = '이미 있는 그룹 이름입니다.'; setHTML($('dlg-body'), body()); bind(); return false; }
+        var parentRepo = $('dlg-grepo').value.trim() || M.workspacesRoot + '\\' + M.slug(name);
         var gid = 'g-' + Date.now().toString(36);
-        var g = { id: gid, name: name, note: '새 그룹', hubSessionId: null };
+        var g = { id: gid, name: name, note: '새 그룹', hubSessionId: null, parentRepo: parentRepo };
         M.groups.push(g);
-        if (preset === 'feature') {
-          var wtId = 'wt-' + Date.now().toString(36);
-          var repo = $('dlg-grepo').value.trim() || M.repo;
-          var branch = $('dlg-gbranch').value.trim() || 'feature/' + name;
-          M.worktrees.push({ id: wtId, group: gid, repo: repo, name: name + '-hub', branch: branch, parent: null, dirty: false });
-          var sid = 's-' + Date.now().toString(36);
-          M.sessions.push({ id: sid, title: name + ' 관리', wt: wtId, group: gid, model: $('dlg-gmodel').value || M.models[0], state: 'running', started: now(), last: now(), tokens: 0, parent: null });
-          M.messages[sid] = [{ role: 'user', at: now(), text: $('dlg-gprompt').value || '(첫 프롬프트 없음)' }];
-          g.hubSessionId = sid;
-          state.chat = sid;
-          state.selected = { type: 'session', id: sid };
-        }
+        var wtId = 'wt-' + gid + '-hub';
+        M.worktrees.push({ id: wtId, group: gid, repo: 'hub', hub: true, name: name + '-hub', branch: $('dlg-gbranch').value || M.bases[0], parent: null, dirty: false, path: parentRepo });
+        var sid = 's-' + Date.now().toString(36);
+        M.sessions.push({ id: sid, title: name + ' 관리', wt: wtId, group: gid, model: $('dlg-gmodel').value || M.models[0], state: 'running', started: now(), last: now(), tokens: 0, parent: null });
+        M.messages[sid] = [{ role: 'user', at: now(), text: $('dlg-gprompt').value || '(첫 프롬프트 없음)' }];
+        g.hubSessionId = sid;
+        state.chat = sid;
+        state.selected = { type: 'session', id: sid };
         state.group = gid;
         renderBoard();
         toast('그룹 생성 — ' + name);
@@ -1698,12 +1711,14 @@
         actions.insertBefore(b, $('dlg-ok'));
       },
       body: '<label>그룹 이름<input id="dlg-gedit" value="' + esc(g.name) + '"></label>'
+        + '<label>부모 저장소<input id="dlg-grepo-edit" value="' + esc(g.parentRepo || '') + '"></label>'
         + '<label>메모<input id="dlg-gnote" value="' + esc(g.note || '') + '"></label>'
         + (g.hubSessionId ? '<p class="muted">허브 세션: ' + esc((byId(M.sessions, g.hubSessionId) || {}).title || '—') + '</p>' : '<p class="muted">허브 세션이 없습니다. 워크트리 상세에서 지정할 수 있습니다.</p>'),
       onOk: function () {
         var v = $('dlg-gedit').value.trim();
         if (!v) { toast('그룹 이름은 비울 수 없습니다'); return false; }
         g.name = v;
+        g.parentRepo = $('dlg-grepo-edit').value.trim() || g.parentRepo;
         g.note = $('dlg-gnote').value.trim();
         renderBoard();
         toast('그룹 저장 — ' + v);
@@ -1778,6 +1793,7 @@
       }).join('');
     }
     function body() {
+      var hub = hubWtOf(state.group);
       var head = (g ? '<p class="muted">' + esc(g.name) + ' 그룹에 추가합니다.</p>' : '');
       var tabs = '<div class="tabs">'
         + '<button type="button" class="tab' + (tab === 'new' ? ' is-active' : '') + '" data-tab="new">새 워크트리</button>'
@@ -1793,7 +1809,7 @@
           + '</div><div class="grid2">'
           + dfield('모델', '<select id="dlg-wtmodel">' + dopts(M.models, M.models[0]) + '</select>')
           + dfield('부모 워크트리', '<select id="dlg-parent"><option value="">없음 (루트로 추가)</option>'
-            + groupWtsOf(state.group).map(function (w) { return '<option value="' + w.id + '">' + esc(w.name) + ' · ' + esc(w.branch) + '</option>'; }).join('') + '</select>')
+            + groupWtsOf(state.group).map(function (w) { return '<option value="' + w.id + '"' + (hub && hub.id === w.id ? ' selected' : '') + '>' + esc(w.name) + ' · ' + esc(w.branch) + '</option>'; }).join('') + '</select>')
           + dfield('첫 프롬프트', '<textarea id="dlg-wtprompt" rows="2" placeholder="선택 · 입력하면 세션도 함께 만듭니다"></textarea>')
           + '</div>';
       }
@@ -1838,12 +1854,15 @@
         if (tab !== 'new') return true;
         var name = $('dlg-wt').value.trim();
         if (!name) { toast('이름을 입력하세요'); return false; }
+        if (!M.slug(name)) { toast('폴더로 쓸 수 있는 문자를 포함하세요'); return false; }
         var branch = $('dlg-wtbranch').value.trim() || 'feature/' + name;
         var id = 'wt-' + Date.now().toString(36);
         var parent = $('dlg-parent').value || null;
         var repo = $('dlg-wtrepo').value || state.repo;
         state.repo = repo;
-        M.worktrees.push({ id: id, group: state.group, repo: repo, name: name, branch: branch, parent: parent, dirty: false });
+        var grp = byId(M.groups, state.group);
+        var wtPath = ((grp && grp.parentRepo) || M.workspacesRoot) + '\\' + M.slug(name);
+        M.worktrees.push({ id: id, group: state.group, repo: repo, name: name, branch: branch, parent: parent, dirty: false, path: wtPath });
         var prompt = $('dlg-wtprompt').value.trim();
         if (prompt) {
           var sid = 's-' + Date.now().toString(36);
