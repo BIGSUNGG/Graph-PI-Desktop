@@ -144,6 +144,10 @@
   .grp.is-active .grp-head{color:var(--text)}
   .grp-head b{margin-left:auto;font-size:10px;font-weight:500;color:var(--dim)}
   .grp-head em{margin-left:6px;font-style:normal;font-size:9.5px;color:var(--dim);opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .grp-more{margin-left:auto;padding:0 3px;font-style:normal;font-size:12px;color:var(--dim);line-height:1}
+  .grp-more:hover{color:var(--text)}
+  .side-add{margin-left:4px;height:18px;padding:0 5px;border:1px solid var(--input-line);border-radius:6px;background:transparent;color:var(--muted);font-size:11px;line-height:1;cursor:pointer}
+  .side-add:hover{background:rgb(255 255 255 / .08);color:var(--text)}
   .grp-body{display:flex;flex-direction:column;gap:1px;padding:0 6px 6px}
   .grp.is-closed .grp-body{display:none}
   #graph{display:block;width:100%;height:auto;max-height:100%;min-height:0}
@@ -186,6 +190,12 @@
   .kv{display:grid;grid-template-columns:78px 1fr;gap:6px 10px;margin:14px 0 0;font-size:11.5px}
   .kv dt{color:var(--dim)} .kv dd{margin:0;color:var(--text)}
   .insp-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+  .insp-loop{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+  .insp-loop h3{display:flex;align-items:center;gap:6px;margin:0 0 8px;font-size:11px;font-weight:600;color:var(--muted)}
+  .insp-loop .loop-meta{margin:0 0 8px;font-size:10.5px;color:var(--dim)}
+  .insp-loop textarea,.insp-loop input{width:100%;font:inherit;font-size:11.5px;color:var(--text);background:var(--panel-2);border:1px solid var(--input-line);border-radius:8px;padding:6px 8px;resize:vertical}
+  .insp-loop .loop-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .insp-loop .loop-row .btn{flex:1 1 auto}
   .empty{padding:26px 6px;color:var(--dim);font-size:12px;text-align:center;line-height:1.7}
 
   /* ---------- chat ---------- */
@@ -267,7 +277,63 @@
   .dialog .dlg-body{display:flex;flex-direction:column;gap:9px;margin-bottom:16px}
   .dialog label{display:flex;flex-direction:column;gap:5px;font-size:10.5px;color:var(--dim)}
   .dialog .warn{padding:8px 10px;border:1px solid rgb(212 163 0 / .3);border-radius:8px;background:rgb(212 163 0 / .12);color:#f0d9a3;font-size:11.5px}
+  .dlg-presets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .dlg-preset{display:flex;flex-direction:column;gap:2px;padding:8px;border:1px solid var(--line);border-radius:9px;background:rgb(255 255 255 / .03);cursor:pointer;font-size:11px;text-align:left;color:var(--text)}
+  .dlg-preset.is-active{border-color:var(--accent);background:rgb(81 162 255 / .1)}
+  .dlg-preset b{font-size:11.5px}.dlg-preset span{font-size:9.5px;color:var(--dim)}
+  .dlg-tabs{display:flex;gap:2px;padding:2px;border:1px solid var(--line);border-radius:8px;background:rgb(255 255 255 / .03)}
+  .dlg-tab{flex:1;border:0;background:transparent;color:var(--muted);border-radius:6px;padding:5px;font-size:11px;cursor:pointer}
+  .dlg-tab.is-active{background:var(--panel-2);color:var(--text)}
+  .dlg-list{display:flex;flex-direction:column;gap:4px;max-height:180px;overflow:auto}
+  .dlg-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-size:11px}
+  .dlg-row .grow{flex:1;min-width:0}.dlg-row .mono{font-size:9.5px;color:var(--dim)}
+  .dlg-row .btn{height:24px;padding:0 8px;font-size:11px}
+  .dlg-row.is-off{opacity:.45}
   .dlg-actions{display:flex;justify-content:flex-end;gap:6px}
+  #dialog .dialog-wide{width:min(560px,94vw);max-height:82vh;overflow:auto}
+  #dialog .dialog-xl{width:min(980px,96vw);max-height:90vh;overflow:auto}
+  #dialog .wizard{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+  #dialog .wizard .card{border:0;background:transparent;padding:0}
+  #dialog .card-h{margin:0 0 8px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  #dialog .card-h.mt{margin-top:16px}
+  #dialog .preset-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  #dialog .preset{display:flex;flex-direction:column;gap:3px;padding:10px;border:1px solid var(--line);border-radius:10px;background:rgb(255 255 255 / .03);color:var(--text);text-align:left;cursor:pointer}
+  #dialog .preset:hover{border-color:var(--input-line)}
+  #dialog .preset.is-active{border-color:var(--accent);background:rgb(81 162 255 / .1)}
+  #dialog .preset .p-name{font-size:13px;font-weight:600}
+  #dialog .preset .p-desc{font-size:11px;color:var(--muted);line-height:1.5}
+  #dialog .preset .p-tag{font-size:9.5px;color:var(--dim)}
+  #dialog .preset.is-active .p-tag{color:var(--accent)}
+  #dialog .form{display:flex;flex-direction:column;gap:10px}
+  #dialog .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  #dialog .field{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:5px;font-size:10.5px;color:var(--dim);min-width:0;padding:0}
+  #dialog .field .lbl{font-size:10.5px;color:var(--dim)}
+  #dialog .field.err input{border-color:var(--red)}
+  #dialog .field .err-txt{font-size:10px;color:var(--red)}
+  #dialog .notice{display:flex;align-items:flex-start;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:rgb(255 255 255 / .03);font-size:11px;color:var(--muted);line-height:1.55}
+  #dialog .side-actions{display:flex;flex-direction:column;gap:6px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+  #dialog .hintx{font-size:10.5px;color:var(--dim);line-height:1.55;margin:8px 0 0}
+  #dialog .kv{margin:0}
+  #dialog .del-list{display:flex;flex-direction:column;gap:5px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:rgb(255 255 255 / .03)}
+  #dialog .del-item{display:flex;align-items:center;gap:6px;font-size:11.5px;flex-wrap:wrap}
+  #dialog .del-item b{font-weight:600}
+  #dialog .del-item .d{width:6px;height:6px;border-radius:50%;background:var(--dim);flex:0 0 auto}
+  #dialog .del-item .d.dirty{background:var(--amber)}
+  #dialog .pill.dirty .d{background:var(--amber)}
+  #dialog .pill.missing .d{background:var(--red)}
+  #dialog .stats{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+  #dialog .imp-row{display:flex;align-items:center;gap:8px;padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:rgb(255 255 255 / .03);font-size:11.5px;margin-bottom:6px}
+  #dialog .imp-row.is-blocked{opacity:.55}
+  #dialog .imp-main{min-width:0;flex:1}
+  #dialog .imp-name{font-size:12px}
+  #dialog .imp-meta{margin-top:2px;font-size:10px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #dialog .tabs{display:flex;gap:2px;padding:2px;border:1px solid var(--line);border-radius:9px;background:rgb(255 255 255 / .03);width:max-content;max-width:100%;margin-bottom:10px}
+  #dialog .tab{border:0;background:transparent;color:var(--muted);border-radius:7px;padding:4px 10px;font-size:11.5px;cursor:pointer;white-space:nowrap}
+  #dialog .tab:hover{background:rgb(255 255 255 / .06);color:var(--text)}
+  #dialog .tab.is-active{background:var(--panel-2);color:var(--text)}
+  #dialog .loop-actions{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+  #dialog .loop-actions .btn{height:27px;font-size:11.5px;padding:0 9px}
+  @media(max-width:760px){#dialog .wizard{grid-template-columns:1fr}#dialog .grid2{grid-template-columns:1fr}}
   .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);padding:8px 14px;border:1px solid rgb(255 255 255 / .1);border-radius:999px;background:rgb(23 23 23 / .97);box-shadow:var(--shadow-pop);font-size:12px;z-index:30}
 
   /* ---------- motion (선택된 시안) ---------- */
@@ -367,7 +433,7 @@
       <button class="nav-item" data-view="history"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path></svg>히스토리<b id="n-history">9</b></button>
     </nav>
     <div class="side-sec">
-      <div class="side-head">워크스페이스<span id="wt-count">3</span></div>
+      <div class="side-head">워크스페이스<span id="wt-count">3</span><button class="side-add" id="group-new" type="button" title="새 그룹">+</button></div>
       <div id="wt-list"></div>
     </div>
     <div class="side-foot">
@@ -456,6 +522,7 @@
 (function () {
   "use strict";
   var M = window.MOCK;
+  var LOOP_LABEL = { idle: "대기", running: "실행 중", waiting: "응답 대기", paused: "일시정지", done: "완료", stopped: "중단" };
   function $(id) { return document.getElementById(id); }
   function esc(t) {
     return String(t == null ? "" : t).replace(/&/g, "&amp;").replace(/</g, "&lt;")
@@ -501,28 +568,42 @@
   function groupWts(gid) {
     return M.worktrees.filter(function (w) { return w.group === gid; });
   }
+  function activeSessions() {
+    return M.sessions.filter(function (s) { return !s.removed; });
+  }
   function groupSessions(gid) {
     var ids = {};
     groupWts(gid).forEach(function (w) { ids[w.id] = 1; });
-    return M.sessions.filter(function (s) { return ids[s.wt]; });
+    return activeSessions().filter(function (s) { return ids[s.wt]; });
+  }
+  function descendants(wid) {
+    var out = [], queue = [wid];
+    while (queue.length) {
+      var cur = queue.shift();
+      M.worktrees.forEach(function (w) {
+        if (w.parent === cur && out.indexOf(w.id) < 0) { out.push(w.id); queue.push(w.id); }
+      });
+    }
+    return out;
   }
 
   function renderSidebar() {
     var rows = M.groups.map(function (g) {
       var wts = groupWts(g.id), closed = !!state.closed[g.id];
       var body = wts.map(function (w) {
-        var ss = M.sessions.filter(function (s) { return s.wt === w.id; });
+        var ss = activeSessions().filter(function (s) { return s.wt === w.id; });
         var st = ss.filter(function (s) { return s.state === "running"; }).length ? "running"
           : ss.filter(function (s) { return s.state === "failed"; }).length ? "failed" : "done";
         var sel = state.selected.type === "wt" && state.selected.id === w.id ? " is-sel" : "";
         return '<button class="wt-row' + sel + '" data-wt="' + w.id + '"><span class="d ' + st + '"></span>'
           + '<span class="wt-name">' + esc(w.repo) + ' · ' + esc(w.branch) + "</span>"
-          + (w.dirty ? '<span class="wt-meta">' + w.dirty + "</span>" : "") + "</button>";
+          + (w.dirty ? '<span class="wt-dirty">미커밋</span>' : "") + "</button>";
       }).join("");
       return '<div class="grp' + (closed ? " is-closed" : "") + (state.group === g.id ? " is-active" : "")
         + (state.openAnim === g.id ? " is-open-anim" : "") + (state.flash === g.id ? " is-flash" : "") + '">'
         + '<button class="grp-head" data-grp="' + g.id + '"><span class="chev">▾</span><span>' + esc(g.name) + "</span>"
         + '<em>' + esc(g.note) + "</em>"
+        + '<span class="grp-more" data-grp-edit="' + g.id + '" title="그룹 편집">⋯</span>'
         + "<b>" + wts.length + "</b></button>"
         + '<div class="grp-body">' + body + "</div></div>";
     }).join("");
@@ -538,6 +619,12 @@
         if (!state.closed[gid]) state.openAnim = gid;
         state.group = gid;
         renderBoard();
+      };
+    });
+    [].forEach.call($("wt-list").querySelectorAll("[data-grp-edit]"), function (b) {
+      b.onclick = function (e) {
+        e.stopPropagation();
+        groupEditDialog(b.getAttribute("data-grp-edit"));
       };
     });
     [].forEach.call($("wt-list").querySelectorAll("[data-wt]"), function (b) {
@@ -599,10 +686,15 @@
   function hubOf(wts) {
     var own = {}, best = null;
     wts.forEach(function (w) { own[w.id] = 1; });
-    M.sessions.forEach(function (s) {
+    var g = wts.length ? byId(M.groups, wts[0].group) : null;
+    if (g && g.hubSessionId) {
+      var h = byId(M.sessions, g.hubSessionId);
+      if (h && !h.removed) return h;
+    }
+    activeSessions().forEach(function (s) {
       if (!own[s.wt]) return;
       var spread = {};
-      M.sessions.forEach(function (k) {
+      activeSessions().forEach(function (k) {
         if (k.parent === s.id && k.wt !== s.wt && own[k.wt]) spread[k.wt] = 1;
       });
       if (Object.keys(spread).length >= 2) best = s;
@@ -612,7 +704,7 @@
 
   function rowsOf(wid, skip, startY) {
     var rows = [], y = startY;
-    M.sessions.filter(function (s) {
+    activeSessions().filter(function (s) {
       return s.wt === wid && s.id !== skip;
     }).sort(function (a, b) { return a.started < b.started ? -1 : 1; }).forEach(function (s) {
       var ags = M.agents.filter(function (a) { return a.session === s.id; });
@@ -641,6 +733,12 @@
   function renderBoard() {
     renderSidebar();
     var wts = groupWts(state.group);
+    if (!wts.length) {
+      setSvg($("graph"), '<text x="24" y="48" fill="#737373" font-size="12">빈 그룹 — 워크트리를 추가하세요.</text>');
+      $("n-board").textContent = "0";
+      renderInspector();
+      return;
+    }
     var rootWt = wts.filter(function (w) {
       return wts.some(function (x) { return x.parent === w.id; });
     })[0] || null;
@@ -690,7 +788,7 @@
     }
 
     function liveWt(wid) {
-      return M.sessions.some(function (s) { return s.wt === wid && s.state === "running"; });
+      return activeSessions().some(function (s) { return s.wt === wid && s.state === "running"; });
     }
 
     var hubX = G.pad, hubY = G.pad, hubW = totalW - G.pad * 2;
@@ -713,7 +811,7 @@
 
     var overlay = [];
     var bottomExtra = 0;
-    M.sessions.forEach(function (s) {
+    activeSessions().forEach(function (s) {
       var p = pos[s.id];
       if (!p) return;
       if (s.loop) {
@@ -760,7 +858,7 @@
       svg.push('<text x="' + (c.x + 12) + '" y="' + (c.y + 17) + '" fill="#737373" font-size="10">' + esc(c.wt.repo) + '</text>');
       svg.push('<text x="' + (c.x + 12) + '" y="' + (c.y + 33) + '" fill="#f0f0f0" font-size="12" font-weight="600">' + esc(c.wt.branch) + '</text>');
       svg.push('<text x="' + (c.x + c.w - 12) + '" y="' + (c.y + 33) + '" fill="#737373" font-size="9.5" text-anchor="end">'
-        + c.rows.length + " 세션" + (c.wt.dirty ? " · " + c.wt.dirty + " 미커밋" : "") + "</text>");
+        + c.rows.length + " 세션" + (c.wt.dirty ? " · 미커밋" : "") + "</text>");
       if (!c.rows.length) {
         svg.push('<text x="' + (c.x + c.w / 2) + '" y="' + (c.y + G.head + 16) + '" fill="#737373" font-size="10.5" text-anchor="middle">세션 없음</text>');
       }
@@ -798,7 +896,7 @@
     svg.push(overlay.join(""));
     $("graph").setAttribute("viewBox", "0 0 " + totalW + " " + (Math.max(maxBottom, bottomExtra) + G.pad));
     setSvg($("graph"), svg.join(""));
-    $("n-board").textContent = M.sessions.length;
+    $("n-board").textContent = activeSessions().length;
     renderInspector();
   }
 
@@ -808,15 +906,18 @@
       var wt = byId(M.worktrees, state.selected.id);
       if (!wt) { setHTML(box, '<p class="empty">선택된 항목이 없습니다.</p>'); return; }
       var parent = wt.parent ? byId(M.worktrees, wt.parent) : null;
+      var group = byId(M.groups, wt.group);
       setHTML(box,
         '<div class="insp-head"><h2>' + esc(wt.name) + '</h2><span class="pill">워크트리</span></div>'
         + '<dl class="kv"><dt>브랜치</dt><dd class="mono">' + esc(wt.branch) + "</dd>"
         + "<dt>상위</dt><dd>" + (parent ? esc(parent.name) : "—") + "</dd>"
-        + "<dt>미커밋</dt><dd>" + (wt.dirty ? wt.dirty + "개" : "없음") + "</dd>"
-        + "<dt>세션</dt><dd>" + M.sessions.filter(function (s) { return s.wt === wt.id; }).length + "개</dd></dl>"
+        + "<dt>미커밋</dt><dd>" + (wt.dirty ? "있음" : "없음") + "</dd>"
+        + "<dt>세션</dt><dd>" + activeSessions().filter(function (s) { return s.wt === wt.id; }).length + "개</dd></dl>"
         + '<div class="insp-actions">'
         + '<button class="btn" data-act="wt-rename">이름 수정</button>'
-        + '<button class="btn" data-act="wt-hide">숨김</button>'
+        + '<button class="btn" data-act="wt-parent">부모 변경</button>'
+        + (group && !group.hubSessionId ? '<button class="btn" data-act="wt-hub">허브로 지정</button>' : "")
+        + (wt.orcaMissing ? '<button class="btn" data-act="wt-orca">Orca 복구</button>' : "")
         + '<button class="btn danger" data-act="wt-del">삭제</button></div>');
       bindInspector();
       return;
@@ -824,10 +925,11 @@
     var s = byId(M.sessions, state.selected.id);
     if (!s) { setHTML(box, '<p class="empty">노드를 선택하면 세션 상세가 보입니다.</p>'); return; }
     var agents = M.agents.filter(function (a) { return a.session === s.id; });
+    var swt = byId(M.worktrees, s.wt);
     setHTML(box,
       '<div class="insp-head"><h2>' + esc(s.title) + "</h2>" + pill(s.state) + "</div>"
       + '<dl class="kv"><dt>모델</dt><dd class="mono">' + esc(s.model) + "</dd>"
-      + "<dt>워크트리</dt><dd>" + esc(byId(M.worktrees, s.wt).name) + "</dd>"
+      + "<dt>워크트리</dt><dd>" + esc((byId(M.worktrees, s.wt) || {}).name || s.wtName || s.wt) + "</dd>"
       + "<dt>시작</dt><dd>" + esc(s.started) + "</dd>"
       + "<dt>마지막 활동</dt><dd>" + esc(s.last) + "</dd>"
       + "<dt>토큰</dt><dd>" + s.tokens.toLocaleString() + "</dd>"
@@ -837,28 +939,84 @@
       + '<div class="insp-actions">'
       + '<button class="btn primary" data-act="resume">재개</button>'
       + '<button class="btn" data-act="stop">중단</button>'
-      + '<button class="btn" data-act="open-chat">채팅 열기</button></div>');
+      + '<button class="btn" data-act="open-chat">채팅 열기</button>'
+      + '<button class="btn" data-act="s-rename">이름 수정</button>'
+      + '<button class="btn danger" data-act="s-del">제거</button></div>' + (swt && swt.loop ? loopInspector(swt) : ""));
     bindInspector();
+  }
+
+  function loopInspector(wt) {
+    var L = wt.loop;
+    var st = L.status;
+    var cls = st === "running" || st === "waiting" ? "running" : st === "paused" ? "failed" : st === "done" ? "done" : "idle";
+    var head = '<h3>Loop <span class="pill ' + cls + '"><span class="d"></span>' + esc(LOOP_LABEL[st] || st) + "</span></h3>";
+    var startLabel = st === "running" ? "다음 회차" : st === "paused" ? "재개" : st === "stopped" ? "다시 시작" : "시작";
+    return '<section class="insp-loop">' + head
+      + '<p class="loop-meta">' + L.round + "/" + L.maxRounds + " 회차 · " + esc(L.lastEvent || "") + "</p>"
+      + '<textarea id="insp-loop-prompt" rows="2" placeholder="매 회차 보낼 프롬프트">' + esc(L.prompt || "") + "</textarea>"
+      + '<div class="loop-row"><input id="insp-loop-max" type="number" min="1" max="20" value="' + L.maxRounds + '" style="width:88px">'
+      + '<button class="btn" data-loop-save>저장</button></div>'
+      + '<div class="loop-row"><button class="btn primary" data-loop-act="start">' + startLabel + '</button>'
+      + '<button class="btn" data-loop-act="pause">일시정지</button>'
+      + '<button class="btn danger" data-loop-act="stop">중단</button></div></section>';
   }
 
   function bindInspector() {
     [].forEach.call($("inspector").querySelectorAll("[data-act]"), function (b) {
       b.onclick = function () {
         var act = b.getAttribute("data-act");
-        if (!state.orca && act !== "open-chat") return toast("Orca 연결이 없어 실행할 수 없습니다");
+        if (!state.orca && act !== "open-chat" && act !== "s-rename" && act !== "s-del") return toast("Orca 연결이 없어 실행할 수 없습니다");
         if (act === "resume") return toast("목업: 재개 명령은 실제로 보내지 않습니다");
         if (act === "stop") return toast("목업: 중단 명령은 실제로 보내지 않습니다");
         if (act === "open-chat") { state.chat = state.selected.id; return setView("chat"); }
-        if (act === "wt-rename") return renameDialog(state.selected.id);
-        if (act === "wt-hide") return toast("목업: 숨김은 목록에서만 사라집니다");
-        if (act === "wt-del") return deleteDialog(state.selected.id);
+        if (act === "wt-rename") return worktreeRenameDialog(state.selected.id);
+        if (act === "wt-parent") return worktreeParentDialog(state.selected.id);
+        if (act === "wt-hub") return hubStart(state.selected.id);
+        if (act === "wt-orca") return orcaDialog(state.selected.id);
+        if (act === "wt-del") return worktreeDeleteDialog(state.selected.id);
+        if (act === "s-rename") return sessionRenameDialog(state.selected.id);
+        if (act === "s-del") return sessionDeleteDialog(state.selected.id);
+      };
+    });
+
+    var selSess = state.selected.type === "session" ? byId(M.sessions, state.selected.id) : null;
+    var wt = selSess ? byId(M.worktrees, selSess.wt) : null;
+    var loopBox = $("inspector").querySelector(".insp-loop");
+    if (!wt || !wt.loop || !loopBox) return;
+    var read = function () {
+      var p = $("insp-loop-prompt").value.trim();
+      var max = Math.max(1, Math.min(20, parseInt($("insp-loop-max").value, 10) || 1));
+      if (!p) { toast("프롬프트를 입력하세요"); return null; }
+      return { prompt: p, maxRounds: max };
+    };
+    var save = function () {
+      var v = read();
+      if (!v) return;
+      wt.loop = wt.loop || { round: 0, status: "idle" };
+      wt.loop.prompt = v.prompt;
+      wt.loop.maxRounds = v.maxRounds;
+      wt.loop.lastEvent = now();
+      renderInspector();
+      renderBoard();
+      toast("Loop 저장 — " + wt.name);
+    };
+    var saveBtn = loopBox.querySelector("[data-loop-save]");
+    if (saveBtn) saveBtn.onclick = save;
+    [].forEach.call(loopBox.querySelectorAll("[data-loop-act]"), function (b) {
+      b.onclick = function () {
+        var act = b.getAttribute("data-loop-act");
+        wt.loop.status = act === "start" ? "running" : act === "pause" ? "paused" : "stopped";
+        wt.loop.lastEvent = now();
+        renderInspector();
+        renderBoard();
+        toast("Loop " + (act === "start" ? "시작" : act === "pause" ? "일시정지" : "중단") + " — " + wt.name);
       };
     });
   }
 
   /* ---------- chat ---------- */
   function renderChat() {
-    setHTML($("chat-list"), M.sessions.map(function (s) {
+    setHTML($("chat-list"), activeSessions().map(function (s) {
       return '<button class="chat-item ' + s.state + (s.id === state.chat ? " is-active" : "") + '" data-chat="' + s.id + '">'
         + '<span class="d"></span><span>' + esc(s.title) + "</span></button>";
     }).join(""));
@@ -875,20 +1033,23 @@
     }
     $("chat-who").textContent = s.title;
     var cp = $("chat-pill");
-    cp.className = "pill " + s.state;
-    setHTML(cp, '<span class="d"></span>' + (STATE_LABEL[s.state] || s.state));
-    setHTML($("chat-meta"), esc(short(s.model)) + " · " + esc(s.started) + "–" + esc(s.last) + " · " + s.tokens.toLocaleString() + " tok");
+    cp.className = "pill " + (s.removed ? "idle" : s.state);
+    setHTML(cp, '<span class="d"></span>' + (s.removed ? "삭제됨" : (STATE_LABEL[s.state] || s.state)));
+    setHTML($("chat-meta"), esc(short(s.model)) + " · " + esc(s.started) + "–" + esc(s.last) + " · " + (s.removed ? "기록" : s.tokens.toLocaleString() + " tok"));
 
     var msgs = M.messages[s.id] || [];
     var log = msgs.length ? msgs.map(msgHTML).join("") : '<p class="empty">저장된 메시지가 없습니다.</p>';
     setHTML($("chat-log"), log);
     $("chat-log").scrollTop = $("chat-log").scrollHeight;
 
-    $("chat-input").disabled = !state.orca;
-    $("chat-send").disabled = !state.orca;
-    $("chat-input").placeholder = state.orca
-      ? "프롬프트를 입력하세요 (Enter 전송 · Shift+Enter 줄바꿈)"
-      : "Orca 연결 없음 — 프롬프트를 보낼 수 없습니다";
+    var ro = !state.orca || s.removed;
+    $("chat-input").disabled = ro;
+    $("chat-send").disabled = ro;
+    $("chat-input").placeholder = s.removed
+      ? "삭제된 세션 — 기록만 표시합니다"
+      : state.orca
+        ? "프롬프트를 입력하세요 (Enter 전송 · Shift+Enter 줄바꿈)"
+        : "Orca 연결 없음 — 프롬프트를 보낼 수 없습니다";
     $("chat-status").textContent = "";
     $("chat-status").className = "status";
   }
@@ -908,7 +1069,7 @@
 
   function sendPrompt(text) {
     var s = byId(M.sessions, state.chat);
-    if (!s) return;
+    if (!s || s.removed) return;
     if (!M.messages[s.id]) M.messages[s.id] = [];
     M.messages[s.id].push({ role: "user", at: now(), text: text });
     renderChat();
@@ -988,7 +1149,7 @@
           + esc(hay.slice(i + state.query.length, i + state.query.length + 40)) + "…</div>";
       }
       return '<div class="h-row" data-open="' + s.id + '"><div><div class="h-title">' + esc(s.title) + "</div>"
-        + '<div class="h-meta">' + esc(byId(M.worktrees, s.wt).name) + " · " + esc(short(s.model)) + " · " + esc(s.started) + "–" + esc(s.last) + "</div>"
+        + '<div class="h-meta">' + esc(s.wtName || (byId(M.worktrees, s.wt) || {}).name || s.wt) + " · " + esc(short(s.model)) + " · " + esc(s.started) + "–" + esc(s.last) + (s.removed ? ' · <span class="hit">삭제됨</span>' : "") + "</div>"
         + hit + '</div><div class="h-tok">' + s.tokens.toLocaleString() + " tok</div></div>";
     }).join("") || '<p class="empty">조건에 맞는 세션이 없습니다.</p>');
     [].forEach.call($("history-list").querySelectorAll("[data-open]"), function (b) {
@@ -1029,10 +1190,12 @@
   /* ---------- dialogs ---------- */
   function openDialog(opts) {
     $("dlg-title").textContent = opts.title;
+    $("dialog").querySelector(".dialog").className = "dialog" + (opts.size ? " " + opts.size : "");
     setHTML($("dlg-body"), opts.body);
     var ok = $("dlg-ok");
     ok.textContent = opts.okLabel || "확인";
     ok.className = "btn " + (opts.danger ? "danger" : "primary");
+    [].forEach.call($("dlg-ok").parentNode.querySelectorAll(".dlg-extra"), function (x) { x.remove(); });
     $("dialog").classList.remove("hidden");
     $("dlg-cancel").onclick = closeDialog;
     ok.onclick = function () {
@@ -1081,7 +1244,7 @@
     });
   }
 
-  function worktreeDialog() {
+  function _oldWorktreeDialog() {
     openDialog({
       title: "워크트리 생성",
       okLabel: "생성",
@@ -1101,28 +1264,515 @@
   }
 
   function newSessionDialog() {
+    var wts = groupWtsOf(state.group);
+    if (!wts.length) { toast("그룹에 워크트리가 없습니다. 먼저 워크트리를 추가하세요"); return; }
     openDialog({
       title: "새 Pi 세션",
       okLabel: "시작",
       body: "<label>워크트리<select id=\"dlg-swt\">"
-        + M.worktrees.map(function (w) { return '<option value="' + w.id + '">' + esc(w.name) + "</option>"; }).join("")
+        + wts.map(function (w) { return '<option value="' + w.id + '">' + esc(w.name) + "</option>"; }).join("")
         + "</select></label>"
         + '<label>이름 (선택)<input id="dlg-stitle" placeholder="비우면 첫 프롬프트로 짓습니다"></label>'
-        + '<label>모델<select id="dlg-smodel"><option>anthropic/claude-sonnet-4.5</option><option>openai/gpt-5</option></select></label>'
+        + '<label>모델<select id="dlg-smodel">' + M.models.map(function (m) { return "<option>" + esc(m) + "</option>"; }).join("") + "</select></label>"
         + '<label>첫 프롬프트<textarea id="dlg-sprompt" rows="3" placeholder="무엇을 할까요?"></textarea></label>',
       onOk: function () {
         if (!state.orca) { toast("Orca 연결이 없어 세션을 시작할 수 없습니다"); return false; }
         var t = $("dlg-stitle").value.trim() || "새 세션";
-        var id = "s-" + (M.sessions.length + 1) + "-" + Date.now().toString().slice(-3);
+        var wt = byId(M.worktrees, $("dlg-swt").value);
+        if (!wt) { toast("워크트리를 선택하세요"); return false; }
+        var id = "s-" + Date.now().toString(36);
         M.sessions.push({
-          id: id, title: t, wt: $("dlg-swt").value, model: $("dlg-smodel").value,
-          state: "running", started: now(), last: now(), tokens: 0, parent: null,
-          group: (M.worktrees.filter(function (w) { return w.id === $("dlg-swt").value; })[0] || {}).group || state.group
+          id: id, title: t, wt: wt.id, model: $("dlg-smodel").value,
+          state: "running", started: now(), last: now(), tokens: 0, parent: null, group: wt.group
         });
         M.messages[id] = [{ role: "user", at: now(), text: $("dlg-sprompt").value || "(첫 프롬프트 없음)" }];
+        state.chat = id;
         state.selected = { type: "session", id: id };
         renderBoard();
         toast("세션 시작 — " + t + " (목업)");
+      }
+    });
+  }
+
+  /* ---------- group / worktree dialogs ---------- */
+  var PRESET_INFO = {
+    feature: { name: 'Feature', desc: '관리 부모 + 기능 자식' },
+    loop: { name: 'Loop', desc: '감시 부모 + 반복 자식' },
+    manual: { name: 'Manual', desc: '부모를 직접 구성' }
+  };
+
+  function groupWtsOf(gid) {
+    return M.worktrees.filter(function (w) { return w.group === gid; });
+  }
+
+  function dfield(label, control) { return '<label class="field"><span class="lbl">' + label + '</span>' + control + '</label>'; }
+  function dopts(list, selected) { return list.map(function (v) { return '<option' + (v === selected ? ' selected' : '') + '>' + esc(v) + '</option>'; }).join(''); }
+
+  function groupCreateDialog() {
+    var preset = 'feature';
+    var draft = { name: '', error: '' };
+
+    function previewHTML() {
+      var isFeature = preset === 'feature';
+      return '<dl class="kv">'
+        + '<dt>프리셋</dt><dd>' + esc(PRESET_INFO[preset].name) + '</dd>'
+        + '<dt>이름</dt><dd id="dlg-preview-name">' + (draft.name.trim() ? esc(draft.name.trim()) : '<span class="muted">아직 없음</span>') + '</dd>'
+        + '<dt>시작 상태</dt><dd>' + (isFeature ? '부모 워크트리 + 세션' : '빈 그룹') + '</dd>'
+        + '<dt>워크트리</dt><dd>' + (isFeature ? '1개' : '0개') + '</dd>'
+        + '</dl>';
+    }
+
+    function body() {
+      var isFeature = preset === 'feature';
+      var presets = Object.keys(PRESET_INFO).map(function (k) {
+        return '<button type="button" class="preset' + (k === preset ? ' is-active' : '') + '" data-preset="' + k + '">'
+          + '<span class="p-name">' + PRESET_INFO[k].name + '</span>'
+          + '<span class="p-desc">' + PRESET_INFO[k].desc + '</span>'
+          + '<span class="p-tag">' + (k === preset ? '선택됨' : '선택') + '</span></button>';
+      }).join('');
+      var fields = isFeature
+        ? '<div class="grid2">'
+          + dfield('부모 저장소', '<select id="dlg-grepo">' + dopts([M.repo, 'orca-main'], M.repo) + '</select>')
+          + dfield('브랜치', '<input id="dlg-gbranch" placeholder="비우면 feature/&lt;그룹 이름&gt;">')
+          + '</div>'
+          + '<div class="grid2">'
+          + dfield('모델', '<select id="dlg-gmodel">' + dopts(M.models, M.models[0]) + '</select>')
+          + dfield('첫 프롬프트', '<input id="dlg-gprompt" placeholder="부모 세션에 보낼 첫 지시">')
+          + '</div>'
+          + '<div class="notice"><span class="pill hub">허브</span><span>부모 워크트리와 세션을 함께 시작합니다. 자식 워크트리는 보드에서 추가합니다.</span></div>'
+        : '<div class="notice"><span class="pill">빈 그룹</span><span>빈 그룹으로 시작합니다. 워크트리는 보드에서 직접 추가합니다.</span></div>';
+      var nameField = '<label class="field' + (draft.error ? ' err' : '') + '"><span class="lbl">그룹 이름</span>'
+        + '<input id="dlg-gname" value="' + esc(draft.name) + '" placeholder="예: 결제 리팩터링">'
+        + (draft.error ? '<span class="err-txt">' + esc(draft.error) + '</span>' : '')
+        + '</label>';
+      return '<div class="wizard"><section class="card">'
+        + '<h2 class="card-h">프리셋</h2><div class="preset-grid">' + presets + '</div>'
+        + '<h2 class="card-h mt">그룹 정보</h2><div class="form">' + nameField + fields + '</div>'
+        + '</section><aside class="panel"><h3>미리보기</h3>' + previewHTML()
+        + '<div class="side-actions"><button type="button" class="btn" id="dlg-gdup">중복 이름 예시</button></div>'
+        + '<p class="hintx">중복 이름 예시를 누르면 이름 필드에 인라인 오류가 표시됩니다.</p>'
+        + '</aside></div>';
+    }
+
+    function bind() {
+      [].forEach.call($('dlg-body').querySelectorAll('[data-preset]'), function (b) {
+        b.onclick = function () {
+          var n = $('dlg-gname');
+          if (n) draft.name = n.value;
+          preset = b.getAttribute('data-preset');
+          draft.error = '';
+          setHTML($('dlg-body'), body());
+          bind();
+        };
+      });
+      var n = $('dlg-gname');
+      if (n) n.oninput = function () {
+        draft.name = n.value;
+        var p = $('dlg-preview-name');
+        if (p) setHTML(p, draft.name.trim() ? esc(draft.name.trim()) : '<span class="muted">아직 없음</span>');
+      };
+      var dup = $('dlg-gdup');
+      if (dup) dup.onclick = function () {
+        var first = M.groups[0];
+        draft.name = first ? first.name : '로그인 기능';
+        draft.error = '이미 있는 그룹 이름입니다.';
+        setHTML($('dlg-body'), body());
+        bind();
+      };
+    }
+
+    openDialog({
+      title: '새 그룹',
+      size: 'dialog-xl',
+      okLabel: '그룹 만들기',
+      body: body(),
+      onOpen: bind,
+      onOk: function () {
+        var name = $('dlg-gname').value.trim();
+        if (!name) { draft.name = ''; draft.error = '그룹 이름을 입력하세요.'; setHTML($('dlg-body'), body()); bind(); return false; }
+        if (M.groups.some(function (g) { return g.name === name; })) { draft.name = name; draft.error = '이미 있는 그룹 이름입니다.'; setHTML($('dlg-body'), body()); bind(); return false; }
+        var gid = 'g-' + Date.now().toString(36);
+        var g = { id: gid, name: name, note: '새 그룹', hubSessionId: null };
+        M.groups.push(g);
+        if (preset === 'feature') {
+          var wtId = 'wt-' + Date.now().toString(36);
+          var repo = $('dlg-grepo').value.trim() || M.repo;
+          var branch = $('dlg-gbranch').value.trim() || 'feature/' + name;
+          M.worktrees.push({ id: wtId, group: gid, repo: repo, name: name + '-hub', branch: branch, parent: null, dirty: false });
+          var sid = 's-' + Date.now().toString(36);
+          M.sessions.push({ id: sid, title: name + ' 관리', wt: wtId, group: gid, model: $('dlg-gmodel').value || M.models[0], state: 'running', started: now(), last: now(), tokens: 0, parent: null });
+          M.messages[sid] = [{ role: 'user', at: now(), text: $('dlg-gprompt').value || '(첫 프롬프트 없음)' }];
+          g.hubSessionId = sid;
+          state.chat = sid;
+          state.selected = { type: 'session', id: sid };
+        }
+        state.group = gid;
+        renderBoard();
+        toast('그룹 생성 — ' + name);
+      }
+    });
+  }
+
+  function groupEditDialog(gid) {
+    var g = byId(M.groups, gid);
+    if (!g) return;
+    openDialog({
+      title: '그룹 편집',
+      okLabel: '저장',
+      onOpen: function () {
+        var b = document.createElement('button');
+        b.className = 'btn danger dlg-extra';
+        b.textContent = '그룹 삭제';
+        b.onclick = function () { closeDialog(); groupDeleteDialog(gid); };
+        var actions = $('dlg-ok').parentNode;
+        actions.insertBefore(b, $('dlg-ok'));
+      },
+      body: '<label>그룹 이름<input id="dlg-gedit" value="' + esc(g.name) + '"></label>'
+        + '<label>메모<input id="dlg-gnote" value="' + esc(g.note || '') + '"></label>'
+        + (g.hubSessionId ? '<p class="muted">허브 세션: ' + esc((byId(M.sessions, g.hubSessionId) || {}).title || '—') + '</p>' : '<p class="muted">허브 세션이 없습니다. 워크트리 상세에서 지정할 수 있습니다.</p>'),
+      onOk: function () {
+        var v = $('dlg-gedit').value.trim();
+        if (!v) { toast('그룹 이름은 비울 수 없습니다'); return false; }
+        g.name = v;
+        g.note = $('dlg-gnote').value.trim();
+        renderBoard();
+        toast('그룹 저장 — ' + v);
+      }
+    });
+  }
+
+  function groupDeleteDialog(gid) {
+    var g = byId(M.groups, gid);
+    if (!g) return;
+    var wts = groupWtsOf(gid);
+    var names = {};
+    var wtIds = {};
+    wts.forEach(function (w) { names[w.id] = w.name; wtIds[w.id] = 1; });
+    var sess = activeSessions().filter(function (s) { return s.group === gid || wtIds[s.wt]; });
+    var running = sess.filter(function (s) { return s.state === 'running'; }).length;
+    var dirty = wts.filter(function (w) { return w.dirty; }).length;
+    var rows = wts.map(function (w) {
+      return '<div class="del-item"><span class="d' + (w.dirty ? ' dirty' : '') + '"></span><b>' + esc(w.name) + '</b>'
+        + '<span class="mono muted">' + esc(w.branch) + '</span>'
+        + (w.dirty ? '<span class="pill dirty"><span class="d"></span>미커밋</span>' : '')
+        + (w.orcaMissing ? '<span class="pill missing"><span class="d"></span>없음</span>' : '')
+        + '</div>';
+    }).join('');
+    openDialog({
+      title: '그룹 삭제',
+      size: 'dialog-wide',
+      okLabel: '삭제',
+      danger: true,
+      body: '<p><b>' + esc(g.name) + '</b> 그룹을 삭제할까요?</p>'
+        + '<p>이 그룹의 워크트리 ' + wts.length + '개가 Orca에서 함께 삭제됩니다. 세션 기록은 히스토리에 남습니다.</p>'
+        + '<div class="del-list">' + (rows || '<span class="muted">워크트리 없음</span>') + '</div>'
+        + '<div class="stats"><span class="pill running"><span class="d"></span>실행 중 세션 ' + running + '개</span>'
+        + '<span class="pill dirty"><span class="d"></span>미커밋 변경 ' + dirty + '개</span>'
+        + '<span class="pill"><span class="d"></span>세션 ' + sess.length + '개</span></div>'
+        + (running ? '<div class="warn">실행 중인 세션이 ' + running + '개 있습니다. 먼저 중단하지 않으면 응답이 끊길 수 있습니다.</div>' : '')
+        + (dirty ? '<div class="warn">미커밋 변경이 있는 워크트리 ' + dirty + '개. 삭제하면 변경 내용이 사라집니다.</div>' : ''),
+      onOk: function () {
+        if (!state.orca) { toast('Orca 연결이 없어 삭제할 수 없습니다'); return false; }
+        M.worktrees = M.worktrees.filter(function (w) { return !wtIds[w.id]; });
+        M.sessions.forEach(function (s) {
+          if (wtIds[s.wt]) { s.removed = true; s.state = 'idle'; s.wtName = names[s.wt] || s.wt; }
+        });
+        M.groups = M.groups.filter(function (x) { return x.id !== gid; });
+        var left = M.groups[0];
+        state.group = left ? left.id : null;
+        state.chat = (activeSessions()[0] || {}).id || null;
+        state.selected = { type: 'session', id: state.chat };
+        renderBoard();
+        toast('그룹 삭제 — ' + g.name);
+      }
+    });
+  }
+
+  function worktreeDialog() {
+    if (!state.group) { toast('그룹을 먼저 선택하세요'); return; }
+    var tab = 'new';
+    var g = byId(M.groups, state.group);
+    function importList() {
+      if (!M.orcaOnly.length) return '<p class="empty">불러올 워크트리가 없습니다.</p>';
+      return M.orcaOnly.map(function (o) {
+        var blocked = !!o.blockedBy;
+        var reason = blocked ? esc(o.note || ('다른 그룹(' + o.blockedBy + ')에 이미 있음')) : '';
+        return '<div class="imp-row' + (blocked ? ' is-blocked' : '') + '">'
+          + '<div class="imp-main"><div class="imp-name">' + esc(o.name) + '</div>'
+          + '<div class="imp-meta">' + esc(o.repo) + ' · <span class="mono">' + esc(o.branch) + '</span> · ' + esc(o.recent)
+          + (reason ? ' · ' + reason : '') + '</div></div>'
+          + (blocked ? '<button type="button" class="btn" disabled title="' + esc(o.blockedBy) + ' 그룹 소속">불가</button>'
+            : '<button type="button" class="btn" data-import-btn="' + esc(o.id) + '">불러오기</button>')
+          + '</div>';
+      }).join('');
+    }
+    function body() {
+      var head = (g ? '<p class="muted">' + esc(g.name) + ' 그룹에 추가합니다.</p>' : '');
+      var tabs = '<div class="tabs">'
+        + '<button type="button" class="tab' + (tab === 'new' ? ' is-active' : '') + '" data-tab="new">새 워크트리</button>'
+        + '<button type="button" class="tab' + (tab === 'import' ? ' is-active' : '') + '" data-tab="import">기존 불러오기</button></div>';
+      if (tab === 'new') {
+        return head + tabs + '<div class="form">'
+          + '<div class="grid2">'
+          + dfield('이름', '<input id="dlg-wt" placeholder="예: billing-api">')
+          + dfield('브랜치', '<input id="dlg-wtbranch" placeholder="비우면 feature/&lt;이름&gt;">')
+          + '</div><div class="grid2">'
+          + dfield('베이스 브랜치', '<select id="dlg-wtbase">' + dopts(M.bases || ['main'], '') + '</select>')
+          + dfield('모델', '<select id="dlg-wtmodel">' + dopts(M.models, M.models[0]) + '</select>')
+          + '</div>'
+          + dfield('부모 워크트리', '<select id="dlg-parent"><option value="">없음 (루트로 추가)</option>'
+            + groupWtsOf(state.group).map(function (w) { return '<option value="' + w.id + '">' + esc(w.name) + ' · ' + esc(w.branch) + '</option>'; }).join('') + '</select>')
+          + dfield('첫 프롬프트', '<textarea id="dlg-wtprompt" rows="2" placeholder="선택 · 입력하면 세션도 함께 만듭니다"></textarea>')
+          + '</div>';
+      }
+      return head + tabs + '<p class="muted">Orca 워크트리 · 이미 다른 그룹에 있으면 불러올 수 없습니다.</p>' + importList();
+    }
+    function bind() {
+      var ok = $('dlg-ok');
+      if (ok) ok.textContent = tab === 'new' ? '추가' : '닫기';
+      [].forEach.call($('dlg-body').querySelectorAll('[data-tab]'), function (b) {
+        b.onclick = function () { tab = b.getAttribute('data-tab'); setHTML($('dlg-body'), body()); bind(); };
+      });
+      [].forEach.call($('dlg-body').querySelectorAll('[data-import-btn]'), function (b) {
+        b.onclick = function () {
+          var o = byId(M.orcaOnly, b.getAttribute('data-import-btn'));
+          if (!o) return;
+          M.worktrees.push({ id: o.id, group: state.group, repo: o.repo, name: o.name, branch: o.branch, parent: null, dirty: false });
+          M.orcaOnly = M.orcaOnly.filter(function (x) { return x.id !== o.id; });
+          closeDialog();
+          renderBoard();
+          toast('불러오기 — ' + o.name);
+        };
+      });
+    }
+    openDialog({
+      title: '워크트리 추가',
+      size: 'dialog-wide',
+      okLabel: '추가',
+      body: body(),
+      onOpen: bind,
+      onOk: function () {
+        if (tab !== 'new') return true;
+        var name = $('dlg-wt').value.trim();
+        if (!name) { toast('이름을 입력하세요'); return false; }
+        var branch = $('dlg-wtbranch').value.trim() || 'feature/' + name;
+        var id = 'wt-' + Date.now().toString(36);
+        var parent = $('dlg-parent').value || null;
+        M.worktrees.push({ id: id, group: state.group, repo: M.repo, name: name, branch: branch, parent: parent, dirty: false });
+        var prompt = $('dlg-wtprompt').value.trim();
+        if (prompt) {
+          var sid = 's-' + Date.now().toString(36);
+          M.sessions.push({ id: sid, title: name, wt: id, group: state.group, model: $('dlg-wtmodel').value || M.models[0], state: 'running', started: now(), last: now(), tokens: 0, parent: null });
+          M.messages[sid] = [{ role: 'user', at: now(), text: prompt }];
+          state.chat = sid;
+          state.selected = { type: 'session', id: sid };
+        }
+        renderBoard();
+        toast('워크트리 생성 — ' + name);
+      }
+    });
+  }
+
+  function worktreeRenameDialog(wid) {
+    var wt = byId(M.worktrees, wid);
+    if (!wt) return;
+    openDialog({
+      title: '워크트리 이름 수정',
+      okLabel: '저장',
+      body: '<label>표시 이름<input id="dlg-name" value="' + esc(wt.name) + '"></label>'
+        + '<label>메모<input id="dlg-note" placeholder="선택 사항"></label>',
+      onOk: function () {
+        var v = $('dlg-name').value.trim();
+        if (!v) { toast('이름은 비울 수 없습니다'); return false; }
+        wt.name = v;
+        renderBoard();
+        toast('이름 저장 — ' + v);
+      }
+    });
+  }
+
+  function worktreeDeleteDialog(wid) {
+    var wt = byId(M.worktrees, wid);
+    if (!wt) return;
+    var kids = M.worktrees.filter(function (w) { return w.parent === wid; });
+    var n = activeSessions().filter(function (s) { return s.wt === wid; }).length;
+    openDialog({
+      title: '워크트리 삭제',
+      okLabel: '삭제',
+      danger: true,
+      body: '<p><b>' + esc(wt.name) + '</b> 를 삭제합니다. 이 동작은 되돌릴 수 없습니다.</p>'
+        + '<div class="warn">Orca에서도 삭제됩니다. 세션 기록은 히스토리에 남습니다.</div>'
+        + '<p class="muted">세션 ' + n + '개' + (kids.length ? ' · 자식 ' + kids.length + '개는 최상위로 이동' : '') + '</p>'
+        + (wt.dirty ? '<div class="warn">미커밋 변경이 있습니다. 삭제하면 변경 내용이 사라집니다.</div>' : ''),
+      onOk: function () {
+        if (!state.orca) { toast('Orca 연결이 없어 삭제할 수 없습니다'); return false; }
+        var name = wt.name;
+        kids.forEach(function (k) { k.parent = wt.parent || null; });
+        M.worktrees = M.worktrees.filter(function (w) { return w.id !== wid; });
+        M.sessions.forEach(function (s) {
+          if (s.wt === wid) { s.removed = true; s.state = 'idle'; s.wtName = name; }
+        });
+        var g = byId(M.groups, wt.group);
+        if (g && g.hubSessionId) {
+          var h = byId(M.sessions, g.hubSessionId);
+          if (h && h.removed) g.hubSessionId = null;
+        }
+        state.chat = (activeSessions()[0] || {}).id || null;
+        state.selected = { type: 'session', id: state.chat };
+        renderBoard();
+        toast('삭제 완료 — ' + name);
+      }
+    });
+  }
+
+  function worktreeParentDialog(wid) {
+    var wt = byId(M.worktrees, wid);
+    if (!wt) return;
+    var blocked = [wid].concat(descendants(wid));
+    var opts = M.worktrees.filter(function (w) { return w.group === wt.group && blocked.indexOf(w.id) < 0; });
+    openDialog({
+      title: '부모 변경',
+      okLabel: '저장',
+      body: '<label>상위 워크트리<select id="dlg-parent"><option value="">없음 (최상위)</option>'
+        + opts.map(function (w) { return '<option value="' + w.id + '"' + (w.id === wt.parent ? ' selected' : '') + '>' + esc(w.name) + '</option>'; }).join('')
+        + '</select></label>'
+        + '<p class="muted">자기 자신과 하위 워크트리는 부모로 선택할 수 없습니다.</p>',
+      onOk: function () {
+        wt.parent = $('dlg-parent').value || null;
+        renderBoard();
+        toast('부모 변경 — ' + wt.name);
+      }
+    });
+  }
+
+  function sessionRenameDialog(sid) {
+    var s = byId(M.sessions, sid);
+    if (!s) return;
+    openDialog({
+      title: "세션 이름 수정",
+      okLabel: "저장",
+      body: '<label>이름<input id="dlg-stitle" value="' + esc(s.title) + '"></label>',
+      onOk: function () {
+        var v = $("dlg-stitle").value.trim();
+        if (!v) { toast("이름은 비울 수 없습니다"); return false; }
+        s.title = v;
+        renderBoard();
+        toast("이름 저장 — " + v);
+      }
+    });
+  }
+
+  function sessionDeleteDialog(sid) {
+    var s = byId(M.sessions, sid);
+    if (!s) return;
+    openDialog({
+      title: "세션 제거",
+      okLabel: "제거",
+      danger: true,
+      body: "<p><b>" + esc(s.title) + "</b> 세션을 제거합니다.</p>"
+        + '<div class="warn">보드와 채팅에서 사라지고, 히스토리에는 기록이 남습니다.</div>'
+        + '<p class="muted">워크트리와 파일은 유지됩니다.</p>',
+      onOk: function () {
+        s.removed = true;
+        s.state = "idle";
+        s.wtName = (byId(M.worktrees, s.wt) || {}).name || s.wt;
+        state.chat = (activeSessions()[0] || {}).id || null;
+        state.selected = { type: "session", id: state.chat };
+        renderBoard();
+        toast("세션 제거 — " + s.title);
+      }
+    });
+  }
+
+  function loopDialog(wid) {
+    var wt = byId(M.worktrees, wid);
+    if (!wt) return;
+    var loop = wt.loop || { prompt: "", maxRounds: 3, round: 0, status: "idle" };
+    var startLabel = loop.status === "running" ? "다음 회차" : loop.status === "paused" ? "재개" : loop.status === "stopped" ? "다시 시작" : "시작";
+    openDialog({
+      title: "Loop 설정",
+      size: "dialog-wide",
+      okLabel: "저장",
+      body: '<div class="form">'
+        + dfield('프롬프트', '<textarea id="dlg-lprompt" rows="3" placeholder="매 회차 보낼 프롬프트">' + esc(loop.prompt || "") + '</textarea>')
+        + dfield('최대 회차', '<input id="dlg-lmax" type="number" min="1" max="20" value="' + loop.maxRounds + '">')
+        + '</div>'
+        + '<p class="muted">현재 ' + loop.round + "/" + loop.maxRounds + " 회차 · " + esc(loop.status) + "</p>"
+        + (wt.loop ? '<div class="loop-actions"><button type="button" class="btn primary" data-loop-act="start">' + startLabel + '</button>'
+          + '<button type="button" class="btn" data-loop-act="pause">일시정지</button>'
+          + '<button type="button" class="btn danger" data-loop-act="stop">중단</button></div>' : '')
+        + '<p class="muted">응답이 끝나면 다음 회차를 보냅니다. 30분 무응답이면 1회 재시도 후 일시정지합니다.</p>',
+      onOpen: function () {
+        [].forEach.call($("dlg-body").querySelectorAll("[data-loop-act]"), function (b) {
+          b.onclick = function () {
+            var act = b.getAttribute("data-loop-act");
+            wt.loop.status = act === "start" ? "running" : act === "pause" ? "paused" : "stopped";
+            wt.loop.lastEvent = now();
+            closeDialog();
+            renderBoard();
+            toast("Loop " + (act === "start" ? "시작" : act === "pause" ? "일시정지" : "중단") + " — " + wt.name);
+          };
+        });
+      },
+      onOk: function () {
+        var p = $("dlg-lprompt").value.trim();
+        if (!p) { toast("프롬프트를 입력하세요"); return false; }
+        var max = Math.max(1, Math.min(20, parseInt($("dlg-lmax").value, 10) || 1));
+        wt.loop = { prompt: p, maxRounds: max, round: loop.round, status: loop.status, lastEvent: now() };
+        renderBoard();
+        toast("Loop 저장 — " + wt.name);
+      }
+    });
+  }
+
+  function hubStart(wid) {
+    var wt = byId(M.worktrees, wid);
+    var g = wt ? byId(M.groups, wt.group) : null;
+    if (!wt || !g) return;
+    if (g.hubSessionId) {
+      var h = byId(M.sessions, g.hubSessionId);
+      if (h && !h.removed) { toast("이미 허브 세션이 있습니다"); return; }
+      g.hubSessionId = null;
+    }
+    var id = "s-" + Date.now().toString(36);
+    M.sessions.push({ id: id, title: wt.name + " 허브", wt: wid, group: g.id, model: M.models[0], state: "idle", started: now(), last: now(), tokens: 0, parent: null });
+    M.messages[id] = [{ role: "user", at: now(), text: "허브 세션을 시작했습니다. 자식 세션을 조율합니다." }];
+    g.hubSessionId = id;
+    state.chat = id;
+    state.selected = { type: "session", id: id };
+    renderBoard();
+    toast("허브 세션 시작 — " + wt.name);
+  }
+
+  function orcaDialog(wid) {
+    var wt = byId(M.worktrees, wid);
+    if (!wt) return;
+    openDialog({
+      title: "Orca 불일치",
+      size: "dialog-wide",
+      okLabel: "다시 만들기",
+      body: '<div class="notice"><span class="pill missing"><span class="d"></span>없음</span><span>Orca에서 <b>' + esc(wt.name) + '</b> 워크트리를 찾을 수 없습니다. 다시 만들면 같은 이름·브랜치로 새 워크트리를 만듭니다. 그룹에서 제거하면 보드 기록만 정리합니다.</span></div>',
+      onOk: function () {
+        wt.orcaMissing = false;
+        renderBoard();
+        toast("다시 만들기 — " + wt.name);
+      },
+      onOpen: function () {
+        var b = document.createElement("button");
+        b.className = "btn danger dlg-extra";
+        b.textContent = "그룹에서 제거";
+        b.onclick = function () {
+          var name = wt.name;
+          M.worktrees = M.worktrees.filter(function (w) { return w.id !== wid; });
+          M.sessions.forEach(function (s) { if (s.wt === wid) { s.removed = true; s.state = "idle"; s.wtName = name; } });
+          state.chat = (activeSessions()[0] || {}).id || null;
+          state.selected = { type: "session", id: state.chat };
+          closeDialog();
+          renderBoard();
+          toast("그룹에서 제거 — " + name);
+        };
+        var actions = $("dlg-ok").parentNode;
+        actions.appendChild(b);
       }
     });
   }
@@ -1191,6 +1841,7 @@
     if (e.key === "Escape" && !$("dialog").classList.contains("hidden")) closeDialog();
   });
 
+  $("group-new").onclick = groupCreateDialog;
   banner();
   setView("board");
 })();

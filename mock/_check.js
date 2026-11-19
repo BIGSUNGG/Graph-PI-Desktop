@@ -75,6 +75,9 @@ if (!/MOTION\.allLive\(\[topLive, liveWt\(c\.wt\.id\)\]\)/.test(js)) errs.push('
 if (!/class="loop-arc"[^;]*?marker-end="url\(#arwl\)"/.test(js)) errs.push('loop arc with marker-end missing');
 if (html.includes('function liveEdge')) errs.push('unused liveEdge still defined inline');
 if (!/<script src="\.\/motion\.js"><\/script>/.test(html)) errs.push('motion.js not loaded');
+
+for (const c of ['#dialog .dialog-wide', '#dialog .dialog-xl', '#dialog .wizard', '#dialog .preset-grid', '#dialog .preset', '#dialog .preset .p-name', '#dialog .preset .p-desc', '#dialog .preset .p-tag', '.panel', '#dialog .kv', '#dialog .side-actions', '#dialog .hintx', '#dialog .del-list', '#dialog .del-item', '#dialog .stats', '#dialog .imp-row', '#dialog .imp-main', '#dialog .imp-name', '#dialog .imp-meta', '#dialog .tabs', '#dialog .tab', '#dialog .loop-actions', '#dialog .field', '#dialog .grid2', '#dialog .notice']) if (!html.includes(c)) errs.push('missing ' + c);
+for (const f of ["function dfield", "function dopts", "size: 'dialog-xl'", "size: 'dialog-wide'", 'id="dlg-gdup"', 'id="dlg-gprompt"', 'id="dlg-wtbase"', 'id="dlg-wtmodel"', 'id="dlg-wtprompt"', 'data-loop-act="start"']) if (!js.includes(f)) errs.push('missing ' + f);
 console.log(
   errs.length
     ? 'FAIL\n' + errs.join('\n')

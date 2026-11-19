@@ -201,6 +201,14 @@
   .dlg-actions{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-top:12px}
   .dlg-actions .muted{margin-right:auto;font-size:10.5px}
   .dialog-wide{width:min(560px,94vw);max-height:82vh;overflow:auto}
+  .dialog-xl{width:min(980px,96vw);max-height:90vh;overflow:auto}
+  .dialog-xl .topbar{display:none}
+  .dialog-xl .wizard{gap:16px}
+  .dialog-xl .wizard .card{border:0;background:transparent;padding:0}
+  .mini{background:transparent;border:1px solid var(--line);color:var(--muted);font:11px/1 inherit;padding:3px 6px;border-radius:6px;cursor:pointer}
+  .mini:hover{color:var(--text);border-color:var(--input-line)}
+  .wt-tools{display:flex;gap:4px;margin-left:auto;align-items:center}
+  .s-tools{display:flex;gap:4px;margin-left:6px}
   .dialog-solo{display:flex;justify-content:center;padding:6px 0 0}
 
   /* ---------- tabs ---------- */
@@ -345,6 +353,7 @@
     delGroup: "g-feature",
     addTab: "new",
     dialog: null,
+    popupTab: null,
     seq: 0,
     groups: clone(M.groups) || [],
     worktrees: clone(M.worktrees) || [],
@@ -369,7 +378,7 @@
   }
   function groupSessions(gid) {
     var ids = groupWts(gid).map(function (w) { return w.id; });
-    return state.sessions.filter(function (s) { return s.group === gid || ids.indexOf(s.wt) >= 0; });
+    return state.sessions.filter(function (s) { return !s.removed && (s.group === gid || ids.indexOf(s.wt) >= 0); });
   }
   function groupStats(gid) {
     var wts = groupWts(gid);
@@ -414,7 +423,7 @@
     return "";
   }
 
-  function renderScreen1() {
+  function wizardHTML() {
     var w = state.wizard;
     var isFeature = w.preset === "feature";
 
@@ -467,7 +476,10 @@
       + "</div>"
       + '<p class="hintx">중복 이름 예시를 누르면 이름 필드에 인라인 오류가 표시됩니다.</p>'
       + "</aside></div>";
-    setHTML($("screen-1"), html);
+    return html;
+  }
+  function renderScreen1() {
+    setHTML($("screen-1"), wizardHTML());
   }
 
   /* ---------- 워크트리 트리 ---------- */
@@ -479,11 +491,15 @@
       + esc(SESS_LABEL[s.state] || s.state) + "</span>"
       + '<span class="mono">' + esc(shortModel(s.model)) + "</span>"
       + "<span>" + esc(s.started) + "–" + esc(s.last) + "</span>"
-      + '<span class="tok">' + fmtTokens(s.tokens) + " tok</span>" + rel + "</div></div>";
+      + '<span class="tok">' + fmtTokens(s.tokens) + " tok</span>" + rel
+      + '<span class="s-tools">'
+      + '<button type="button" class="mini" data-act="sess-rename" data-sid="' + esc(s.id) + '">이름</button>'
+      + '<button type="button" class="mini" data-act="sess-del" data-sid="' + esc(s.id) + '">삭제</button>'
+      + "</span></div></div>";
   }
 
   function wtBox(wt, isRoot) {
-    var sess = state.sessions.filter(function (s) { return s.wt === wt.id; });
+    var sess = state.sessions.filter(function (s) { return s.wt === wt.id && !s.removed; });
     var g = byId(state.groups, wt.group);
     var isHub = !!(g && g.hubSessionId && sess.some(function (s) { return s.id === g.hubSessionId; }));
     var kids = groupWts(wt.group).filter(function (x) { return x.parent === wt.id; });
@@ -507,6 +523,8 @@
       var bits = [];
       if (isRoot) bits.push('<button type="button" class="btn ghost" data-act="change-parent" data-wt="' + esc(wt.id) + '">부모 변경</button>');
       if (g && !g.hubSessionId) bits.push('<button type="button" class="btn ghost" data-act="hub-start" data-wt="' + esc(wt.id) + '">허브로 지정</button>');
+      if (isHub) bits.push('<button type="button" class="btn ghost" data-act="hub-clear" data-wt="' + esc(wt.id) + '">허브 해제</button>');
+      bits.push('<button type="button" class="btn ghost" data-act="sess-new" data-wt="' + esc(wt.id) + '">+ 세션</button>');
       if (isRoot && kids.length) bits.push('<span class="hintx">자식 ' + kids.length + "개 감시 중</span>");
       if (bits.length) foot = '<div class="wt-foot">' + bits.join("") + "</div>";
     }
@@ -518,7 +536,13 @@
     return '<article class="wt-box' + (isHub ? " is-hub" : "") + (wt.orcaMissing ? " is-missing" : "") + '">'
       + '<header class="wt-head"><b>' + esc(wt.name) + "</b>"
       + '<span class="wt-branch mono">' + esc(wt.branch) + "</span>"
-      + '<span class="wt-badges">' + badges + "</span></header>"
+      + '<span class="wt-badges">' + badges + "</span>"
+      + '<span class="wt-tools">'
+      + '<button type="button" class="mini" data-act="wt-rename" data-wt="' + esc(wt.id) + '">이름</button>'
+      + '<button type="button" class="mini" data-act="wt-del" data-wt="' + esc(wt.id) + '">삭제</button>'
+      + (wt.loop ? '<button type="button" class="mini" data-act="loop-edit" data-wt="' + esc(wt.id) + '">Loop</button>' : "")
+      + (wt.orcaMissing ? '<button type="button" class="mini" data-act="orca-open" data-wt="' + esc(wt.id) + '">Orca</button>' : "")
+      + "</span></header>"
       + body + foot + "</article>";
   }
 
@@ -566,6 +590,7 @@
         + (g.hubSessionId ? ' · 허브 <span class="mono">' + esc(g.hubSessionId) + "</span>" : "") + "</p></div>"
         + '<div class="actions">'
         + '<button type="button" class="btn" data-act="add-wt">워크트리 추가</button>'
+        + '<button type="button" class="btn" data-act="edit-group" data-group="' + esc(g.id) + '">이름 변경</button>'
         + '<button type="button" class="btn primary" data-act="new-group">그룹 만들기</button>'
         + '<button type="button" class="btn danger" data-act="del-group" data-group="' + esc(g.id) + '">그룹 삭제</button>'
         + "</div>";
@@ -793,14 +818,110 @@
       + '<button type="button" class="btn primary" data-act="parent-apply" data-wt="' + esc(wid) + '">적용</button></div>';
   }
 
+  function groupEditBody(gid) {
+    var g = byId(state.groups, gid);
+    if (!g) return "<h2>그룹 편집</h2><p>그룹을 찾을 수 없습니다.</p>";
+    return "<h2>그룹 편집 · " + esc(g.name) + "</h2>"
+      + field("그룹 이름", '<input data-f="group-name" value="' + esc(g.name) + '" />')
+      + '<div class="dlg-actions"><button type="button" class="btn" data-act="dl-close">취소</button>'
+      + '<button type="button" class="btn primary" data-act="group-save" data-group="' + esc(gid) + '">저장</button>'
+      + '<button type="button" class="btn danger" data-act="group-del-open" data-group="' + esc(gid) + '">그룹 삭제</button></div>';
+  }
+
+  function wtRenameBody(wid) {
+    var wt = byId(state.worktrees, wid);
+    if (!wt) return "";
+    return "<h2>워크트리 이름</h2>"
+      + field("표시 이름", '<input data-f="wt-rename" value="' + esc(wt.name) + '" />')
+      + '<div class="dlg-actions"><button type="button" class="btn" data-act="dl-close">취소</button>'
+      + '<button type="button" class="btn primary" data-act="wt-rename-save" data-wt="' + esc(wid) + '">저장</button></div>';
+  }
+
+  function wtDeleteBody(wid) {
+    var wt = byId(state.worktrees, wid);
+    if (!wt) return "";
+    var kids = state.worktrees.filter(function (w) { return w.parent === wid; });
+    var sess = state.sessions.filter(function (s) { return s.wt === wid && !s.removed; });
+    return "<h2>워크트리 삭제 · " + esc(wt.name) + "</h2>"
+      + "<p>이 워크트리를 보드에서 제거합니다. 세션 기록은 히스토리에 남습니다.</p>"
+      + (kids.length ? '<div class="warn">자식 워크트리 ' + kids.length + "개는 부모를 잃고 루트로 이동합니다.</div>" : "")
+      + (sess.length ? '<div class="warn">세션 ' + sess.length + "개가 제거됩니다.</div>" : "")
+      + '<div class="dlg-actions"><button type="button" class="btn" data-act="dl-close">취소</button>'
+      + '<button type="button" class="btn danger" data-act="wt-del-confirm" data-wt="' + esc(wid) + '">삭제</button></div>';
+  }
+
+  function sessNewBody(wid) {
+    var wt = byId(state.worktrees, wid);
+    if (!wt) return "";
+    var list = groupWts(wt.group);
+    return "<h2>새 세션</h2>"
+      + field("제목", '<input data-f="sess-title" placeholder="예: 온보딩 API 점검" />')
+      + field("워크트리", '<select data-f="sess-wt">' + list.map(function (w) {
+          return '<option value="' + esc(w.id) + '"' + (w.id === wid ? " selected" : "") + ">" + esc(w.name) + " · " + esc(w.branch) + "</option>";
+        }).join("") + "</select>")
+      + field("모델", '<select data-f="sess-model">' + options(M.models, (M.models && M.models[0]) || "") + "</select>")
+      + '<div class="dlg-actions"><button type="button" class="btn" data-act="dl-close">취소</button>'
+      + '<button type="button" class="btn primary" data-act="sess-create" data-wt="' + esc(wid) + '">만들기</button></div>';
+  }
+
+  function sessRenameBody(sid) {
+    var s = byId(state.sessions, sid);
+    if (!s) return "";
+    return "<h2>세션 이름</h2>"
+      + field("제목", '<input data-f="sess-title" value="' + esc(s.title) + '" />')
+      + '<div class="dlg-actions"><button type="button" class="btn" data-act="dl-close">취소</button>'
+      + '<button type="button" class="btn primary" data-act="sess-rename-save" data-sid="' + esc(sid) + '">저장</button></div>';
+  }
+
+  function sessDeleteBody(sid) {
+    var s = byId(state.sessions, sid);
+    if (!s) return "";
+    return "<h2>세션 제거 · " + esc(s.title) + "</h2>"
+      + "<p>보드에서 제거합니다. 세션 기록은 히스토리에 남습니다.</p>"
+      + '<div class="dlg-actions"><button type="button" class="btn" data-act="dl-close">취소</button>'
+      + '<button type="button" class="btn danger" data-act="sess-del-confirm" data-sid="' + esc(sid) + '">제거</button></div>';
+  }
+
+  function loopBody(wid) {
+    var wt = byId(state.worktrees, wid);
+    if (!wt || !wt.loop) return "";
+    var L = wt.loop;
+    return "<h2>Loop 설정 · " + esc(wt.name) + "</h2>"
+      + field("프롬프트", '<textarea rows="3" data-f="loop-prompt">' + esc(L.prompt) + "</textarea>")
+      + field("최대 회차", '<input type="number" min="1" max="20" data-f="loop-max" value="' + L.maxRounds + '" />')
+      + '<div class="dlg-actions"><button type="button" class="btn" data-act="dl-close">취소</button>'
+      + '<button type="button" class="btn primary" data-act="loop-save" data-wt="' + esc(wid) + '">저장</button></div>';
+  }
+
+  function orcaBody(wid) {
+    var wt = byId(state.worktrees, wid);
+    if (!wt) return "";
+    return "<h2>Orca 불일치 · " + esc(wt.name) + "</h2>"
+      + "<p>Orca에서 이 워크트리를 찾을 수 없습니다. 보드 기록을 다시 만들거나 그룹에서 제거할 수 있습니다.</p>"
+      + '<div class="dlg-actions"><button type="button" class="btn" data-act="dl-close">닫기</button>'
+      + '<button type="button" class="btn primary" data-act="orca-recreate" data-wt="' + esc(wid) + '">다시 만들기</button>'
+      + '<button type="button" class="btn danger" data-act="orca-remove" data-wt="' + esc(wid) + '">그룹에서 제거</button></div>';
+  }
+
   function renderModal() {
     var root = $("modal");
     if (!state.dialog) { setHTML(root, ""); return; }
+    var d = state.dialog;
     var body = "";
-    if (state.dialog.type === "add") body = addDialogBody();
-    else if (state.dialog.type === "delete") body = deleteDialogBody(state.dialog.groupId);
-    else if (state.dialog.type === "parent") body = parentDialogBody(state.dialog.wt);
-    setHTML(root, '<div class="backdrop" data-act="dl-close"><div class="dialog dialog-wide" data-act="noop">' + body + "</div></div>");
+    var cls = "dialog dialog-wide";
+    if (d.type === "create") { body = wizardHTML(); cls = "dialog dialog-xl"; }
+    else if (d.type === "add") body = addDialogBody();
+    else if (d.type === "delete") body = deleteDialogBody(d.groupId);
+    else if (d.type === "parent") body = parentDialogBody(d.wt);
+    else if (d.type === "group-edit") body = groupEditBody(d.groupId);
+    else if (d.type === "wt-rename") body = wtRenameBody(d.wt);
+    else if (d.type === "wt-del") body = wtDeleteBody(d.wt);
+    else if (d.type === "sess-new") body = sessNewBody(d.wt);
+    else if (d.type === "sess-rename") body = sessRenameBody(d.sid);
+    else if (d.type === "sess-del") body = sessDeleteBody(d.sid);
+    else if (d.type === "loop") body = loopBody(d.wt);
+    else if (d.type === "orca") body = orcaBody(d.wt);
+    setHTML(root, '<div class="backdrop" data-act="dl-close"><div class="' + cls + '" data-act="noop">' + body + "</div></div>");
   }
 
   /* ---------- 상태 helpers ---------- */
@@ -811,16 +932,32 @@
     }
   }
   function renderTabs() {
+    var active = state.popupTab || state.screen;
     [].forEach.call(document.querySelectorAll(".scr-tab"), function (t) {
-      t.classList.toggle("is-active", t.getAttribute("data-screen") === String(state.screen));
+      t.classList.toggle("is-active", t.getAttribute("data-screen") === String(active));
     });
     var pill = $("tb-state");
-    if (pill) pill.textContent = "그룹 " + state.groups.length + " · 워크트리 " + state.worktrees.length + " · 세션 " + state.sessions.length;
+    var live = state.sessions.filter(function (s) { return !s.removed; }).length;
+    if (pill) pill.textContent = "그룹 " + state.groups.length + " · 워크트리 " + state.worktrees.length + " · 세션 " + live;
   }
   function setScreen(s) {
-    state.screen = String(s);
+    s = String(s);
+    if (s === "1" || s === "3" || s === "5") {
+      state.screen = "2";
+      state.popupTab = s;
+      if (s === "1") state.dialog = { type: "create" };
+      if (s === "3") { state.dialog = { type: "add" }; state.addTab = "new"; }
+      if (s === "5") {
+        if (!byId(state.groups, state.delGroup)) state.delGroup = state.groupId;
+        state.dialog = { type: "delete", groupId: state.delGroup || state.groupId };
+      }
+      render();
+      return;
+    }
+    state.screen = s;
+    state.popupTab = null;
     state.dialog = null;
-    if (state.screen === "4" && !state.worktrees.some(function (w) { return w.group === state.groupId && w.loop; })) {
+    if (s === "4" && !state.worktrees.some(function (w) { return w.group === state.groupId && w.loop; })) {
       var lg = state.groups.filter(function (g) {
         return state.worktrees.some(function (w) { return w.group === g.id && w.loop; });
       })[0];
@@ -895,6 +1032,7 @@
       model: (M.models && M.models[0]) || "", prompt: "", error: ""
     };
     state.dialog = null;
+    state.popupTab = null;
     state.screen = "2";
     toast("'" + name + "' 그룹 생성 · " + made);
     render();
@@ -924,6 +1062,7 @@
       });
     }
     state.dialog = null;
+    state.popupTab = null;
     state.screen = "2";
     toast("워크트리 '" + name + "'을 " + g.name + "에 추가했습니다");
     render();
@@ -942,6 +1081,7 @@
     });
     state.orcaOnly = state.orcaOnly.filter(function (x) { return x.id !== id; });
     state.dialog = null;
+    state.popupTab = null;
     state.screen = "2";
     toast("기존 워크트리 '" + item.name + "'을 " + g.name + "에 불러왔습니다");
     render();
@@ -953,12 +1093,13 @@
     var ids = groupWts(gid).map(function (w) { return w.id; });
     state.groups = state.groups.filter(function (x) { return x.id !== gid; });
     state.worktrees = state.worktrees.filter(function (w) { return w.group !== gid; });
-    state.sessions = state.sessions.filter(function (s) {
-      return s.group !== gid && ids.indexOf(s.wt) < 0;
+    state.sessions.forEach(function (s) {
+      if (s.group === gid || ids.indexOf(s.wt) >= 0) s.removed = true;
     });
     if (state.groupId === gid) state.groupId = state.groups.length ? state.groups[0].id : "";
     state.delGroup = state.groupId;
     state.dialog = null;
+    state.popupTab = null;
     state.screen = "2";
     toast("'" + g.name + "' 그룹을 삭제했습니다 · 세션 기록은 히스토리에 남습니다");
     render();
@@ -1028,7 +1169,7 @@
     if (act === "noop") return;
 
     if (act === "goto-board") return setScreen("2");
-    if (act === "new-group") { state.dialog = null; return setScreen("1"); }
+    if (act === "new-group") { state.dialog = { type: "create" }; state.popupTab = "1"; state.screen = "2"; render(); return; }
 
     if (act === "preset") {
       state.wizard.preset = btn.getAttribute("data-preset") || "feature";
@@ -1046,27 +1187,132 @@
     if (act === "create-group") return createGroup();
 
     if (act === "pick-group") { state.groupId = gid || state.groupId; render(); return; }
-    if (act === "add-wt") { state.dialog = { type: "add" }; state.addTab = "new"; render(); return; }
-    if (act === "import-wt") { state.dialog = { type: "add" }; state.addTab = "import"; render(); return; }
+    if (act === "add-wt") { state.dialog = { type: "add" }; state.addTab = "new"; state.popupTab = "3"; state.screen = "2"; render(); return; }
+    if (act === "import-wt") { state.dialog = { type: "add" }; state.addTab = "import"; state.popupTab = "3"; state.screen = "2"; render(); return; }
     if (act === "add-tab") { state.addTab = btn.getAttribute("data-tab") || "new"; render(); return; }
     if (act === "dl-close") {
       state.dialog = null;
-      if (state.screen === "3") state.screen = "2";
+      state.popupTab = null;
+      state.screen = "2";
       render();
       return;
     }
     if (act === "wt-create") return createWorktree();
     if (act === "wt-import") return importWorktree(btn.getAttribute("data-id"));
 
-    if (act === "del-group") { state.dialog = { type: "delete", groupId: gid || state.groupId }; render(); return; }
+    if (act === "del-group") { state.dialog = { type: "delete", groupId: gid || state.groupId }; state.popupTab = "5"; state.screen = "2"; render(); return; }
     if (act === "del-pick") { state.delGroup = gid || state.delGroup; render(); return; }
     if (act === "del-cancel") {
       state.dialog = null;
-      if (state.screen === "5") state.screen = "2";
+      state.popupTab = null;
+      state.screen = "2";
       render();
       return;
     }
     if (act === "del-confirm") return deleteGroup(gid || state.delGroup || state.groupId);
+
+    if (act === "edit-group") { state.dialog = { type: "group-edit", groupId: gid || state.groupId }; state.popupTab = "2"; render(); return; }
+    if (act === "group-save") {
+      var ge = byId(state.groups, gid || state.groupId);
+      var gn = fv(activeDialog(), "group-name").trim();
+      if (!ge || !gn) { toast("그룹 이름을 입력하세요"); return; }
+      ge.name = gn;
+      state.dialog = null;
+      state.popupTab = null;
+      toast("그룹 이름을 '" + gn + "'으로 저장했습니다");
+      render();
+      return;
+    }
+    if (act === "group-del-open") { state.dialog = { type: "delete", groupId: gid || state.groupId }; state.popupTab = "5"; render(); return; }
+    if (act === "wt-rename") { state.dialog = { type: "wt-rename", wt: wid }; render(); return; }
+    if (act === "wt-rename-save") {
+      var wr = byId(state.worktrees, wid);
+      var wn = fv(activeDialog(), "wt-rename").trim();
+      if (!wr || !wn) { toast("워크트리 이름을 입력하세요"); return; }
+      wr.name = wn;
+      state.dialog = null;
+      toast("워크트리 이름을 '" + wn + "'으로 저장했습니다");
+      render();
+      return;
+    }
+    if (act === "wt-del") { state.dialog = { type: "wt-del", wt: wid }; render(); return; }
+    if (act === "wt-del-confirm") {
+      var wd = byId(state.worktrees, wid);
+      if (!wd) return;
+      state.worktrees.forEach(function (x) { if (x.parent === wd.id) x.parent = wd.parent; });
+      state.worktrees = state.worktrees.filter(function (x) { return x.id !== wd.id; });
+      state.sessions.forEach(function (s) { if (s.wt === wd.id) s.removed = true; });
+      state.groups.forEach(function (gg) {
+        if (gg.hubSessionId && !state.sessions.some(function (s) { return s.id === gg.hubSessionId && !s.removed; })) gg.hubSessionId = null;
+      });
+      state.dialog = null;
+      toast("'" + wd.name + "' 워크트리를 삭제했습니다 · 세션 기록은 히스토리에 남습니다");
+      render();
+      return;
+    }
+    if (act === "sess-new") { state.dialog = { type: "sess-new", wt: wid }; render(); return; }
+    if (act === "sess-create") {
+      var sw = byId(state.worktrees, wid);
+      var st = fv(activeDialog(), "sess-title").trim();
+      var swid = fv(activeDialog(), "sess-wt") || wid;
+      var sm = fv(activeDialog(), "sess-model") || (M.models && M.models[0]) || "";
+      if (!sw || !st) { toast("세션 제목을 입력하세요"); return; }
+      state.seq += 1;
+      state.sessions.push({
+        id: "s-new-" + state.seq, title: st, wt: swid, model: sm,
+        state: "idle", started: now(), last: now(), tokens: 0, parent: null, group: sw.group
+      });
+      state.dialog = null;
+      toast("세션 '" + st + "'을 만들었습니다");
+      render();
+      return;
+    }
+    if (act === "sess-rename") { state.dialog = { type: "sess-rename", sid: btn.getAttribute("data-sid") }; render(); return; }
+    if (act === "sess-rename-save") {
+      var sr = byId(state.sessions, btn.getAttribute("data-sid"));
+      var sn = fv(activeDialog(), "sess-title").trim();
+      if (!sr || !sn) { toast("세션 제목을 입력하세요"); return; }
+      sr.title = sn;
+      state.dialog = null;
+      toast("세션 이름을 '" + sn + "'으로 저장했습니다");
+      render();
+      return;
+    }
+    if (act === "sess-del") { state.dialog = { type: "sess-del", sid: btn.getAttribute("data-sid") }; render(); return; }
+    if (act === "sess-del-confirm") {
+      var sd = byId(state.sessions, btn.getAttribute("data-sid"));
+      if (!sd) return;
+      sd.removed = true;
+      state.groups.forEach(function (gg) {
+        if (gg.hubSessionId === sd.id) gg.hubSessionId = null;
+      });
+      state.dialog = null;
+      toast("세션 '" + sd.title + "'을 제거했습니다 · 히스토리에 남습니다");
+      render();
+      return;
+    }
+    if (act === "loop-edit") { state.dialog = { type: "loop", wt: wid }; render(); return; }
+    if (act === "loop-save") {
+      var wl2 = byId(state.worktrees, wid);
+      if (!wl2 || !wl2.loop) return;
+      wl2.loop.prompt = fv(activeDialog(), "loop-prompt");
+      wl2.loop.maxRounds = Math.max(1, Math.min(20, Number(fv(activeDialog(), "loop-max")) || 1));
+      if (wl2.loop.round > wl2.loop.maxRounds) wl2.loop.round = wl2.loop.maxRounds;
+      state.dialog = null;
+      toast("'" + wl2.name + "' Loop 설정을 저장했습니다");
+      render();
+      return;
+    }
+    if (act === "orca-open") { state.dialog = { type: "orca", wt: wid }; render(); return; }
+    if (act === "hub-clear") {
+      var whc = byId(state.worktrees, wid);
+      var ghc = whc ? byId(state.groups, whc.group) : null;
+      if (!ghc) return;
+      ghc.hubSessionId = null;
+      toast("'" + whc.name + "' 허브를 해제했습니다");
+      render();
+      return;
+    }
 
     if (act === "change-parent") { state.dialog = { type: "parent", wt: wid }; render(); return; }
     if (act === "parent-apply") {
@@ -1113,6 +1359,8 @@
       var w1 = byId(state.worktrees, wid);
       if (!w1) return;
       w1.orcaMissing = false;
+      state.dialog = null;
+      state.popupTab = null;
       toast("'" + w1.name + "' 워크트리를 Orca에 다시 만들었습니다");
       render();
       return;
@@ -1122,10 +1370,12 @@
       if (!w2) return;
       state.worktrees.forEach(function (x) { if (x.parent === w2.id) x.parent = w2.parent; });
       state.worktrees = state.worktrees.filter(function (x) { return x.id !== w2.id; });
-      state.sessions = state.sessions.filter(function (s) { return s.wt !== w2.id; });
+      state.sessions.forEach(function (s) { if (s.wt === w2.id) s.removed = true; });
       state.groups.forEach(function (gg) {
-        if (gg.hubSessionId && !state.sessions.some(function (s) { return s.id === gg.hubSessionId; })) gg.hubSessionId = null;
+        if (gg.hubSessionId && !state.sessions.some(function (s) { return s.id === gg.hubSessionId && !s.removed; })) gg.hubSessionId = null;
       });
+      state.dialog = null;
+      state.popupTab = null;
       toast("'" + w2.name + "'을 그룹에서 제거했습니다 · 세션 기록은 히스토리에 남습니다");
       render();
       return;

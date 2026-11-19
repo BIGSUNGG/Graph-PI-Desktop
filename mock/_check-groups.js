@@ -160,12 +160,18 @@ if (srcs.length !== 1 || srcs[0] !== './mock-data.js') errs.push('mock-data.js �
 for (let n = 1; n <= 6; n++) {
   if (!html.includes('data-screen="' + n + '"')) errs.push('화면 스위처 data-screen="' + n + '" 없음');
 }
-for (const text of ['그룹 만들기', '기존 불러오기', '다시 만들기', '그룹에서 제거', '히스토리에 남습니다', 'Orca에서 함께 삭제']) {
+for (const text of ['그룹 만들기', '기존 불러오기', '다시 만들기', '그룹에서 제거', '히스토리에 남습니다', 'Orca에서 함께 삭제', '그룹 편집', '워크트리 삭제', '세션 제거']) {
   if (!html.includes(text)) errs.push('필수 문자열 없음: ' + text);
 }
-for (const act of ['preset', 'hub-start', 'loop-enable']) {
+for (const act of ['preset', 'hub-start', 'loop-enable', 'edit-group', 'group-save', 'group-del-open', 'wt-rename', 'wt-rename-save', 'wt-del', 'wt-del-confirm', 'sess-new', 'sess-create', 'sess-rename', 'sess-rename-save', 'sess-del', 'sess-del-confirm', 'loop-edit', 'loop-save', 'orca-open', 'hub-clear']) {
   if (!html.includes('data-act="' + act + '"')) errs.push('필수 액션 없음: ' + act);
 }
+for (const fn of ['wizardHTML', 'groupEditBody', 'wtRenameBody', 'wtDeleteBody', 'sessNewBody', 'sessRenameBody', 'sessDeleteBody', 'loopBody', 'orcaBody']) {
+  if (!html.includes('function ' + fn + '(')) errs.push('팝업 함수 없음: ' + fn);
+}
+if (!html.includes('popupTab')) errs.push('팝업 탭 상태(popupTab) 없음');
+if (!html.includes('dialog-xl')) errs.push('넓은 팝업(dialog-xl) 없음');
+if (!html.includes('s.removed = true')) errs.push('세션 소프트 삭제(removed) 없음');
 if (!/btn danger/.test(html)) errs.push('파괴적 확인 버튼(.btn danger) 없음');
 if (/https?:\/\//.test(html)) errs.push('외부 네트워크 요청(http/https) 발견');
 
