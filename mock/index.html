@@ -150,7 +150,9 @@
   .side-add:hover{background:rgb(255 255 255 / .08);color:var(--text)}
   .grp-body{display:flex;flex-direction:column;gap:1px;padding:0 6px 6px}
   .grp.is-closed .grp-body{display:none}
-  #graph{display:block;width:100%;height:auto;max-height:100%;min-height:0}
+  #graph{display:block;width:100%;height:auto;max-height:100%;min-height:0;cursor:grab;touch-action:none;user-select:none}
+  #graph.is-panning,#graph.is-panning .node{cursor:grabbing}
+  #graph .node{cursor:pointer}
   #graph text{font-family:'Geist',-apple-system,'Segoe UI',sans-serif}
   .edge-flow{stroke-dasharray:7 5;animation:edge-dash .9s linear infinite}
   .edge-dash{stroke-dasharray:6 5}
@@ -564,7 +566,8 @@
     view: "board", selected: { type: null, id: null }, chat: M.sessions[0].id,
     group: (M.groups.filter(function (g) { return "#" + g.id === location.hash; })[0] || M.groups[0]).id,
     closed: {}, orca: true,
-    run: M.runs[0].id, worker: M.workers[0].id, query: "", range: "30", results: null, indexed: 0
+    run: M.runs[0].id, worker: M.workers[0].id, query: "", range: "30", results: null, indexed: 0,
+    zoom: 1, vx: 0, vy: 0, boardW: 0, boardH: 0, nodePts: [], pan: null, dragMoved: false, _lastGroup: null
   };
 
   function pill(st) {
@@ -752,9 +755,17 @@
   }
 
   function renderBoard() {
+    if (state._lastGroup !== state.group) {
+      state._lastGroup = state.group;
+      resetView();
+    }
     renderSidebar();
     var wts = groupWts(state.group);
     if (!wts.length) {
+      state.boardW = 0;
+      state.boardH = 0;
+      state.nodePts = [];
+      $("graph").setAttribute("viewBox", "0 0 900 480");
       setSvg($("graph"), '<text x="24" y="48" fill="#737373" font-size="12">빈 그룹 — 워크트리를 추가하세요.</text>');
       $("n-board").textContent = "0";
       renderInspector();
@@ -918,10 +929,61 @@
     var maxBottom = G.pad;
     all.forEach(function (c) { maxBottom = Math.max(maxBottom, c.y + c.h); });
     svg.push(overlay.join(""));
-    $("graph").setAttribute("viewBox", "0 0 " + totalW + " " + (Math.max(maxBottom, bottomExtra) + G.pad));
+    state.boardW = totalW;
+    state.boardH = Math.max(maxBottom, bottomExtra) + G.pad;
+    state.nodePts = Object.keys(pos).map(function (k) { return pos[k]; });
+    applyView();
     setSvg($("graph"), svg.join(""));
     $("n-board").textContent = activeSessions().length;
     renderInspector();
+  }
+
+  function resetView() {
+    state.zoom = 1;
+    state.vx = 0;
+    state.vy = 0;
+  }
+
+  function applyView() {
+    var W = state.boardW, H = state.boardH;
+    if (!W || !H) return;
+    var vw = W / state.zoom, vh = H / state.zoom;
+    var vx = vw >= W ? (W - vw) / 2 : Math.min(Math.max(state.vx, 0), W - vw);
+    var vy = vh >= H ? (H - vh) / 2 : Math.min(Math.max(state.vy, 0), H - vh);
+    var pts = state.nodePts || [];
+    if (vw < W && pts.length && !pts.some(function (p) {
+      return p.x >= vx && p.x <= vx + vw && p.y >= vy && p.y <= vy + vh;
+    })) {
+      var best = pts[0], bd = Infinity;
+      pts.forEach(function (p) {
+        var cx = Math.min(Math.max(p.x, vx), vx + vw);
+        var cy = Math.min(Math.max(p.y, vy), vy + vh);
+        var d = Math.abs(p.x - cx) + Math.abs(p.y - cy);
+        if (d < bd) { bd = d; best = p; }
+      });
+      if (best.x < vx) vx = best.x - 8;
+      else if (best.x > vx + vw) vx = best.x - vw + 8;
+      if (best.y < vy) vy = best.y - 8;
+      else if (best.y > vy + vh) vy = best.y - vh + 8;
+      vx = Math.min(Math.max(vx, 0), W - vw);
+      vy = Math.min(Math.max(vy, 0), H - vh);
+    }
+    state.vx = vx;
+    state.vy = vy;
+    $("graph").setAttribute("viewBox", vx + " " + vy + " " + vw + " " + vh);
+  }
+
+  function setZoom(next) {
+    var W = state.boardW, H = state.boardH;
+    if (!W || !H) return;
+    var z = Math.min(3, Math.max(0.5, next));
+    if (Math.abs(z - state.zoom) < 0.001) return;
+    var vw = W / state.zoom, vh = H / state.zoom;
+    var cx = state.vx + vw / 2, cy = state.vy + vh / 2;
+    state.zoom = z;
+    state.vx = cx - W / z / 2;
+    state.vy = cy - H / z / 2;
+    applyView();
   }
 
   function renderInspector() {
@@ -1825,6 +1887,7 @@
     b.onclick = function () { setView(b.getAttribute("data-view")); };
   });
   $("graph").addEventListener("click", function (e) {
+    if (state.dragMoved) { state.dragMoved = false; return; }
     var g = e.target.closest("[data-session]");
     if (g) {
       var id = g.getAttribute("data-session");
@@ -1837,6 +1900,40 @@
       return renderBoard();
     }
   });
+  $("graph").addEventListener("pointerdown", function (e) {
+    if (e.button !== 0) return;
+    state.pan = { x: e.clientX, y: e.clientY, vx: state.vx, vy: state.vy, moved: 0 };
+    state.dragMoved = false;
+    $("graph").classList.add("is-panning");
+  });
+  $("graph").addEventListener("pointermove", function (e) {
+    var p = state.pan;
+    if (!p) return;
+    var dx = e.clientX - p.x, dy = e.clientY - p.y;
+    p.moved = Math.max(p.moved, Math.abs(dx) + Math.abs(dy));
+    if (p.moved < 3) return;
+    if (!p.captured && $("graph").setPointerCapture) {
+      p.captured = true;
+      $("graph").setPointerCapture(e.pointerId);
+    }
+    var r = $("graph").getBoundingClientRect();
+    var k = r.width ? (state.boardW / state.zoom) / r.width : 1;
+    state.vx = p.vx - dx * k;
+    state.vy = p.vy - dy * k;
+    applyView();
+  });
+  function endPan(e) {
+    var p = state.pan;
+    if (!p) return;
+    state.dragMoved = p.moved >= 3;
+    state.pan = null;
+    $("graph").classList.remove("is-panning");
+    if (p.captured && $("graph").releasePointerCapture && e && e.pointerId != null) {
+      try { $("graph").releasePointerCapture(e.pointerId); } catch (err) {}
+    }
+  }
+  $("graph").addEventListener("pointerup", endPan);
+  $("graph").addEventListener("pointercancel", endPan);
   $("orca-toggle").onclick = function () { setOrca(!state.orca); };
   $("banner-retry").onclick = function () { setOrca(true); };
   $("composer").addEventListener("submit", function (e) {
@@ -1865,6 +1962,10 @@
   });
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && !$("dialog").classList.contains("hidden")) closeDialog();
+    if (state.view !== "board") return;
+    if (!(e.ctrlKey || e.metaKey)) return;
+    if (e.key === "+" || e.key === "=") { e.preventDefault(); setZoom(state.zoom * 1.2); }
+    else if (e.key === "-" || e.key === "_") { e.preventDefault(); setZoom(state.zoom / 1.2); }
   });
 
   $("group-new").onclick = groupCreateDialog;
