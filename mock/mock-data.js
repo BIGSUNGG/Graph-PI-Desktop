@@ -1,9 +1,10 @@
 // 목업 전용 더미 데이터. 실제 Pi JSONL / Orca CLI 와 무관합니다.
-// Nimbus — 가상의 B2B SaaS. web · api · worker · infra · shared 5개 저장소.
+// Nimbus — 가상의 B2B SaaS. web · api · worker · infra · shared · docs 6개 저장소.
 window.MOCK = {
   workspace: "graph-pi",
   product: "Nimbus",
   repo: "C:/Projects/nimbus",
+  repos: ["web", "api", "worker", "infra", "shared", "docs"],
   bases: ["main", "develop"],
   models: [
     "anthropic/claude-sonnet-4.5",

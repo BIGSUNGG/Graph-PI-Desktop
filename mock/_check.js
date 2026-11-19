@@ -92,6 +92,13 @@ for (const f of ['function turnsOf', 'function thinkHTML', 'function turnHTML', 
 if (!M.sessions.some((s) => (M.messages[s.id] || []).some((m) => m.role === 'assistant' && m.think))) errs.push('no assistant think text');
 if (!M.sessions.some((s) => (M.messages[s.id] || []).some((m) => m.role === 'assistant' && m.thinkFor > 0))) errs.push('no thinkFor data');
 for (const f of ["function dfield", "function dopts", "size: 'dialog-xl'", "size: 'dialog-wide'", 'id="dlg-gdup"', 'id="dlg-gprompt"', 'id="dlg-wtbase"', 'id="dlg-wtmodel"', 'id="dlg-wtprompt"', 'data-loop-act="start"']) if (!js.includes(f)) errs.push('missing ' + f);
+
+// 워크트리 추가 팝업의 레포지토리 선택
+const REPOS = M.repos || [];
+if (REPOS.length !== 6) errs.push('M.repos must list 6 repositories');
+for (const w of M.worktrees.concat(M.orcaOnly)) if (!REPOS.includes(w.repo)) errs.push('seeded repo not in M.repos: ' + w.repo);
+for (const f of ['id="dlg-wtrepo"', 'id="dlg-wtfilter"', "dfield('레포지토리'", '<option value="">전체</option>']) if (!js.includes(f)) errs.push('missing ' + f);
+if (js.includes('repo: M.repo,')) errs.push('worktree create still hardcodes M.repo');
 console.log(
   errs.length
     ? 'FAIL\n' + errs.join('\n')

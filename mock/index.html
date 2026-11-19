@@ -603,7 +603,8 @@
     group: (M.groups.filter(function (g) { return "#" + g.id === location.hash; })[0] || M.groups[0]).id,
     closed: {}, histOpen: {}, orca: true,
     run: M.runs[0].id, worker: M.workers[0].id, query: "", range: "30", results: null, indexed: 0,
-    zoom: 1, vx: 0, vy: 0, boardW: 0, boardH: 0, nodePts: [], pan: null, dragMoved: false, _lastGroup: null
+    zoom: 1, vx: 0, vy: 0, boardW: 0, boardH: 0, nodePts: [], pan: null, dragMoved: false, _lastGroup: null,
+    repo: M.repos[0]
   };
 
   function pill(st) {
@@ -1759,11 +1760,12 @@
 
   function worktreeDialog() {
     if (!state.group) { toast('그룹을 먼저 선택하세요'); return; }
-    var tab = 'new';
+    var tab = 'new', filter = state.repo;
     var g = byId(M.groups, state.group);
     function importList() {
-      if (!M.orcaOnly.length) return '<p class="empty">불러올 워크트리가 없습니다.</p>';
-      return M.orcaOnly.map(function (o) {
+      var opts = filter ? M.orcaOnly.filter(function (o) { return o.repo === filter; }) : M.orcaOnly;
+      if (!opts.length) return '<p class="empty">불러올 워크트리가 없습니다.</p>';
+      return opts.map(function (o) {
         var blocked = !!o.blockedBy;
         var reason = blocked ? esc(o.note || ('다른 그룹(' + o.blockedBy + ')에 이미 있음')) : '';
         return '<div class="imp-row' + (blocked ? ' is-blocked' : '') + '">'
@@ -1783,18 +1785,21 @@
       if (tab === 'new') {
         return head + tabs + '<div class="form">'
           + '<div class="grid2">'
+          + dfield('레포지토리', '<select id="dlg-wtrepo">' + dopts(M.repos, state.repo) + '</select>')
           + dfield('이름', '<input id="dlg-wt" placeholder="예: billing-api">')
-          + dfield('브랜치', '<input id="dlg-wtbranch" placeholder="비우면 feature/&lt;이름&gt;">')
           + '</div><div class="grid2">'
+          + dfield('브랜치', '<input id="dlg-wtbranch" placeholder="비우면 feature/&lt;이름&gt;">')
           + dfield('베이스 브랜치', '<select id="dlg-wtbase">' + dopts(M.bases || ['main'], '') + '</select>')
+          + '</div><div class="grid2">'
           + dfield('모델', '<select id="dlg-wtmodel">' + dopts(M.models, M.models[0]) + '</select>')
-          + '</div>'
           + dfield('부모 워크트리', '<select id="dlg-parent"><option value="">없음 (루트로 추가)</option>'
             + groupWtsOf(state.group).map(function (w) { return '<option value="' + w.id + '">' + esc(w.name) + ' · ' + esc(w.branch) + '</option>'; }).join('') + '</select>')
           + dfield('첫 프롬프트', '<textarea id="dlg-wtprompt" rows="2" placeholder="선택 · 입력하면 세션도 함께 만듭니다"></textarea>')
           + '</div>';
       }
-      return head + tabs + '<p class="muted">Orca 워크트리 · 이미 다른 그룹에 있으면 불러올 수 없습니다.</p>' + importList();
+      return head + tabs + '<div class="form">'
+        + dfield('레포지토리', '<select id="dlg-wtfilter"><option value="">전체</option>' + dopts(M.repos, filter) + '</select>')
+        + '</div>' + '<p class="muted">Orca 워크트리 · 이미 다른 그룹에 있으면 불러올 수 없습니다.</p>' + importList();
     }
     function bind() {
       var ok = $('dlg-ok');
@@ -1802,6 +1807,15 @@
       [].forEach.call($('dlg-body').querySelectorAll('[data-tab]'), function (b) {
         b.onclick = function () { tab = b.getAttribute('data-tab'); setHTML($('dlg-body'), body()); bind(); };
       });
+      var repoPick = $('dlg-wtrepo');
+      if (repoPick) repoPick.onchange = function () { state.repo = repoPick.value; filter = repoPick.value; };
+      var repoFilter = $('dlg-wtfilter');
+      if (repoFilter) repoFilter.onchange = function () {
+        filter = repoFilter.value;
+        if (filter) state.repo = filter;
+        setHTML($('dlg-body'), body());
+        bind();
+      };
       [].forEach.call($('dlg-body').querySelectorAll('[data-import-btn]'), function (b) {
         b.onclick = function () {
           var o = byId(M.orcaOnly, b.getAttribute('data-import-btn'));
@@ -1827,7 +1841,9 @@
         var branch = $('dlg-wtbranch').value.trim() || 'feature/' + name;
         var id = 'wt-' + Date.now().toString(36);
         var parent = $('dlg-parent').value || null;
-        M.worktrees.push({ id: id, group: state.group, repo: M.repo, name: name, branch: branch, parent: parent, dirty: false });
+        var repo = $('dlg-wtrepo').value || state.repo;
+        state.repo = repo;
+        M.worktrees.push({ id: id, group: state.group, repo: repo, name: name, branch: branch, parent: parent, dirty: false });
         var prompt = $('dlg-wtprompt').value.trim();
         if (prompt) {
           var sid = 's-' + Date.now().toString(36);
