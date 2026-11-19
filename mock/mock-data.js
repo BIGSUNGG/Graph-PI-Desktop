@@ -99,19 +99,6 @@ window.MOCK = {
     { id: "s-fix-docs", title: "릴리스 노트", wt: "wt-develop", group: "g-fix", model: "google/gemini-2.5-pro", state: "done", started: "15:32", last: "15:40", tokens: 3200, parent: "s-fix-root" }
   ],
 
-  agents: [
-    { id: "a-onb-spec", title: "onboarding-spec", session: "s-onb-api", state: "done" },
-    { id: "a-onb-ui", title: "wizard-ui-check", session: "s-onb-web", state: "running" },
-    { id: "a-bill-webhook", title: "webhook-replay", session: "s-bill-api", state: "done" },
-    { id: "a-bill-ui", title: "plan-picker", session: "s-bill-web", state: "running" },
-    { id: "a-perf-query", title: "query-plan-diff", session: "s-perf-query", state: "running" },
-    { id: "a-perf-cache", title: "cache-hit-report", session: "s-perf-cache", state: "running" },
-    { id: "a-sec-owasp", title: "owasp-scan", session: "s-sec-audit", state: "running" },
-    { id: "a-infra-db", title: "migration-rehearsal", session: "s-infra-db", state: "done" },
-    { id: "a-fix-sec", title: "session-fixation-repro", session: "s-fix-sec", state: "done" },
-    { id: "a-fix-perf", title: "n-plus-one-scan", session: "s-fix-perf", state: "running" }
-  ],
-
   messages: {
     "s-onb-hub": [
       { role: "user", at: "09:02", text: "Nimbus 온보딩을 web, api, shared, worker 네 레포에 한 번에 붙여줘. 공통 단계 정의는 이 세션에서 관리해." },

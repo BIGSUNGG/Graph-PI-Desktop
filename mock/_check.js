@@ -16,7 +16,7 @@ for (const v of ['board', 'chat', 'orch', 'history']) {
 }
 if (!/window\.MOCK/.test(fs.readFileSync('mock/mock-data.js', 'utf8'))) errs.push('MOCK not exported');
 if (!M.sessions.every((s) => M.worktrees.some((w) => w.id === s.wt))) errs.push('session wt orphan');
-if (!M.agents.every((a) => M.sessions.some((s) => s.id === a.session))) errs.push('agent session orphan');
+if (!M.sessions.some((s) => (M.messages[s.id] || []).some((m) => m.role === 'tool'))) errs.push('no tool messages');
 if (!M.tasks.every((t) => M.runs.some((r) => r.id === t.run))) errs.push('task run orphan');
 if (!M.workers.every((w) => M.tasks.some((t) => t.id === w.task))) errs.push('worker task orphan');
 const legacy = html.match(/#(?:7aa2f7|14171d|262b33|e7e9ee|5f6672|191d24|8a919e|5a6474|4a5160|3a1f24|1d3b2e|2e2717|1d2637|f07178|6ed3a1|e0af68|3a4150|a9b1c1)/g) || [];
@@ -36,8 +36,8 @@ else {
   const colW = G[1];
   const head = G[3];
   const rowH = G[4];
-  const chipMax = Math.min(78, 12 + Math.max(...M.agents.map((a) => a.title.length)) * 5.4);
-  if (32 + chipMax > colW - 10) errs.push('agent chip overflows column: ' + (32 + chipMax) + ' > ' + (colW - 10));
+  const maxToolW = colW - 42;
+  if (32 + maxToolW > colW - 10) errs.push('tool chip overflows column: ' + (32 + maxToolW) + ' > ' + (colW - 10));
   if (head + 4 + rowH < 40) errs.push('card header too short for one row');
 }
 if (!Array.isArray(M.groups) || M.groups.length < 5) errs.push('groups missing');
@@ -77,10 +77,12 @@ if (html.includes('function liveEdge')) errs.push('unused liveEdge still defined
 if (!/<script src="\.\/motion\.js"><\/script>/.test(html)) errs.push('motion.js not loaded');
 
 for (const c of ['#dialog .dialog-wide', '#dialog .dialog-xl', '#dialog .wizard', '#dialog .preset-grid', '#dialog .preset', '#dialog .preset .p-name', '#dialog .preset .p-desc', '#dialog .preset .p-tag', '.panel', '#dialog .kv', '#dialog .side-actions', '#dialog .hintx', '#dialog .del-list', '#dialog .del-item', '#dialog .stats', '#dialog .imp-row', '#dialog .imp-main', '#dialog .imp-name', '#dialog .imp-meta', '#dialog .tabs', '#dialog .tab', '#dialog .loop-actions', '#dialog .field', '#dialog .grid2', '#dialog .notice']) if (!html.includes(c)) errs.push('missing ' + c);
+for (const c of ['insp-tools', '세션별 최근 도구', 'tool-row', 'data-tool']) if (!html.includes(c)) errs.push('missing ' + c);
+for (const f of ['function lastTool', 'function toolName', 'function toolTextW', 'var maxW = c.w - 42', 'measureText']) if (!js.includes(f)) errs.push('missing ' + f);
 for (const f of ["function dfield", "function dopts", "size: 'dialog-xl'", "size: 'dialog-wide'", 'id="dlg-gdup"', 'id="dlg-gprompt"', 'id="dlg-wtbase"', 'id="dlg-wtmodel"', 'id="dlg-wtprompt"', 'data-loop-act="start"']) if (!js.includes(f)) errs.push('missing ' + f);
 console.log(
   errs.length
     ? 'FAIL\n' + errs.join('\n')
-    : 'PASS ids=' + new Set(ids).size + ' sessions=' + M.sessions.length + ' worktrees=' + M.worktrees.length + ' agents=' + M.agents.length + ' tasks=' + M.tasks.length + ' workers=' + M.workers.length
+    : 'PASS ids=' + new Set(ids).size + ' sessions=' + M.sessions.length + ' worktrees=' + M.worktrees.length + ' tasks=' + M.tasks.length + ' workers=' + M.workers.length
 );
 process.exit(errs.length ? 1 : 0);
