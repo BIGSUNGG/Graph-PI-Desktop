@@ -158,7 +158,8 @@
   .grp.is-closed .grp-head .chev{transform:rotate(-90deg)}
   .grp.is-active .grp-head{color:var(--text)}
   .grp-head b{margin-left:auto;font-size:10px;font-weight:500;color:var(--dim)}
-  .grp-head em{margin-left:6px;font-style:normal;font-size:9.5px;color:var(--dim);opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .grp-name{flex:0 0 auto;white-space:nowrap}
+  .grp-head em{flex:1 1 auto;min-width:0;margin-left:6px;font-style:normal;font-size:9.5px;color:var(--dim);opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .grp-more{margin-left:auto;padding:0 3px;font-style:normal;font-size:12px;color:var(--dim);line-height:1}
   .grp-more:hover{color:var(--text)}
   .side-add{margin-left:4px;height:18px;padding:0 5px;border:1px solid var(--input-line);border-radius:6px;background:transparent;color:var(--muted);font-size:11px;line-height:1;cursor:pointer}
@@ -216,6 +217,82 @@
   .insp-chat{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
   .insp-chat h3{display:flex;align-items:center;gap:6px;margin:0 0 8px;font-size:11px;font-weight:600;color:var(--muted)}
   .insp-chat-n{margin-left:auto;font-size:10px;font-weight:400;color:var(--dim)}
+  /* ---------- goal / list / loop / audit supervision ---------- */
+  .sup{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+  .sup-head{display:flex;align-items:center;gap:6px;margin:0 0 8px;font-size:11px;font-weight:600;color:var(--muted)}
+  .sup-head .n{margin-left:auto;font-size:10px;font-weight:400;color:var(--dim)}
+  .sup-question{padding:9px 10px;margin-bottom:10px;border:1px solid rgb(212 163 0 / .38);border-radius:9px;background:rgb(212 163 0 / .1)}
+  .sup-question .q-h{display:flex;gap:6px;align-items:center;font-size:10.5px;color:#f0d9a3;margin-bottom:4px}
+  .sup-question .q-t{font-size:11.5px;line-height:1.45;margin-bottom:7px}
+  .sup-question .q-opts{display:flex;flex-direction:column;gap:5px}
+  .sup-question .q-opt{text-align:left;padding:6px 8px;border:1px solid rgb(212 163 0 / .3);border-radius:7px;background:rgb(255 255 255 / .03);color:var(--text);font:inherit;font-size:10.5px;cursor:pointer}
+  .sup-question .q-opt:hover{border-color:var(--amber)}
+  .sup-tabs{display:flex;gap:2px;padding:2px;margin-bottom:8px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)}
+  .sup-tab{flex:1;padding:5px 2px;border:0;border-radius:6px;background:transparent;color:var(--dim);font:inherit;font-size:10px;cursor:pointer}
+  .sup-tab.is-active{background:rgb(255 255 255 / .08);color:var(--text)}
+  .sup-tab .cnt{margin-left:2px;font-size:9px;color:var(--dim)}
+  .sup-panel{display:flex;flex-direction:column;gap:7px}
+  .sup-empty{padding:12px 4px;font-size:10.5px;line-height:1.55;color:var(--dim);text-align:center}
+  .goal-row,.list-row,.loop-card,.audit-card{padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:rgb(255 255 255 / .025)}
+  .goal-row .g-top,.list-row .l-top{display:flex;align-items:flex-start;gap:5px;margin-bottom:4px}
+  .goal-row .g-obj{flex:1;font-size:11px;line-height:1.4;font-weight:550}
+  .goal-row .g-meta,.list-row .l-meta{font-size:9.5px;color:var(--dim);line-height:1.5}
+  .goal-accept{margin:5px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px}
+  .goal-accept li{font-size:9.5px;line-height:1.4;color:var(--muted)}
+  .goal-accept li:before{content:"✓ ";color:var(--green)}
+  .goal-accept li.no:before{content:"✕ ";color:var(--red)}
+  .goal-accept li.unknown:before{content:"? ";color:var(--amber)}
+  .list-row .l-children{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}
+  .list-row .l-child{font-size:9px;padding:1px 4px;border-radius:4px;background:rgb(255 255 255 / .06);color:var(--muted)}
+  .list-row .l-child.ok{color:#9fe8c8;background:rgb(16 185 129 / .12)}
+  .list-row .l-child.bad{color:#ffb3b4;background:rgb(255 101 104 / .12)}
+  .list-row.blocked{border-color:rgb(255 101 104 / .35)}
+  .loop-card .lp-top{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+  .loop-card .lp-target{flex:1;font-size:10.5px;font-weight:550}
+  .loop-card .lp-num{font-size:10px;color:var(--dim)}
+  .loop-progress{height:4px;margin:5px 0;border-radius:2px;background:rgb(255 255 255 / .08);overflow:hidden}
+  .loop-progress i{display:block;height:100%;border-radius:2px;background:var(--accent)}
+  .loop-card .lp-meta{font-size:9.5px;color:var(--dim);line-height:1.5}
+  .loop-card.paused{border-color:rgb(212 163 0 / .35)}
+  .loop-card.stopped{border-color:rgb(255 101 104 / .3)}
+  .audit-card .a-top{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+  .audit-card .a-verdict{flex:1;font-size:10.5px;font-weight:600}
+  .audit-verdict{padding:1px 5px;border-radius:4px;font-size:9px;font-weight:600;border:1px solid var(--line);color:var(--muted)}
+  .audit-verdict.approved{color:#9fe8c8;border-color:rgb(16 185 129 / .35);background:rgb(16 185 129 / .12)}
+  .audit-verdict.rejected,.audit-verdict.impossible{color:#ffb3b4;border-color:rgb(255 101 104 / .35);background:rgb(255 101 104 / .12)}
+  .audit-verdict.error{color:#f0d9a3;border-color:rgb(212 163 0 / .35);background:rgb(212 163 0 / .12)}
+  .audit-criteria{display:flex;flex-direction:column;gap:3px;margin:5px 0 0;padding:0;list-style:none}
+  .audit-criteria li{font-size:9.5px;line-height:1.4;color:var(--muted)}
+  .audit-criteria .cr{font-weight:600;margin-right:3px}
+  .audit-criteria .cr.pass{color:var(--green)} .audit-criteria .cr.fail{color:var(--red)} .audit-criteria .cr.unknown{color:var(--amber)}
+  .audit-hist{margin-top:5px;padding-top:4px;border-top:1px dashed var(--line);font-size:9px;color:var(--dim);line-height:1.5}
+  .todo-panel{margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}
+  .todo-row{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:10px;color:var(--muted)}
+  .todo-row .td{width:6px;height:6px;border-radius:50%;background:var(--dim);flex:none}
+  .todo-row.done .td{background:var(--green)} .todo-row.doing .td{background:var(--accent)}
+  .todo-row .tt{flex:1;line-height:1.35}
+  .todo-row .ts{font-size:8.5px;color:var(--dim)}
+  .slot-badges{display:inline-flex;gap:2px;margin-left:auto;flex:none}
+  .slot{width:5px;height:5px;border-radius:50%;background:rgb(255 255 255 / .16)}
+  .slot.good{background:var(--green)} .slot.active{background:var(--accent)} .slot.wait{background:var(--amber)} .slot.bad{background:var(--red)}
+  .session-attn{outline:1px solid rgb(212 163 0 / .5);outline-offset:1px;border-radius:7px}
+  .agent-msg{margin:5px 0;padding:6px 8px;border-left:2px solid var(--purple);background:rgb(192 132 252 / .08);border-radius:0 6px 6px 0;font-size:10.5px;line-height:1.45}
+  .agent-msg .am-h{font-size:9px;color:#d8b4fe;margin-bottom:2px}
+  .chat-question{margin:7px 0;padding:8px 9px;border:1px solid rgb(212 163 0 / .4);border-radius:8px;background:rgb(212 163 0 / .1)}
+  .chat-question .cq-h{font-size:9px;color:#f0d9a3;margin-bottom:3px}
+  .chat-question .cq-q{font-size:11px;line-height:1.4;margin-bottom:6px}
+  .chat-question .q-opts{display:flex;flex-wrap:wrap;gap:4px}
+  .chat-question .q-opt{text-align:left;padding:4px 7px;border:1px solid rgb(212 163 0 / .35);border-radius:6px;background:rgb(255 255 255 / .03);color:var(--text);font:inherit;font-size:10px;cursor:pointer}
+  .chat-question .q-opt:hover{border-color:var(--amber)}
+  #ref-menu{position:absolute;left:8px;right:8px;bottom:100%;margin-bottom:6px;max-height:220px;overflow:auto;padding:5px;border:1px solid var(--input-line);border-radius:9px;background:rgb(23 23 23 / .98);box-shadow:var(--shadow-pop);z-index:20}
+  #ref-menu .ref-item{display:flex;flex-direction:column;gap:1px;width:100%;padding:5px 7px;border:0;border-radius:6px;background:transparent;color:var(--text);text-align:left;font:inherit;cursor:pointer}
+  #ref-menu .ref-item:hover{background:rgb(255 255 255 / .07)}
+  #ref-menu .ri-t{font-size:10.5px}
+  #ref-menu .ri-d{font-size:9px;color:var(--dim)}
+  .ref-tag{color:var(--accent)}
+  .preset-required{font-size:8.5px;color:var(--amber)}
+  .preset-flow{font-size:8.5px;color:var(--dim);line-height:1.4}
+  .goal-field-error{font-size:10px;color:#ffb3b4;margin-top:-4px}
   .insp-thread{overflow:auto;display:flex;flex-direction:column;gap:14px;padding-right:4px}
   .insp-thread .msg{font-size:11.5px}
   .insp-resize{height:8px;margin:6px 0;cursor:ns-resize;border-radius:4px;background:linear-gradient(var(--line),var(--line)) center/32px 2px no-repeat}
@@ -278,7 +355,7 @@
   .msg.typing .dots i:nth-child(3){animation-delay:.3s}
   .divider{display:flex;align-items:center;gap:10px;color:var(--dim);font-size:10px}
   .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
-  .composer{border-top:1px solid var(--line);padding:10px 12px;background:var(--card)}
+  .composer{border-top:1px solid var(--line);padding:10px 12px;background:var(--card);position:relative}
   .composer textarea{resize:none;min-height:46px;font-size:12.5px;background:rgb(255 255 255 / .04)}
   .composer-foot{display:flex;align-items:center;gap:8px;margin-top:8px}
   .status{margin-left:auto;font-size:11px;color:var(--dim)}
@@ -535,7 +612,8 @@
             <div class="chat-head"><span class="who" id="chat-who"></span><span class="pill" id="chat-pill"></span><span class="meta" id="chat-meta"></span></div>
             <div class="chat-log" id="chat-log"></div>
             <form class="composer" id="composer">
-              <textarea id="chat-input" rows="2" placeholder="프롬프트를 입력하세요 (Enter 전송 · Shift+Enter 줄바꿈)"></textarea>
+              <div id="ref-menu" class="hidden"></div>
+              <textarea id="chat-input" rows="2" placeholder="프롬프트를 입력하세요 (Enter 전송 · Shift+Enter 줄바꿈 · @로 참조)"></textarea>
               <div class="composer-foot"><span class="status" id="chat-status"></span><button class="btn primary" type="submit" id="chat-send">전송</button></div>
             </form>
           </div>
@@ -696,6 +774,193 @@
     return out;
   }
 
+  function goalById(id) { return byId(M.goals, id); }
+  function isHubSession(s) { var g = byId(M.groups, s.group); return !!g && g.hubSessionId === s.id; }
+  function auditById(id) { return byId(M.audits, id); }
+  function loopById(id) { return byId(M.loops, id); }
+  function goalOfSession(sid) {
+    return M.goals.filter(function (g) { return g.sessionId === sid; })
+      .sort(function (a, b) { return (b.status === "active" || b.status === "auditing") - (a.status === "active" || a.status === "auditing"); })[0] || null;
+  }
+  function goalsOfGroup(gid) {
+    return M.goals.filter(function (g) { return g.group === gid; });
+  }
+  function listOfSession(sid) {
+    return M.listItems.filter(function (li) { return li.sessionId === sid; });
+  }
+  function listOfGroup(gid) {
+    return M.listItems.filter(function (li) { return li.group === gid && li.parentGoalId; });
+  }
+  function loopOfGoal(gid) { return M.loops.filter(function (l) { return l.goalId === gid; })[0] || null; }
+  function loopsOfGroup(gid) {
+    var ids = {}; goalsOfGroup(gid).forEach(function (g) { if (g.loopId) ids[g.loopId] = 1; });
+    return M.loops.filter(function (l) { return ids[l.id]; });
+  }
+  function auditsOfGroup(gid) {
+    var ids = {}; goalsOfGroup(gid).forEach(function (g) { ids[g.id] = 1; });
+    return M.audits.filter(function (a) { return ids[a.goalId]; });
+  }
+  function latestAuditOf(g) { return g && g.latestAuditId ? auditById(g.latestAuditId) : null; }
+  function openQuestion(sid) {
+    return M.questions.filter(function (q) { return q.sessionId === sid && q.status === "pending"; })[0] || null;
+  }
+  function todosOf(gid, sid) {
+    return M.todos.filter(function (t) {
+      return t.groupId === gid && (t.scope === "group" || (sid && t.sessionId === sid));
+    });
+  }
+  function agentMessagesOf(sid) {
+    return M.agentMessages.filter(function (m) { return m.from === sid || m.to === sid; });
+  }
+  function auditRunOf(gid, goalId) {
+    return M.auditRuns.filter(function (r) { return r.group === gid && r.goalId === goalId; })[0] || null;
+  }
+  function goalSlot(g) {
+    if (!g) return "";
+    if (g.status === "complete") return "good";
+    if (g.status === "active" || g.status === "auditing") return "active";
+    if (g.status === "paused") return "wait";
+    return "bad";
+  }
+  function listSlot(items) {
+    if (!items.length) return "";
+    if (items.some(function (li) { return li.state === "blocked"; })) return "bad";
+    if (items.some(function (li) { return li.state === "active"; })) return "active";
+    if (items.some(function (li) { return li.state === "queued"; })) return "wait";
+    return "good";
+  }
+  function loopSlot(loops) {
+    if (!loops.length) return "";
+    if (loops.some(function (l) { return l.status === "stopped" || l.status === "paused"; })) return "bad";
+    if (loops.some(function (l) { return l.status === "running"; })) return "active";
+    if (loops.some(function (l) { return l.status === "done"; })) return "good";
+    return "wait";
+  }
+  function auditSlot(audits) {
+    if (!audits.length) return "";
+    if (audits.some(function (a) { return a.verdict === "rejected" || a.verdict === "impossible" || a.verdict === "error"; })) return "bad";
+    if (audits.some(function (a) { return a.verdict === "approved"; })) return "good";
+    return "wait";
+  }
+  function slotsHTML(g, items, loops, audits) {
+    return '<span class="slot-badges" title="Goal · List · Loop · Audit">' +
+      '<i class="slot ' + goalSlot(g) + '" data-slot="goal"></i><i class="slot ' + listSlot(items) + '" data-slot="list"></i>' +
+      '<i class="slot ' + loopSlot(loops) + '" data-slot="loop"></i><i class="slot ' + auditSlot(audits) + '" data-slot="audit"></i></span>';
+  }
+  function sessionSlots(s) {
+    var g = goalOfSession(s.id), items = listOfSession(s.id);
+    var loops = M.loops.filter(function (l) { var x = goalById(l.goalId); return x && x.sessionId === s.id; });
+    var audits = M.audits.filter(function (a) { var x = goalById(a.goalId); return x && x.sessionId === s.id; });
+    return slotsHTML(g, items, loops, audits);
+  }
+  function slotColor(kind) {
+    return ({ good: "#10b981", active: "#51a2ff", wait: "#d4a300", bad: "#ff6568" })[kind] || "#444444";
+  }
+  function sessionSlotColors(s) {
+    var g = goalOfSession(s.id), items = listOfSession(s.id);
+    var loops = M.loops.filter(function (l) { var x = goalById(l.goalId); return x && x.sessionId === s.id; });
+    var audits = M.audits.filter(function (a) { var x = goalById(a.goalId); return x && x.sessionId === s.id; });
+    return [goalSlot(g), listSlot(items), loopSlot(loops), auditSlot(audits)];
+  }
+  function groupSlotColors(gid) {
+    var h = hubSession(gid);
+    return [goalSlot(h ? goalOfSession(h.id) : null), listSlot(listOfGroup(gid)), loopSlot(loopsOfGroup(gid)), auditSlot(auditsOfGroup(gid))];
+  }
+  function groupSlots(gid) {
+    var h = hubSession(gid);
+    return slotsHTML(h ? goalOfSession(h.id) : null, listOfGroup(gid), loopsOfGroup(gid), auditsOfGroup(gid));
+  }
+  function attention(s) {
+    return !!(openQuestion(s.id) || (s.state === "paused" && s.loop) || s.auditState === "error");
+  }
+  function statusLabel(st) {
+    return ({ active: "진행 중", auditing: "감사 중", complete: "완료", paused: "일시정지", aborted: "중단" })[st] || st;
+  }
+  function verdictLabel(v) {
+    return ({ approved: "승인", rejected: "거부", impossible: "불가능", error: "오류" })[v] || v;
+  }
+  function refToken(text) {
+    var m = String(text || "").match(/@([a-z0-9-]*)(\/[^\s@]*)?$/i);
+    return m ? { handle: m[1], rest: m[2] || "" } : null;
+  }
+  function refProject(handle) {
+    return M.refProjects.filter(function (p) { return p.handle === handle; })[0] || null;
+  }
+  function refExists(text) {
+    var t = refToken(text);
+    if (!t) return true;
+    var p = refProject(t.handle);
+    if (!p) return false;
+    var rest = t.rest.replace(/^\//, "");
+    if (!rest) return true;
+    return p.files.some(function (f) { return f === rest || f.indexOf(rest) === 0; }) ||
+      p.branches.some(function (b) { return b === rest || rest.indexOf(b + "/") === 0; });
+  }
+  function showRefMenu() {
+    var input = $("chat-input"), menu = $("ref-menu");
+    if (!input || !menu) return;
+    var t = refToken(input.value);
+    if (!t) { menu.classList.add("hidden"); return; }
+    var p = refProject(t.handle);
+    var items = [];
+    if (!p && !t.handle) {
+      M.refProjects.forEach(function (x) {
+        items.push("<button type=\"button\" class=\"ref-item\" data-ref=\"@" + esc(x.handle) + "\" data-kind=\"project\"><span class=\"ri-t\">" + esc(x.label) + " · 프로젝트</span><span class=\"ri-d\">@" + esc(x.handle) + " · " + esc(x.repo) + "</span></button>");
+      });
+    } else if (!p) {
+      items.push('<div class="ref-item"><span class="ri-t">일치하는 프로젝트 없음</span><span class="ri-d">@' + esc(t.handle) + '</span></div>');
+    } else {
+      var rest = t.rest.replace(/^\//, "");
+      if (!rest) items.push({ ref: "@" + p.handle, title: p.label + " · 프로젝트", desc: p.repo + " · " + p.branches.length + "개 브랜치", kind: "project" });
+      p.branches.forEach(function (b) {
+        if (rest && b.indexOf(rest) !== 0 && rest.indexOf(b) !== 0) return;
+        items.push({ ref: "@" + p.handle + "/" + b, title: "@" + p.handle + "/" + b, desc: "브랜치" + (p.worktree && b === p.branches[0] ? " · 워크트리 " + p.worktree : " · 워크트리 없음 (생성 확인)"), kind: "branch" });
+      });
+      p.files.forEach(function (f) {
+        if (rest && f.indexOf(rest) !== 0) return;
+        items.push({ ref: "@" + p.handle + "/" + f, title: "@" + p.handle + "/" + f, desc: "파일 참조", kind: "file" });
+      });
+    }
+    setHTML(menu, items.map(function (x) {
+      if (typeof x === "string") return x;
+      return '<button type="button" class="ref-item" data-ref="' + esc(x.ref) + '" data-kind="' + x.kind + '"><span class="ri-t">' + esc(x.title) + '</span><span class="ri-d">' + esc(x.desc) + '</span></button>';
+    }).join(""));
+    menu.classList.remove("hidden");
+  }
+  function insertRef(ref) {
+    var input = $("chat-input"), menu = $("ref-menu");
+    if (!input) return;
+    var t = refToken(input.value);
+    if (t) input.value = input.value.slice(0, input.value.length - (t.handle.length + 1 + t.rest.length)) + ref + " ";
+    if (menu) menu.classList.add("hidden");
+    input.focus();
+  }
+  function refCreateDialog(p, branch) {
+    openDialog({
+      title: "워크트리 생성",
+      okLabel: "브랜치와 워크트리 만들기",
+      body: '<div class="notice"><span class="pill running"><span class="d"></span>없음</span><span><b>@' + esc(p.handle) + '/' + esc(branch) + '</b> 브랜치의 워크트리가 없습니다.</span></div>'
+        + '<p>브랜치와 워크트리를 만들까요? 세션은 만들지 않습니다.</p>'
+        + '<p class="muted">' + esc(p.repo) + ' · ' + esc(p.group) + ' 그룹 · 확인 후 참조가 입력됩니다.</p>',
+      onOk: function () {
+        var id = "wt-" + Date.now().toString(36);
+        M.worktrees.push({ id: id, name: branch, branch: branch, repo: p.repo, group: p.group, parent: null, dirty: false, path: M.workspacesRoot + "\\" + p.group + "\\" + branch, loop: null });
+        p.worktree = branch;
+        insertRef("@" + p.handle + "/" + branch);
+        renderSidebar();
+        toast("워크트리 생성 — " + branch);
+      }
+    });
+  }
+  function pickRef(ref, kind) {
+    var p = refProject(ref.replace(/^@/, "").split("/")[0]);
+    if (kind === "branch" && p) {
+      var branch = ref.slice(ref.indexOf("/") + 1);
+      if (!p.worktree || p.worktree !== branch) { refCreateDialog(p, branch); return; }
+    }
+    insertRef(ref);
+  }
+
   function renderSidebar() {
     var selSess = state.selected.type === "session" ? byId(M.sessions, state.selected.id) : null;
     var rows = M.groups.map(function (g) {
@@ -708,10 +973,11 @@
         var isOpen = state.sideOpenWt === w.id;
         var list = isOpen ? '<div class="wt-sess">' + (ss.length ? ss.map(function (s) {
           var on = selSess && selSess.id === s.id ? " is-sel" : "";
-          return '<button class="wt-sess-row' + on + '" data-sess="' + s.id + '">'
+          return '<button class="wt-sess-row' + on + (attention(s) ? " session-attn" : "") + '" data-sess="' + s.id + '">'
             + '<span class="d ' + s.state + '"></span>'
             + '<span class="wt-sess-name">' + esc(s.title) + "</span>"
-            + '<span class="wt-sess-time">' + esc(s.last) + "</span></button>";
+            + (openQuestion(s.id) ? '<span class="wt-sess-time" style="color:var(--amber)" title="질문 대기">?</span>' : "")
+            + '<span class="wt-sess-time">' + esc(s.last) + "</span>" + sessionSlots(s) + "</button>";
         }).join("") : '<div class="wt-sess-empty">세션 없음</div>') + "</div>" : "";
         return '<div class="wt-item">'
           + '<button class="wt-row' + sel + '" data-wt="' + w.id + '" aria-expanded="' + (isOpen ? "true" : "false") + '">'
@@ -723,8 +989,9 @@
       }).join("");
       return '<div class="grp' + (closed ? " is-closed" : "") + (state.group === g.id ? " is-active" : "")
         + (state.openAnim === g.id ? " is-open-anim" : "") + (state.flash === g.id ? " is-flash" : "") + '">'
-        + '<button class="grp-head" data-grp="' + g.id + '"><span class="chev">▾</span><span>' + esc(g.name) + "</span>"
+        + '<button class="grp-head" data-grp="' + g.id + '"><span class="chev">▾</span><span class="grp-name">' + esc(g.name) + "</span>"
         + '<em>' + esc(g.note) + "</em>"
+        + groupSlots(g.id)
         + '<span class="grp-more" data-grp-edit="' + g.id + '" title="그룹 편집">⋯</span>'
         + "<b>" + wts.length + "</b></button>"
         + '<div class="grp-body">' + body + "</div></div>";
@@ -807,6 +1074,8 @@
 
   function setView(v) {
     state.view = v;
+    if (toastTimer) clearTimeout(toastTimer);
+    $("toast").classList.add("hidden");
     [].forEach.call(document.querySelectorAll(".view"), function (s) { s.classList.add("hidden"); });
     $("view-" + v).classList.remove("hidden");
     [].forEach.call(document.querySelectorAll(".nav-item"), function (b) {
@@ -849,6 +1118,9 @@
       + '<circle cx="' + (x + 18) + '" cy="' + (y + 19) + '" r="4" fill="#d4a300"/>'
       + '<text x="' + (x + 30) + '" y="' + (y + 23) + '" fill="#f0f0f0" font-size="12" font-weight="600">' + esc(hub.title) + '</text>'
       + '<text x="' + (x + w - 14) + '" y="' + (y + 23) + '" fill="#737373" font-size="9.5" text-anchor="end">' + repoN + ' 레포 관리</text>'
+      + groupSlotColors(hub.group).map(function (k, i) {
+        return '<circle data-slot="' + ["goal", "list", "loop", "audit"][i] + '" cx="' + (x + w - 14 - i * 8) + '" cy="' + (y + 37) + '" r="2.3" fill="' + slotColor(k) + '"/>';
+      }).join("")
       + '<text x="' + (x + 18) + '" y="' + (y + 41) + '" fill="#737373" font-size="9.5">'
       + esc(short(hub.model)) + ' · ' + esc(hub.started) + ' · ' + Math.round(hub.tokens / 1000) + 'k</text>';
   }
@@ -1055,6 +1327,10 @@
         svg.push('<text x="' + (c.x + 32) + '" y="' + (r.y + 13) + '" fill="#f0f0f0" font-size="11">' + esc(clip(s.title, 19)) + '</text>');
         svg.push('<text x="' + (c.x + 32) + '" y="' + (r.y + 26) + '" fill="#737373" font-size="9">'
           + esc(short(s.model)) + " · " + esc(s.started) + " · " + Math.round(s.tokens / 1000) + "k</text>");
+        sessionSlotColors(s).forEach(function (k, i) {
+          svg.push('<circle data-slot="' + ["goal", "list", "loop", "audit"][i] + '" cx="' + (c.x + c.w - 9 - i * 7) + '" cy="' + (r.y + 26) + '" r="2.1" fill="' + slotColor(k) + '"/>');
+        });
+        if (attention(s)) svg.push('<circle cx="' + (c.x + c.w - 9) + '" cy="' + (r.y + 9) + '" r="2.6" fill="#d4a300"/>');
         svg.push("</g>");
         if (!r.tool) return;
         var full = toolName(r.tool) || "도구";
@@ -1079,6 +1355,17 @@
     var maxBottom = G.pad;
     if (hub) maxBottom = Math.max(maxBottom, hubBottom);
     all.forEach(function (c) { maxBottom = Math.max(maxBottom, c.y + c.h); });
+    var ar = M.auditRuns.filter(function (r) { return r.group === state.group && (r.state === "running" || r.state === "error"); })[0];
+    if (ar) {
+      var ay = maxBottom + 18, aw = Math.min(300, totalW - G.pad * 2), ag = goalById(ar.goalId);
+      svg.push('<g class="node audit-run" data-audit="' + ar.id + '">'
+        + '<rect x="' + G.pad + '" y="' + ay + '" width="' + aw + '" height="54" rx="9" fill="#171717" stroke="' + (ar.state === "error" ? "#ff6568" : "#c084fc") + '"/>'
+        + '<circle cx="' + (G.pad + 15) + '" cy="' + (ay + 18) + '" r="3.5" fill="' + (ar.state === "error" ? "#ff6568" : "#c084fc") + '"/>'
+        + '<text x="' + (G.pad + 26) + '" y="' + (ay + 21) + '" fill="#f0f0f0" font-size="10.5" font-weight="600">Audit 세션 · ' + (ar.state === "error" ? "오류" : "진행 중") + '</text>'
+        + '<text x="' + (G.pad + 12) + '" y="' + (ay + 38) + '" fill="#a3a3a3" font-size="9">' + esc(clip(ag ? ag.objective : ar.id, 34)) + '</text>'
+        + '<text x="' + (G.pad + aw - 12) + '" y="' + (ay + 21) + '" fill="#737373" font-size="8.5" text-anchor="end">' + esc(ar.last) + '</text></g>');
+      maxBottom = ay + 62;
+    }
     svg.push(overlay.join(""));
     state.boardW = totalW;
     state.boardH = Math.max(maxBottom, bottomExtra) + G.pad;
@@ -1154,6 +1441,131 @@
       + '</section>';
   }
 
+  function goalPillClass(st) {
+    return st === "complete" ? "done" : st === "aborted" ? "failed" : st === "paused" ? "idle" : "running";
+  }
+  function questionHTML(q, compact) {
+    if (!q || !q.questions.length) return "";
+    var qq = q.questions[0];
+    var opts = qq.options.map(function (o, i) {
+      return '<button class="q-opt" data-act="ask-answer" data-q="' + esc(q.id) + '" data-opt="' + i + '">'
+        + '<b>' + esc(o.label) + '</b> — ' + esc(o.description) + '</button>';
+    }).join("");
+    return '<div class="' + (compact ? "chat-question" : "sup-question") + '">'
+      + '<div class="' + (compact ? "cq-h" : "q-h") + '">? 에이전트 질문 · ' + esc(qq.header) + '</div>'
+      + '<div class="' + (compact ? "cq-q" : "q-t") + '">' + esc(qq.question) + '</div>'
+      + '<div class="q-opts">' + opts + '</div></div>';
+  }
+
+  function goalTabHTML(s, g, isHub) {
+    if (!g) return '<div class="sup-empty">이 세션에 활성 Goal이 없습니다.<br>에이전트가 Goal을 만들면 여기에 표시됩니다.</div>';
+    var a = latestAuditOf(g);
+    var crit = a ? a.criteriaResults : [];
+    var accepted = g.acceptance.map(function (c) {
+      var r = crit.filter(function (x) { return x.criterion === c; })[0];
+      var cls = !r ? "" : r.result === "pass" ? "" : r.result === "fail" ? "no" : "unknown";
+      return '<li class="' + cls + '">' + esc(c) + "</li>";
+    }).join("");
+    var agg = "";
+    if (isHub) {
+      var gs = goalsOfGroup(g.group), child = gs.filter(function (x) { return x.id !== g.id; });
+      var ok = child.filter(function (x) { return x.status === "complete"; }).length;
+      var bad = child.filter(function (x) { return x.status === "aborted"; }).length;
+      agg = '<div class="g-meta">하위 Goal ' + child.length + '개 · 승인 ' + ok + ' · 중단 ' + bad
+        + ' · 차단 항목 ' + listOfGroup(g.group).filter(function (li) { return li.state === "blocked"; }).length + '</div>';
+    }
+    return '<div class="goal-row"><div class="g-top"><span class="pill ' + goalPillClass(g.status) + '"><span class="d"></span>'
+      + statusLabel(g.status) + '</span><span class="g-obj">' + esc(g.objective) + '</span></div>'
+      + '<div class="g-meta">revision ' + g.revision + ' · 감사 ' + g.auditAttemptCount + '회'
+      + (g.completedAt ? ' · 완료 ' + esc(g.completedAt) : '') + (g.pauseReason ? ' · 사유 ' + esc(g.pauseReason) : '') + '</div>'
+      + agg + '<ul class="goal-accept">' + accepted + '</ul></div>';
+  }
+
+  function listTabHTML(s, items, isHub) {
+    var archive = !!state.arch;
+    var shown = items.filter(function (li) { return archive ? (li.state === "complete" || li.state === "blocked") : li.state !== "complete"; });
+    var head = '<div class="sup-head">' + (isHub ? "허브 List · 항목" : "세션 List · Goal 큐")
+      + '<span class="n">' + items.length + '개</span></div>'
+      + '<button class="btn ghost" data-act="arch-toggle" style="align-self:flex-start;margin-bottom:4px">' + (archive ? "진행 항목 보기" : "아카이브 보기") + '</button>';
+    if (!shown.length) return head + '<div class="sup-empty">' + (archive ? "아카이브가 비어 있습니다." : "대기 중인 List 항목이 없습니다.") + '</div>';
+    return head + shown.map(function (li) {
+      var child = (li.childGoalIds || []).map(function (id) {
+        var x = goalById(id); if (!x) return "";
+        var cls = x.status === "complete" ? "ok" : x.status === "aborted" ? "bad" : "";
+        return '<span class="l-child ' + cls + '">' + esc(x.sessionId.replace("s-", "")) + ' · ' + statusLabel(x.status) + '</span>';
+      }).join("");
+      return '<div class="list-row ' + (li.state === "blocked" ? "blocked" : "") + '">'
+        + '<div class="l-top"><span class="pill ' + (li.state === "blocked" ? "failed" : li.state === "complete" ? "done" : li.state === "active" ? "running" : "idle") + '"><span class="d"></span>' + esc(li.state) + '</span>'
+        + '<span class="g-obj">' + esc(li.title) + '</span></div>'
+        + '<div class="l-meta">#' + li.queueOrder + (li.parentGoalId ? " · 부모 Goal" : " · 세션 Goal") + (li.integrationNote ? " · " + esc(li.integrationNote) : "") + '</div>'
+        + (child ? '<div class="l-children">' + child + '</div>' : "") + '</div>';
+    }).join("");
+  }
+
+  function loopReason(l) {
+    if (l.status === "paused" && l.pauseKind === "audit") return "감사 대기" + (l.stopReason === "metric_target" ? " · 측정 목표 달성" : "");
+    if (l.status === "paused" && l.pauseKind === "error") return "감사 오류 · 재감사 대기";
+    if (l.status === "stopped") {
+      var why = { max_iterations: "최대 회차", time_limit: "시간 상한", token_limit: "토큰 상한", plateau: "정체", user: "사용자 중지" }[l.stopReason] || l.stopReason;
+      return "정지 · " + why;
+    }
+    if (l.status === "done") return "완료 · 감사 승인";
+    return "진행 중";
+  }
+
+  function loopTabHTML(loops) {
+    if (!loops.length) return '<div class="sup-empty">이 Goal에는 Loop가 없습니다.<br>완료 조건은 Audit만으로 검증합니다.</div>';
+    return loops.map(function (l) {
+      var pct = l.maxIterations ? Math.min(100, Math.round(l.iteration / l.maxIterations * 100)) : 0;
+      var st = l.status === "paused" ? "paused" : l.status === "stopped" ? "stopped" : "";
+      return '<div class="loop-card ' + st + '"><div class="lp-top"><span class="g-obj">' + esc(l.target || "측정값 없음 · Audit 판정") + '</span>'
+        + '<span class="pill ' + (l.status === "running" ? "running" : l.status === "done" ? "done" : l.status === "stopped" ? "failed" : "idle") + '"><span class="d"></span>' + esc(l.status) + '</span></div>'
+        + '<div class="loop-progress"><i style="width:' + pct + '%"></i></div>'
+        + '<div class="lp-meta">' + l.iteration + '/' + l.maxIterations + ' 회차 · 현재 ' + esc(l.currentValue == null ? "—" : l.currentValue) + ' · 최고 ' + esc(l.bestValue == null ? "—" : l.bestValue)
+        + '<br>' + esc(l.measureCmd || "measureCmd 없음") + ' · ' + Math.round(l.tokensUsed / 1000) + 'k/' + Math.round(l.tokenLimit / 1000) + 'k'
+        + '<br>' + esc(loopReason(l)) + '</div>'
+        + (l.history && l.history.length ? '<div class="audit-hist">' + l.history.map(function (h) { return '#' + h.iteration + ' ' + esc(h.value == null ? "—" : h.value) + ' · ' + esc(h.at); }).join("  ") + '</div>' : '') + '</div>';
+    }).join("");
+  }
+
+  function auditTabHTML(audits, runs) {
+    var run = runs[0];
+    var runHTML = run ? '<div class="audit-card"><div class="a-top"><span class="a-verdict">Audit 세션 · ' + (run.state === "error" ? "오류" : "진행 중") + '</span><span class="pill ' + (run.state === "error" ? "failed" : "running") + '"><span class="d"></span>' + esc(run.state) + '</span></div><div class="g-meta">대상 ' + esc(run.targetSessionId) + ' · ' + esc(run.started) + ' 시작</div></div>' : "";
+    if (!audits.length) return runHTML + '<div class="sup-empty">아직 감사 기록이 없습니다.<br>Goal 완료를 주장하면 별도 Audit 세션이 검증합니다.</div>';
+    return runHTML + audits.map(function (a, idx) {
+      var crit = a.criteriaResults.map(function (c) { return '<li><span class="cr ' + esc(c.result) + '">' + esc(c.result) + '</span>' + esc(c.criterion) + ' — ' + esc(c.evidence) + '</li>'; }).join("");
+      return '<div class="audit-card"><div class="a-top"><span class="a-verdict">' + (idx === 0 ? "최신 감사" : "이전 감사") + '</span><span class="audit-verdict ' + esc(a.verdict) + '">' + verdictLabel(a.verdict) + '</span></div>'
+        + '<div class="g-meta">' + esc(a.createdAt) + ' · ' + esc(a.model) + ' · commit ' + esc(a.commitHash) + ' · ' + esc(a.worktreeState) + '</div>'
+        + '<ul class="audit-criteria">' + crit + '</ul>'
+        + '<div class="g-meta" style="margin-top:4px">' + esc(a.report) + '</div></div>';
+    }).join("");
+  }
+
+  function supervisionHTML(s) {
+    var isHub = isHubSession(s);
+    var g = goalOfSession(s.id);
+    var items = isHub ? listOfGroup(s.group) : listOfSession(s.id);
+    var loops = isHub ? loopsOfGroup(s.group) : M.loops.filter(function (l) { var x = goalById(l.goalId); return x && x.sessionId === s.id; });
+    var audits = isHub ? auditsOfGroup(s.group) : M.audits.filter(function (a) { var x = goalById(a.goalId); return x && x.sessionId === s.id; });
+    var runs = isHub ? M.auditRuns.filter(function (r) { return r.group === s.group && (r.state === "running" || r.state === "error"); }) : M.auditRuns.filter(function (r) { return r.targetSessionId === s.id; });
+    var q = openQuestion(s.id);
+    var tab = state.inspTab || "goal";
+    var tabs = [
+      '<button class="sup-tab' + (tab === "goal" ? " is-active" : "") + '" data-tab="goal">Goal<span class="cnt">' + (g ? 1 : 0) + '</span></button>',
+      '<button class="sup-tab' + (tab === "list" ? " is-active" : "") + '" data-tab="list">List<span class="cnt">' + items.length + '</span></button>',
+      '<button class="sup-tab' + (tab === "loop" ? " is-active" : "") + '" data-tab="loop">Loop<span class="cnt">' + loops.length + '</span></button>',
+      '<button class="sup-tab' + (tab === "audit" ? " is-active" : "") + '" data-tab="audit">Audit<span class="cnt">' + audits.length + '</span></button>'
+    ].join("");
+    var panel = tab === "list" ? listTabHTML(s, items, isHub) : tab === "loop" ? loopTabHTML(loops) : tab === "audit" ? auditTabHTML(audits, runs) : goalTabHTML(s, g, isHub);
+    var todos = todosOf(s.group, s.id);
+    var todoHTML = '<div class="todo-panel"><div class="sup-head">TODO<span class="n">읽기 전용</span></div>'
+      + (todos.length ? todos.map(function (t) {
+          return '<div class="todo-row ' + t.status + '"><i class="td"></i><span class="tt">' + esc(t.title) + '</span><span class="ts">' + (t.scope === "group" ? "그룹" : "세션") + ' · ' + t.status + '</span></div>';
+        }).join("") : '<div class="sup-empty">TODO가 없습니다.</div>') + '</div>';
+    return '<section class="sup"><div class="sup-head">감독 · ' + (isHub ? "허브" : "세션") + '<span class="n">읽기 전용</span></div>'
+      + questionHTML(q, false) + '<div class="sup-tabs">' + tabs + '</div><div class="sup-panel">' + panel + '</div>' + todoHTML + '</section>';
+  }
+
   function renderInspector() {
     var box = $("inspector");
     if (state.selected.type === "wt") {
@@ -1176,6 +1588,7 @@
             }).join("") + "</section>" : "")
         + '<div class="insp-actions">'
         + '<button class="btn" data-act="wt-rename">이름 수정</button>'
+        + '<button class="btn" data-act="wt-loop">Loop 보기</button>'
         + '<button class="btn" data-act="wt-parent">부모 변경</button>'
         + (wt.orcaMissing ? '<button class="btn" data-act="wt-orca">Orca 복구</button>' : "")
         + '<button class="btn danger" data-act="wt-del">삭제</button></div>');
@@ -1197,6 +1610,7 @@
       + "<dt>최근 도구</dt><dd>" + (tool ? '<span class="mono">' + esc(toolName(tool)) + "</span> · " + esc(tool.at) : "없음") + "</dd>"
       + "</dl>"
       + inspChatHTML(s)
+      + supervisionHTML(s)
       + '<div class="insp-actions">'
       + '<button class="btn primary" data-act="resume">재개</button>'
       + '<button class="btn" data-act="stop">중단</button>'
@@ -1222,6 +1636,12 @@
   }
 
   function bindInspector() {
+    [].forEach.call($("inspector").querySelectorAll("[data-tab]"), function (b) {
+      b.onclick = function () {
+        state.inspTab = b.getAttribute("data-tab");
+        renderInspector();
+      };
+    });
     [].forEach.call($("inspector").querySelectorAll("[data-act]"), function (b) {
       b.onclick = function () {
         var act = b.getAttribute("data-act");
@@ -1229,7 +1649,19 @@
         if (act === "resume") return toast("목업: 재개 명령은 실제로 보내지 않습니다");
         if (act === "stop") return toast("목업: 중단 명령은 실제로 보내지 않습니다");
         if (act === "wt-rename") return worktreeRenameDialog(state.selected.id);
+        if (act === "wt-loop") return loopDialog(state.selected.id);
         if (act === "wt-parent") return worktreeParentDialog(state.selected.id);
+        if (act === "arch-toggle") { state.arch = !state.arch; return renderInspector(); }
+        if (act === "ask-answer") {
+          var q = byId(M.questions, b.getAttribute("data-q"));
+          var opt = q && q.questions[0].options[parseInt(b.getAttribute("data-opt"), 10)];
+          if (!q || !opt) return;
+          q.status = "answered"; q.answer = opt.label; q.answeredAt = now();
+          var qs = byId(M.sessions, q.sessionId);
+          if (qs) { qs.state = "running"; qs.last = now(); }
+          renderBoard(); renderChat(); renderInspector();
+          return toast("답변 전송 — " + opt.label);
+        }
         if (act === "wt-orca") return orcaDialog(state.selected.id);
         if (act === "wt-del") return worktreeDeleteDialog(state.selected.id);
         if (act === "s-rename") return sessionRenameDialog(state.selected.id);
@@ -1352,7 +1784,28 @@
     var msgs = M.messages[s.id] || [];
     var turns = turnsOf(msgs);
     var log = turns.length ? turns.map(function (t, i) { return turnHTML(t, i === turns.length - 1, s); }).join("") : '<p class="empty">저장된 메시지가 없습니다.</p>';
+    var am = agentMessagesOf(s.id);
+    if (am.length) {
+      log += '<div class="divider">에이전트 대화 · ' + am.length + '개</div>' + am.map(function (m) {
+        var from = byId(M.sessions, m.from), to = byId(M.sessions, m.to);
+        return '<div class="agent-msg"><div class="am-h">에이전트 · ' + esc(from ? from.title : m.from) + ' → ' + esc(to ? to.title : m.to) + ' · ' + esc(m.at) + (m.status === "pending" ? " · 전달 대기" : "") + '</div>' + esc(m.body) + '</div>';
+      }).join("");
+    }
+    var q = openQuestion(s.id);
+    if (q) log += questionHTML(q, true);
     setHTML($("chat-log"), log);
+    [].forEach.call($("chat-log").querySelectorAll('[data-act="ask-answer"]'), function (b) {
+      b.onclick = function () {
+        var q = byId(M.questions, b.getAttribute("data-q"));
+        var opt = q && q.questions[0].options[parseInt(b.getAttribute("data-opt"), 10)];
+        if (!q || !opt) return;
+        q.status = "answered"; q.answer = opt.label; q.answeredAt = now();
+        var qs = byId(M.sessions, q.sessionId);
+        if (qs) { qs.state = "running"; qs.last = now(); }
+        renderChat(); renderBoard(); renderInspector();
+        toast("답변 전송 — " + opt.label);
+      };
+    });
     $("chat-log").scrollTop = $("chat-log").scrollHeight;
 
     var ro = !state.orca || s.removed;
@@ -1469,12 +1922,12 @@
     if (!runs.some(function (r) { return r.id === state.run; })) state.run = runs.length ? runs[0].id : null;
     setHTML($("run-select"), runs.length ? runs.map(function (r) {
       return '<option value="' + r.id + '"' + (r.id === state.run ? " selected" : "") + ">"
-        + esc(r.id) + " — " + esc(r.goal) + "</option>";
+        + esc(r.id) + " — 목적: " + esc(r.goal) + "</option>";
     }).join("") : '<option value="">이 그룹에 실행 없음</option>');
     $("run-select").onchange = function (e) { state.run = e.target.value || null; renderOrch(); };
 
     var run = byId(M.runs, state.run);
-    $("run-meta").textContent = run ? "status " + run.status + " · started " + run.started + " · tasks " + run.tasks : "이 그룹에 실행 없음";
+    $("run-meta").textContent = run ? "목적: " + run.goal + " · status " + run.status + " · started " + run.started + " · tasks " + run.tasks : "이 그룹에 실행 없음";
 
     var tasks = run ? M.tasks.filter(function (t) { return t.run === state.run; }) : [];
     var doneN = tasks.filter(function (t) { return t.state === "done"; }).length;
@@ -1686,9 +2139,9 @@
 
   /* ---------- group / worktree dialogs ---------- */
   var PRESET_INFO = {
-    feature: { name: 'Feature', desc: '관리 부모 + 기능 자식' },
-    loop: { name: 'Loop', desc: '감시 부모 + 반복 자식' },
-    manual: { name: 'Manual', desc: '부모를 직접 구성' }
+    feature: { name: 'Feature', desc: '명세 확인 → 레포별 워크트리·세션 → 목업 선택 → API 중계', flow: '명세 질문 · 워크트리 · 목업 · API', required: true },
+    loop: { name: 'Loop', desc: '검토 축을 레포별 Loop로 나누고, 종료 시 허브가 통합', flow: '검토 축 · Loop 6개 · 통합 · 다음 주기', required: true },
+    manual: { name: 'Manual', desc: '허브가 Feature/Loop 구조를 참고해 요청에 맞게 자율 구성', flow: '구조 결정 · 필요한 질문 · 자율 관리', required: false }
   };
 
   function groupWtsOf(gid) {
@@ -1700,7 +2153,7 @@
 
   function groupCreateDialog() {
     var preset = 'feature';
-    var draft = { name: '', parentRepo: '', repoTouched: false, error: '' };
+    var draft = { name: '', parentRepo: '', repoTouched: false, error: '', prompt: '' };
 
     function repoValue() {
       return draft.repoTouched ? draft.parentRepo : M.workspacesRoot + '\\' + M.slug(draft.name);
@@ -1718,8 +2171,9 @@
     function body() {
       var presets = Object.keys(PRESET_INFO).map(function (k) {
         return '<button type="button" class="preset' + (k === preset ? ' is-active' : '') + '" data-preset="' + k + '">'
-          + '<span class="p-name">' + PRESET_INFO[k].name + '</span>'
+          + '<span class="p-name">' + PRESET_INFO[k].name + (PRESET_INFO[k].required ? ' <span class="preset-required">필수 프롬프트</span>' : ' <span class="p-tag">선택</span>') + '</span>'
           + '<span class="p-desc">' + PRESET_INFO[k].desc + '</span>'
+          + '<span class="preset-flow">' + PRESET_INFO[k].flow + '</span>'
           + '<span class="p-tag">' + (k === preset ? '선택됨' : '선택') + '</span></button>';
       }).join('');
       var notice = '허브 세션을 시작합니다. 워크트리는 보드에서 추가합니다.';
@@ -1727,7 +2181,7 @@
         + dfield('부모 저장소', '<input id="dlg-grepo" value="' + esc(repoValue()) + '">')
         + dfield('모델', '<select id="dlg-gmodel">' + dopts(M.models, M.models[0]) + '</select>')
         + '</div>'
-        + dfield('첫 프롬프트', '<textarea id="dlg-gprompt" rows="4" placeholder="부모 세션에 보낼 첫 지시"></textarea>')
+        + dfield('첫 프롬프트' + (PRESET_INFO[preset].required ? ' <span class="preset-required">필수</span>' : ' <span class="p-tag">선택</span>'), '<textarea id="dlg-gprompt" rows="4" placeholder="' + esc(PRESET_INFO[preset].desc) + '">' + esc(draft.prompt) + '</textarea>')
         + '<div class="notice"><span class="pill hub">허브</span><span>' + notice + ' 허브는 그룹 최상위 폴더(부모 저장소)에서 시작합니다.</span></div>';
       var nameField = '<label class="field' + (draft.error ? ' err' : '') + '"><span class="lbl">그룹 이름</span>'
         + '<input id="dlg-gname" value="' + esc(draft.name) + '" placeholder="예: 결제 리팩터링">'
@@ -1738,7 +2192,7 @@
         + '<h2 class="card-h mt">그룹 정보</h2><div class="form">' + nameField + fields + '</div>'
         + '</section><aside class="panel"><h3>미리보기</h3>' + previewHTML()
         + '<div class="side-actions"><button type="button" class="btn" id="dlg-gdup">중복 이름 예시</button></div>'
-        + '<p class="hintx">중복 이름 예시를 누르면 이름 필드에 인라인 오류가 표시됩니다.</p>'
+        + '<p class="hintx">Feature/Loop는 첫 프롬프트가 필수입니다. Manual은 비워도 됩니다.</p>'
         + '</aside></div>';
     }
 
@@ -1749,6 +2203,8 @@
           if (n) draft.name = n.value;
           var r0 = $('dlg-grepo');
           if (r0) draft.parentRepo = r0.value;
+          var p0 = $('dlg-gprompt');
+          if (p0) draft.prompt = p0.value;
           preset = b.getAttribute('data-preset');
           draft.error = '';
           setHTML($('dlg-body'), body());
@@ -1767,6 +2223,8 @@
       };
       var repoField = $('dlg-grepo');
       if (repoField) repoField.oninput = function () { draft.parentRepo = repoField.value; draft.repoTouched = true; };
+      var promptField = $('dlg-gprompt');
+      if (promptField) promptField.oninput = function () { draft.prompt = promptField.value; };
       var dup = $('dlg-gdup');
       if (dup) dup.onclick = function () {
         var first = M.groups[0];
@@ -1788,13 +2246,15 @@
         if (!name) { draft.name = ''; draft.error = '그룹 이름을 입력하세요.'; setHTML($('dlg-body'), body()); bind(); return false; }
         if (!M.slug(name)) { draft.name = name; draft.error = '폴더로 쓸 수 있는 문자를 포함하세요.'; setHTML($('dlg-body'), body()); bind(); return false; }
         if (M.groups.some(function (g) { return g.name === name; })) { draft.name = name; draft.error = '이미 있는 그룹 이름입니다.'; setHTML($('dlg-body'), body()); bind(); return false; }
+        var prompt = $('dlg-gprompt').value.trim();
+        if (PRESET_INFO[preset].required && !prompt) { draft.name = name; draft.error = '이 프리셋은 첫 프롬프트가 필요합니다.'; setHTML($('dlg-body'), body()); bind(); return false; }
         var parentRepo = $('dlg-grepo').value.trim() || M.workspacesRoot + '\\' + M.slug(name);
         var gid = 'g-' + Date.now().toString(36);
         var g = { id: gid, name: name, note: '새 그룹', hubSessionId: null, parentRepo: parentRepo };
         M.groups.push(g);
         var sid = 's-' + Date.now().toString(36);
         M.sessions.push({ id: sid, title: name + ' 관리', wt: null, group: gid, model: $('dlg-gmodel').value || M.models[0], state: 'running', started: now(), last: now(), tokens: 0, parent: null });
-        M.messages[sid] = [{ role: 'user', at: now(), text: $('dlg-gprompt').value || '(첫 프롬프트 없음)' }];
+        M.messages[sid] = [{ role: 'user', at: now(), text: prompt || '(첫 프롬프트 없음)' }];
         g.hubSessionId = sid;
         state.chat = sid;
         state.selected = { type: 'session', id: sid };
@@ -2112,41 +2572,20 @@
   function loopDialog(wid) {
     var wt = byId(M.worktrees, wid);
     if (!wt) return;
-    var loop = wt.loop || { prompt: "", maxRounds: 3, round: 0, status: "idle" };
-    var startLabel = loop.status === "running" ? "다음 회차" : loop.status === "paused" ? "재개" : loop.status === "stopped" ? "다시 시작" : "시작";
+    var sids = {}; activeSessions().forEach(function (s) { if (s.wt === wid) sids[s.id] = 1; });
+    var loops = M.loops.filter(function (l) { var g = goalById(l.goalId); return g && sids[g.sessionId]; });
+    var body = loops.length ? loops.map(function (l) {
+      var pct = l.maxIterations ? Math.min(100, Math.round(l.iteration / l.maxIterations * 100)) : 0;
+      return '<div class="loop-card"><div class="lp-top"><span class="g-obj">' + esc(l.target || "측정값 없음 · Audit 판정") + '</span>'
+        + '<span class="pill ' + (l.status === "running" ? "running" : l.status === "done" ? "done" : l.status === "stopped" ? "failed" : "idle") + '"><span class="d"></span>' + esc(l.status) + '</span></div>'
+        + '<div class="loop-progress"><i style="width:' + pct + '%"></i></div>'
+        + '<div class="lp-meta">' + l.iteration + '/' + l.maxIterations + ' 회차 · ' + esc(l.measureCmd || "measureCmd 없음") + ' · ' + Math.round(l.tokensUsed / 1000) + 'k/' + Math.round(l.tokenLimit / 1000) + 'k</div></div>';
+    }).join("") : '<p class="empty">이 워크트리 세션에 Loop가 없습니다.</p>';
     openDialog({
-      title: "Loop 설정",
+      title: "Loop · " + wt.name,
       size: "dialog-wide",
-      okLabel: "저장",
-      body: '<div class="form">'
-        + dfield('프롬프트', '<textarea id="dlg-lprompt" rows="3" placeholder="매 회차 보낼 프롬프트">' + esc(loop.prompt || "") + '</textarea>')
-        + dfield('최대 회차', '<input id="dlg-lmax" type="number" min="1" max="20" value="' + loop.maxRounds + '">')
-        + '</div>'
-        + '<p class="muted">현재 ' + loop.round + "/" + loop.maxRounds + " 회차 · " + esc(loop.status) + "</p>"
-        + (wt.loop ? '<div class="loop-actions"><button type="button" class="btn primary" data-loop-act="start">' + startLabel + '</button>'
-          + '<button type="button" class="btn" data-loop-act="pause">일시정지</button>'
-          + '<button type="button" class="btn danger" data-loop-act="stop">중단</button></div>' : '')
-        + '<p class="muted">응답이 끝나면 다음 회차를 보냅니다. 30분 무응답이면 1회 재시도 후 일시정지합니다.</p>',
-      onOpen: function () {
-        [].forEach.call($("dlg-body").querySelectorAll("[data-loop-act]"), function (b) {
-          b.onclick = function () {
-            var act = b.getAttribute("data-loop-act");
-            wt.loop.status = act === "start" ? "running" : act === "pause" ? "paused" : "stopped";
-            wt.loop.lastEvent = now();
-            closeDialog();
-            renderBoard();
-            toast("Loop " + (act === "start" ? "시작" : act === "pause" ? "일시정지" : "중단") + " — " + wt.name);
-          };
-        });
-      },
-      onOk: function () {
-        var p = $("dlg-lprompt").value.trim();
-        if (!p) { toast("프롬프트를 입력하세요"); return false; }
-        var max = Math.max(1, Math.min(20, parseInt($("dlg-lmax").value, 10) || 1));
-        wt.loop = { prompt: p, maxRounds: max, round: loop.round, status: loop.status, lastEvent: now() };
-        renderBoard();
-        toast("Loop 저장 — " + wt.name);
-      }
+      okLabel: "닫기",
+      body: body + '<p class="muted">앱은 읽기 전용입니다. Loop 시작·일시정지·중단은 Pi 채팅과 에이전트 도구에서 합니다. 측정 목표 달성 시 감사 대기(paused), 상한 도달 시 stopped가 됩니다.</p>'
     });
   }
 
@@ -2262,6 +2701,7 @@
     var input = $("chat-input");
     var text = input.value.trim();
     if (!text || !state.orca) return;
+    if (!refExists(text)) { toast("해석하지 못한 참조가 있습니다. 참조를 확인한 뒤 전송해 주세요."); return; }
     input.value = "";
     sendPrompt(text);
   });
@@ -2270,6 +2710,14 @@
       e.preventDefault();
       $("composer").dispatchEvent(new Event("submit", { cancelable: true }));
     }
+  });
+  $("chat-input").addEventListener("input", showRefMenu);
+  $("ref-menu").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-ref]");
+    if (b) pickRef(b.getAttribute("data-ref"), b.getAttribute("data-kind"));
+  });
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest("#composer")) $("ref-menu").classList.add("hidden");
   });
   $("search-btn").onclick = runSearch;
   $("search").addEventListener("keydown", function (e) { if (e.key === "Enter") runSearch(); });

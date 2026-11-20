@@ -144,6 +144,28 @@ if (!js.includes('function inspChatHTML')) errs.push('missing function inspChatH
 for (const f of ['id="insp-thread"', 'id="insp-input"', 'id="insp-resize"', 'inspChatH']) if (!js.includes(f)) errs.push('missing ' + f);
 if (js.includes('data-act="open-chat"')) errs.push('inspector chat button still present');
 
+// 허브 오케스트레이션: Goal·List·Loop·Audit·TODO·질문·@참조
+for (const f of ['data-tab="goal"', 'data-tab="list"', 'data-tab="loop"', 'data-tab="audit"', 'data-act="ask-answer"', 'data-slot="goal"', 'data-slot="list"', 'data-slot="loop"', 'data-slot="audit"', '목적: ', 'function supervisionHTML', 'function refCreateDialog', 'function questionHTML']) {
+  if (!js.includes(f)) errs.push('missing planning hook ' + f);
+}
+if (!html.includes('id="ref-menu"')) errs.push('missing ref-menu');
+if (!Array.isArray(M.goals) || M.goals.length < 10) errs.push('goals missing');
+if (!Array.isArray(M.listItems) || M.listItems.length < 10) errs.push('listItems missing');
+if (!Array.isArray(M.loops) || M.loops.length < 5) errs.push('loops missing');
+if (!Array.isArray(M.audits) || M.audits.length < 6) errs.push('audits missing');
+if (!Array.isArray(M.todos) || M.todos.length < 8) errs.push('todos missing');
+if (!Array.isArray(M.questions) || !M.questions.some((q) => q.status === 'pending')) errs.push('pending question missing');
+if (!Array.isArray(M.agentMessages) || !M.agentMessages.length) errs.push('agentMessages missing');
+if (!Array.isArray(M.refProjects) || !M.refProjects.some((p) => p.branches.includes('feature/account'))) errs.push('refProjects missing');
+if (!M.goals.every((g) => M.sessions.some((s) => s.id === g.sessionId))) errs.push('goal session orphan');
+if (!M.audits.every((a) => M.goals.some((g) => g.id === a.goalId))) errs.push('audit goal orphan');
+if (!M.loops.every((l) => M.goals.some((g) => g.id === l.goalId))) errs.push('loop goal orphan');
+if (!M.listItems.every((li) => (!li.parentGoalId || M.goals.some((g) => g.id === li.parentGoalId)) && (!li.sessionId || M.sessions.some((s) => s.id === li.sessionId)))) errs.push('list goal/session orphan');
+if (!M.todos.every((t) => M.groups.some((g) => g.id === t.groupId) && (!t.sessionId || M.sessions.some((s) => s.id === t.sessionId)))) errs.push('todo group/session orphan');
+if (!M.questions.every((q) => M.sessions.some((s) => s.id === q.sessionId))) errs.push('question session orphan');
+if (!M.agentMessages.every((m) => M.sessions.some((s) => s.id === m.from) && M.sessions.some((s) => s.id === m.to))) errs.push('agent message session orphan');
+if (!M.auditRuns.every((r) => M.groups.some((g) => g.id === r.group) && M.goals.some((g) => g.id === r.goalId) && M.sessions.some((s) => s.id === r.targetSessionId))) errs.push('audit run group/goal/session orphan');
+
 // 사이드바: 워크트리 선택 시 하위 세션 펼침 (승인 설계: .wt-item/.wt-chev/.wt-sess/.wt-sess-row/.wt-sess-empty)
 for (const c of ['.wt-item', '.wt-chev', '.wt-sess', '.wt-sess-row', '.wt-sess-row.is-sel', '.wt-sess-name', '.wt-sess-time', '.wt-sess-empty']) {
   if (!html.includes(c)) errs.push('missing ' + c);
