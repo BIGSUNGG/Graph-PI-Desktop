@@ -32,8 +32,8 @@ tags: []
 | 레포지토리 | 워크트리 생성·불러오기에서 고르는 저장소 단위(web·api·worker·infra·shared·docs). 한 그룹이 여러 레포지토리의 워크트리를 함께 담는다. | [[SPEC-graph-pi-ade]] |
 | 오케스트레이션 Run | Orca가 여러 에이전트 작업을 묶는 단위. Task·Worker·Gate를 가진다. | [[SPEC-graph-pi-ade]] |
 | 그룹 | 여러 레포의 워크트리를 한 작업 단위로 묶은 것(예: `feature/login` = Server·Client·Contract). 앱이 직접 정의·저장하며 Orca 에는 없는 개념이다. | [[SPEC-graph-pi-ade]] |
-| 부모 저장소 | 그룹의 최상위 폴더. 기본값은 `C:\Users\DAESUNG\orca\workspaces\<그룹 이름 슬러그>` 이고, 그룹에 추가한 하위 워크트리는 이 폴더 아래에 생긴다. 허브 워크트리의 경로이기도 하다. | [[SPEC-graph-pi-ade]] |
-| 허브 | 그룹의 하위 워크트리를 관리하는 최상위 에이전트. 부모 저장소에서 시작하고 프리셋과 상관없이 그룹당 워크트리 1개·세션 1개가 생긴다. | [[SPEC-graph-pi-ade]] |
+| 부모 저장소 | 그룹의 최상위 폴더. 기본값은 `C:\Users\DAESUNG\orca\workspaces\<그룹 이름 슬러그>` 이고, 그룹에 추가한 하위 워크트리는 이 폴더 아래에 생긴다. 허브 세션은 이 폴더에서 시작한다. | [[SPEC-graph-pi-ade]] |
+| 허브 | 그룹 전체를 관리하는 세션. 워크트리가 아니며 그룹 소유(`hubSessionId`)이고, 실행 위치는 부모 저장소 폴더다. 그룹당 하나이며 허브를 제거하면 그룹 관리용 허브 세션을 새로 만든다. | [[SPEC-graph-pi-ade]] |
 | 슬러그 | 한글 이름을 폴더 이름으로 쓸 수 있게 로마자로 옮긴 문자열. `고객 온보딩` → `gogaek-onboding`. | [[SPEC-graph-pi-ade]] |
 | 외부 세션 | Pi 세션 파일은 있으나 그 경로가 Orca 워크트리에 속하지 않는 세션. 목록에 `외부` 라벨로 남고 제어는 되지 않는다. | [[SPEC-graph-pi-ade]] |
 

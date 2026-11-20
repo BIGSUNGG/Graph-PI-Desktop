@@ -4,6 +4,7 @@ const js = html.match(/<script>([\s\S]*?)<\/script>/)[1];
 global.window = {};
 eval(fs.readFileSync('mock/mock-data.js', 'utf8'));
 const M = global.window.MOCK;
+const hubIds = new Set(M.groups.filter((g) => g.hubSessionId).map((g) => g.hubSessionId));
 const errs = [];
 try { new Function(js); } catch (e) { errs.push('inline js syntax: ' + e.message); }
 const ids = [...js.matchAll(/\$\("([a-z0-9-]+)"\)/g)].map((m) => m[1]);
@@ -15,7 +16,7 @@ for (const v of ['board', 'chat', 'orch', 'history']) {
   if (!html.includes('data-view="' + v + '"')) errs.push('missing nav ' + v);
 }
 if (!/window\.MOCK/.test(fs.readFileSync('mock/mock-data.js', 'utf8'))) errs.push('MOCK not exported');
-if (!M.sessions.every((s) => M.worktrees.some((w) => w.id === s.wt))) errs.push('session wt orphan');
+if (!M.sessions.every((s) => (s.wt == null ? hubIds.has(s.id) : M.worktrees.some((w) => w.id === s.wt)))) errs.push('session wt orphan');
 if (!M.sessions.some((s) => (M.messages[s.id] || []).some((m) => m.role === 'tool'))) errs.push('no tool messages');
 if ((M.messages['s-onb-hub'] || []).filter((m) => m.think).length < 1) errs.push('s-onb-hub think missing');
 if (!M.tasks.every((t) => M.runs.some((r) => r.id === t.run))) errs.push('task run orphan');
@@ -41,13 +42,20 @@ else {
   if (32 + maxToolW > colW - 10) errs.push('tool chip overflows column: ' + (32 + maxToolW) + ' > ' + (colW - 10));
   if (head + 4 + rowH < 40) errs.push('card header too short for one row');
 }
-if (!Array.isArray(M.groups) || M.groups.length < 5) errs.push('groups missing');
-if (M.worktrees.length < 15) errs.push('worktrees < 15');
-if (M.sessions.length < 25) errs.push('sessions < 25');
+if (!Array.isArray(M.groups) || M.groups.length !== 6) errs.push('groups !== 6');
+if (M.worktrees.length !== 22) errs.push('worktrees !== 22');
+if (M.sessions.length !== 33) errs.push('sessions !== 33');
 if (M.tasks.length < 15) errs.push('tasks < 15');
 if (M.workers.length < 8) errs.push('workers < 8');
 if (M.gates.length < 6) errs.push('gates < 6');
-if (!M.sessions.every((s) => s.group && M.worktrees.some((w) => w.id === s.wt && w.group === s.group))) errs.push('session group mismatch');
+if (!M.sessions.every((s) => s.group && M.groups.some((g) => g.id === s.group) && (s.wt == null ? hubIds.has(s.id) : M.worktrees.some((w) => w.id === s.wt && w.group === s.group)))) errs.push('session group mismatch');
+for (const g of M.groups) {
+  const h = g.hubSessionId ? M.sessions.filter((s) => s.id === g.hubSessionId)[0] : null;
+  if (!h || h.removed) errs.push('group hub orphan: ' + g.id);
+  else if (h.wt !== null) errs.push('hub session must bind no worktree: ' + g.id);
+  else if (h.group !== g.id) errs.push('hub session group mismatch: ' + g.id);
+}
+if (M.worktrees.some((w) => w.hub === true)) errs.push('hub worktrees must be 0');
 if (!M.sessions.every((s) => Array.isArray(M.messages[s.id]) && M.messages[s.id].length >= 1)) errs.push('session messages missing');
 if (!M.worktrees.every((w) => w.loop == null || (w.loop.prompt && w.loop.maxRounds >= 1 && w.loop.round >= 0 && M.loopStates.includes(w.loop.status)))) errs.push('loop invalid');
 if (!M.orcaOnly.every((o) => !o.blockedBy || M.groups.some((g) => g.id === o.blockedBy))) errs.push('orcaOnly blockedBy orphan');

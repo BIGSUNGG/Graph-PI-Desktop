@@ -22,10 +22,10 @@ window.MOCK = {
   groups: [
     { id: "g-feature", name: "고객 온보딩", note: "web · api · shared · worker", hubSessionId: "s-onb-hub", parentRepo: "C:\\Users\\DAESUNG\\orca\\workspaces\\gogaek-onboding" },
     { id: "g-billing", name: "구독 결제", note: "web · api · worker", hubSessionId: "s-bill-hub", parentRepo: "C:\\Users\\DAESUNG\\orca\\workspaces\\gudok-gyeolje" },
-    { id: "g-loop", name: "API 성능 루프", note: "query · cache · index", parentRepo: "C:\\Users\\DAESUNG\\orca\\workspaces\\api-seongneung-rupeu" },
-    { id: "g-manual", name: "보안 점검", note: "api · web · audit", parentRepo: "C:\\Users\\DAESUNG\\orca\\workspaces\\boan-jeomgeom" },
+    { id: "g-loop", name: "API 성능 루프", note: "query · cache · index", hubSessionId: "s-perf-hub", parentRepo: "C:\\Users\\DAESUNG\\orca\\workspaces\\api-seongneung-rupeu" },
+    { id: "g-manual", name: "보안 점검", note: "api · web · audit", hubSessionId: "s-sec-hub", parentRepo: "C:\\Users\\DAESUNG\\orca\\workspaces\\boan-jeomgeom" },
     { id: "g-infra", name: "인프라 마이그레이션", note: "core · k8s · db · obs", hubSessionId: "s-infra-hub", parentRepo: "C:\\Users\\DAESUNG\\orca\\workspaces\\inpeura-maigeureisyeon" },
-    { id: "g-fix", name: "릴리스 안정화", note: "develop · security · performance", parentRepo: "C:\\Users\\DAESUNG\\orca\\workspaces\\rilliseu-anjeonghwa" }
+    { id: "g-fix", name: "릴리스 안정화", note: "develop · security · performance", hubSessionId: "s-fix-hub", parentRepo: "C:\\Users\\DAESUNG\\orca\\workspaces\\rilliseu-anjeonghwa" }
   ],
 
   worktrees: [
@@ -63,7 +63,7 @@ window.MOCK = {
   ],
 
   sessions: [
-    { id: "s-onb-hub", title: "온보딩 4레포 통합 관리", wt: "wt-onb-api", group: "g-feature", model: "anthropic/claude-sonnet-4.5", state: "running", started: "09:02", last: "09:58", tokens: 18400, parent: null },
+    { id: "s-onb-hub", title: "온보딩 4레포 통합 관리", wt: null, group: "g-feature", model: "anthropic/claude-sonnet-4.5", state: "running", started: "09:02", last: "09:58", tokens: 18400, parent: null },
     { id: "s-onb-web", title: "온보딩 위저드 UI", wt: "wt-onb-web", group: "g-feature", model: "anthropic/claude-sonnet-4.5", state: "running", started: "09:10", last: "09:55", tokens: 32100, parent: "s-onb-hub" },
     { id: "s-onb-api", title: "온보딩 API · 단계 저장", wt: "wt-onb-api", group: "g-feature", model: "anthropic/claude-sonnet-4.5", state: "running", started: "09:12", last: "09:57", tokens: 28700, parent: "s-onb-hub" },
     { id: "s-onb-shared", title: "온보딩 공통 스키마", wt: "wt-onb-shared", group: "g-feature", model: "openai/gpt-5", state: "done", started: "09:15", last: "09:48", tokens: 9600, parent: "s-onb-hub" },
@@ -71,28 +71,31 @@ window.MOCK = {
     { id: "s-onb-qa", title: "온보딩 E2E 시나리오", wt: "wt-onb-web", group: "g-feature", model: "google/gemini-2.5-pro", state: "done", started: "09:40", last: "09:52", tokens: 7400, parent: "s-onb-web" },
     { id: "s-onb-docs", title: "온보딩 가이드", wt: "wt-onb-shared", group: "g-feature", model: "google/gemini-2.5-pro", state: "idle", started: "09:50", last: "09:58", tokens: 2600, parent: "s-onb-shared" },
 
-    { id: "s-bill-hub", title: "구독 결제 3레포 통합", wt: "wt-bill-api", group: "g-billing", model: "anthropic/claude-sonnet-4.5", state: "running", started: "10:02", last: "10:58", tokens: 15600, parent: null },
+    { id: "s-bill-hub", title: "구독 결제 3레포 통합", wt: null, group: "g-billing", model: "anthropic/claude-sonnet-4.5", state: "running", started: "10:02", last: "10:58", tokens: 15600, parent: null },
     { id: "s-bill-web", title: "결제 화면 · 플랜 선택", wt: "wt-bill-web", group: "g-billing", model: "anthropic/claude-sonnet-4.5", state: "running", started: "10:10", last: "10:56", tokens: 27400, parent: "s-bill-hub" },
     { id: "s-bill-api", title: "웹훅 검증 · 재시도", wt: "wt-bill-api", group: "g-billing", model: "openai/gpt-5", state: "done", started: "10:12", last: "10:50", tokens: 19800, parent: "s-bill-hub" },
     { id: "s-bill-worker", title: "인보이스 워커", wt: "wt-bill-worker", group: "g-billing", model: "openai/gpt-5", state: "idle", started: "10:20", last: "10:40", tokens: 6100, parent: "s-bill-hub" },
     { id: "s-bill-qa", title: "결제 실패 케이스", wt: "wt-bill-web", group: "g-billing", model: "google/gemini-2.5-pro", state: "done", started: "10:35", last: "10:47", tokens: 8300, parent: "s-bill-web" },
 
+    { id: "s-perf-hub", title: "API 성능 루프 관리", wt: null, group: "g-loop", model: "anthropic/claude-sonnet-4.5", state: "idle", started: "11:00", last: "11:58", tokens: 0, parent: null },
     { id: "s-perf-root", title: "성능 루프 감시", wt: "wt-perf-api", group: "g-loop", model: "anthropic/claude-sonnet-4.5", state: "idle", started: "11:02", last: "11:40", tokens: 4200, parent: null },
     { id: "s-perf-query", title: "느린 쿼리 제거", wt: "wt-perf-query", group: "g-loop", model: "anthropic/claude-sonnet-4.5", state: "running", started: "11:05", last: "11:52", tokens: 22100, parent: null, loop: true },
     { id: "s-perf-cache", title: "캐시 히트율 개선", wt: "wt-perf-cache", group: "g-loop", model: "openai/gpt-5", state: "running", started: "11:08", last: "11:54", tokens: 18300, parent: null, loop: true },
     { id: "s-perf-index", title: "인덱스 후보 검토", wt: "wt-perf-index", group: "g-loop", model: "openai/gpt-5", state: "done", started: "11:10", last: "11:38", tokens: 12700, parent: null, loop: true },
 
+    { id: "s-sec-hub", title: "보안 점검 관리", wt: null, group: "g-manual", model: "anthropic/claude-sonnet-4.5", state: "idle", started: "13:00", last: "13:55", tokens: 0, parent: null },
     { id: "s-sec-root", title: "보안 점검 총괄", wt: "wt-sec-api", group: "g-manual", model: "anthropic/claude-sonnet-4.5", state: "idle", started: "13:02", last: "13:30", tokens: 3800, parent: null },
     { id: "s-sec-web", title: "웹 보안 헤더 점검", wt: "wt-sec-web", group: "g-manual", model: "anthropic/claude-sonnet-4.5", state: "running", started: "13:05", last: "13:48", tokens: 14200, parent: null },
     { id: "s-sec-audit", title: "OWASP 점검 루프", wt: "wt-sec-audit", group: "g-manual", model: "openai/gpt-5", state: "running", started: "13:10", last: "13:50", tokens: 16800, parent: null, loop: true },
     { id: "s-sec-secrets", title: "시크릿 스캔", wt: "wt-sec-secrets", group: "g-manual", model: "google/gemini-2.5-pro", state: "idle", started: "13:20", last: "13:36", tokens: 5400, parent: "s-sec-audit" },
 
-    { id: "s-infra-hub", title: "인프라 마이그레이션 통합", wt: "wt-infra-core", group: "g-infra", model: "anthropic/claude-sonnet-4.5", state: "running", started: "14:02", last: "14:58", tokens: 20400, parent: null },
+    { id: "s-infra-hub", title: "인프라 마이그레이션 통합", wt: null, group: "g-infra", model: "anthropic/claude-sonnet-4.5", state: "running", started: "14:02", last: "14:58", tokens: 20400, parent: null },
     { id: "s-infra-k8s", title: "K8s 매니페스트 이전", wt: "wt-infra-k8s", group: "g-infra", model: "anthropic/claude-sonnet-4.5", state: "running", started: "14:10", last: "14:55", tokens: 23600, parent: "s-infra-hub" },
     { id: "s-infra-db", title: "DB 마이그레이션 검증", wt: "wt-infra-db", group: "g-infra", model: "openai/gpt-5", state: "done", started: "14:12", last: "14:48", tokens: 17900, parent: "s-infra-hub" },
     { id: "s-infra-obs", title: "관측 파이프라인", wt: "wt-infra-obs", group: "g-infra", model: "google/gemini-2.5-pro", state: "idle", started: "14:20", last: "14:44", tokens: 7100, parent: "s-infra-hub" },
     { id: "s-infra-qa", title: "마이그레이션 리허설", wt: "wt-infra-k8s", group: "g-infra", model: "openai/gpt-5", state: "done", started: "14:35", last: "14:52", tokens: 9800, parent: "s-infra-k8s" },
 
+    { id: "s-fix-hub", title: "릴리스 안정화 관리", wt: null, group: "g-fix", model: "anthropic/claude-sonnet-4.5", state: "idle", started: "15:00", last: "15:50", tokens: 0, parent: null },
     { id: "s-fix-root", title: "릴리스 안정화 총괄", wt: "wt-develop", group: "g-fix", model: "anthropic/claude-sonnet-4.5", state: "idle", started: "15:30", last: "15:45", tokens: 4820, parent: null },
     { id: "s-fix-sec", title: "세션 고정 취약점 수정", wt: "wt-fix-sec", group: "g-fix", model: "anthropic/claude-sonnet-4.5", state: "running", started: "15:02", last: "15:41", tokens: 21600, parent: null, mergeTo: "wt-develop" },
     { id: "s-fix-perf", title: "쿼리 N+1 제거", wt: "wt-fix-perf", group: "g-fix", model: "openai/gpt-5", state: "running", started: "15:10", last: "15:44", tokens: 15200, parent: null, loop: true },
@@ -160,6 +163,9 @@ window.MOCK = {
       { role: "assistant", at: "10:47", text: "카드 거절은 즉시 안내, 타임아웃은 3회 재시도 후 실패로 정리했습니다." }
     ],
 
+    "s-perf-hub": [
+      { role: "user", at: "11:00", text: "이 그룹의 성능 루프 3개를 관리해. p95 목표는 250ms로 잡아." }
+    ],
     "s-perf-root": [
       { role: "user", at: "11:02", text: "API p95가 400ms를 넘었어. 자식 워크트리 3개로 쿼리·캐시·인덱스를 나눠서 돌려줘." },
       { role: "assistant", at: "11:04", text: "perf-query, perf-cache, perf-index를 부모 아래에 만들고 각각 Loop 설정을 붙였습니다." }
@@ -180,6 +186,9 @@ window.MOCK = {
       { role: "tool", at: "11:38", text: "loop round 3/3 done\n→ 복합 인덱스 2개 추가" }
     ],
 
+    "s-sec-hub": [
+      { role: "user", at: "13:00", text: "릴리스 전 보안 점검을 관리해. audit 루프 결과를 모아서 보고해." }
+    ],
     "s-sec-root": [
       { role: "user", at: "13:02", text: "릴리스 전에 보안 점검을 수동으로 구성해줘. api와 web을 루트로 두고 audit을 아래에 붙여." },
       { role: "assistant", at: "13:04", text: "sec-api, sec-web을 루트로 만들고 sec-audit, sec-secrets를 api 아래에 붙였습니다." }
@@ -223,6 +232,9 @@ window.MOCK = {
       { role: "assistant", at: "14:52", text: "db → k8s → obs 순서와 각 단계 롤백 조건을 체크리스트로 정리했습니다." }
     ],
 
+    "s-fix-hub": [
+      { role: "user", at: "15:00", text: "릴리스 안정화 이슈를 develop 기준으로 관리해." }
+    ],
     "s-fix-root": [
       { role: "user", at: "15:30", text: "릴리스 전에 보안과 성능 이슈를 develop 기준으로 정리해줘." },
       { role: "assistant", at: "15:32", text: "fix-sec, fix-perf를 develop 아래에 붙였습니다. 둘 다 머지 큐로 보냅니다." }

@@ -742,8 +742,9 @@
         if (state.group !== gid) {
           state.group = gid;
           state.sideOpenWt = null;
-          state.selected = { type: null, id: null };
-          state.chat = (defaultChat(gid) || {}).id || null;
+          var hubSess = hubSession(gid);
+          state.selected = hubSess ? { type: "session", id: hubSess.id } : { type: null, id: null };
+          state.chat = hubSess ? hubSess.id : (defaultChat(gid) || {}).id || null;
           state.query = ""; state.results = null;
           if ($("search")) $("search").value = "";
         }
@@ -836,23 +837,20 @@
   /* ---------- board ---------- */
   var G = { pad: 16, colW: 206, gap: 14, head: 46, rowH: 36, chipH: 18, hubH: 52 };
 
-  function hubOf(wts) {
-    var own = {}, best = null;
-    wts.forEach(function (w) { own[w.id] = 1; });
-    var g = wts.length ? byId(M.groups, wts[0].group) : null;
-    if (g && g.hubSessionId) {
-      var h = byId(M.sessions, g.hubSessionId);
-      if (h && !h.removed) return h;
-    }
-    activeSessions().forEach(function (s) {
-      if (!own[s.wt]) return;
-      var spread = {};
-      activeSessions().forEach(function (k) {
-        if (k.parent === s.id && k.wt !== s.wt && own[k.wt]) spread[k.wt] = 1;
-      });
-      if (Object.keys(spread).length >= 2) best = s;
-    });
-    return best;
+  function hubSession(gid) {
+    var g = byId(M.groups, gid);
+    if (!g || !g.hubSessionId) return null;
+    var h = byId(M.sessions, g.hubSessionId);
+    return h && !h.removed ? h : null;
+  }
+
+  function hubCard(hub, x, y, w, repoN) {
+    return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + G.hubH + '" rx="10" fill="#171717" stroke="#ffffff1f"/>'
+      + '<circle cx="' + (x + 18) + '" cy="' + (y + 19) + '" r="4" fill="#d4a300"/>'
+      + '<text x="' + (x + 30) + '" y="' + (y + 23) + '" fill="#f0f0f0" font-size="12" font-weight="600">' + esc(hub.title) + '</text>'
+      + '<text x="' + (x + w - 14) + '" y="' + (y + 23) + '" fill="#737373" font-size="9.5" text-anchor="end">' + repoN + ' 레포 관리</text>'
+      + '<text x="' + (x + 18) + '" y="' + (y + 41) + '" fill="#737373" font-size="9.5">'
+      + esc(short(hub.model)) + ' · ' + esc(hub.started) + ' · ' + Math.round(hub.tokens / 1000) + 'k</text>';
   }
 
   function lastTool(s) {
@@ -905,34 +903,46 @@
     }
     renderSidebar();
     var wts = groupWts(state.group);
+    var hub = hubSession(state.group);
     if (!wts.length) {
-      state.boardW = 0;
-      state.boardH = 0;
+      if (!hub) {
+        state.boardW = 0;
+        state.boardH = 0;
+        state.nodePts = [];
+        $("graph").setAttribute("viewBox", "0 0 900 480");
+        setSvg($("graph"), '<text x="24" y="48" fill="#737373" font-size="12">빈 그룹 — 워크트리를 추가하세요.</text>');
+        $("n-board").textContent = "0";
+        renderInspector();
+        return;
+      }
+      state.boardW = 900;
+      state.boardH = 480;
       state.nodePts = [];
-      $("graph").setAttribute("viewBox", "0 0 900 480");
-      setSvg($("graph"), '<text x="24" y="48" fill="#737373" font-size="12">빈 그룹 — 워크트리를 추가하세요.</text>');
-      $("n-board").textContent = "0";
+      applyView();
+      setSvg($("graph"), '<g class="node" data-session="' + hub.id + '">' + hubCard(hub, G.pad, G.pad, 900 - G.pad * 2, 0) + "</g>"
+        + '<text x="24" y="' + (G.pad + G.hubH + 32) + '" fill="#737373" font-size="12">빈 그룹 — 워크트리를 추가하세요.</text>');
+      $("n-board").textContent = activeSessions().length;
       renderInspector();
       return;
     }
     var rootWt = wts.filter(function (w) {
       return wts.some(function (x) { return x.parent === w.id; });
     })[0] || null;
-    var hub = rootWt ? null : hubOf(wts);
     var children = wts.filter(function (w) { return !rootWt || w.id !== rootWt.id; });
     var totalW = children.length ? children.length * (G.colW + G.gap) - G.gap + G.pad * 2 : 320;
 
-    var root = null, childTop = G.pad + (hub ? G.hubH + 64 : 0);
+    var rootTop = hub ? G.pad + G.hubH + 48 : G.pad;
+    var root = null, childTop = hub ? G.pad + G.hubH + 64 : G.pad;
     if (rootWt) {
-      var rr = rowsOf(rootWt.id, null, G.pad + G.head + 4);
+      var rr = rowsOf(rootWt.id, null, rootTop + G.head + 4);
       root = {
-        wt: rootWt, x: G.pad, y: G.pad, w: totalW - G.pad * 2,
-        h: Math.max(rowsEnd(rr, G.pad + G.head + 4) - G.pad + 8, G.head + 42), rows: rr
+        wt: rootWt, x: G.pad, y: rootTop, w: totalW - G.pad * 2,
+        h: Math.max(rowsEnd(rr, rootTop + G.head + 4) - rootTop + 8, G.head + 42), rows: rr
       };
-      childTop = G.pad + root.h + 64;
+      childTop = root.y + root.h + 64;
     }
 
-    var cols = boardCols(children, hub, childTop);
+    var cols = boardCols(children, null, childTop);
     var all = root ? [root].concat(cols) : cols;
     var pos = {};
     all.forEach(function (c) {
@@ -968,14 +978,18 @@
     }
 
     var hubX = G.pad, hubY = G.pad, hubW = totalW - G.pad * 2;
-    var topBottom = root ? root.y + root.h : hub ? G.pad + G.hubH : 0;
-    var topCenter = root ? root.x + root.w / 2 : G.pad + hubW / 2;
+    var hubBottom = G.pad + G.hubH, hubCx = hubX + hubW / 2;
+    var topBottom = root ? root.y + root.h : hub ? hubBottom : 0;
+    var topCenter = root ? root.x + root.w / 2 : hubCx;
+    var topLive = root ? liveWt(root.wt.id) : hub ? hub.state === "running" : false;
+    if (hub && root) {
+      svg.push(edge("M" + hubCx + " " + hubBottom + " L" + hubCx + " " + root.y, "#525252", MOTION.allLive([hub.state === "running", topLive]), null));
+    }
     if ((root || hub) && cols.length) {
       var busY = topBottom + 16;
       var centers = cols.map(function (c) { return c.x + c.w / 2; });
       var left = Math.min.apply(null, centers.concat([topCenter]));
       var right = Math.max.apply(null, centers.concat([topCenter]));
-      var topLive = root ? liveWt(root.wt.id) : hub.state === "running";
       var trunkLive = MOTION.allLive([topLive].concat(cols.map(function (c) { return liveWt(c.wt.id); })));
       svg.push(edge("M" + topCenter + " " + topBottom + " L" + topCenter + " " + busY + " L" + right + " " + busY, "#525252", trunkLive, null));
       svg.push(edge("M" + topCenter + " " + busY + " L" + left + " " + busY, "#525252", trunkLive, null));
@@ -1016,15 +1030,7 @@
       }
     });
 
-    if (hub) {
-      svg.push('<g class="node" data-session="' + hub.id + '">'
-        + '<rect x="' + hubX + '" y="' + hubY + '" width="' + hubW + '" height="' + G.hubH + '" rx="10" fill="#171717" stroke="#ffffff1f"/>'
-        + '<circle cx="' + (hubX + 18) + '" cy="' + (hubY + 19) + '" r="4" fill="#d4a300"/>'
-        + '<text x="' + (hubX + 30) + '" y="' + (hubY + 23) + '" fill="#f0f0f0" font-size="12" font-weight="600">' + esc(hub.title) + '</text>'
-        + '<text x="' + (hubX + hubW - 14) + '" y="' + (hubY + 23) + '" fill="#737373" font-size="9.5" text-anchor="end">' + wts.length + ' 레포 관리</text>'
-        + '<text x="' + (hubX + 18) + '" y="' + (hubY + 41) + '" fill="#737373" font-size="9.5">'
-        + esc(short(hub.model)) + " · " + esc(hub.started) + " · " + Math.round(hub.tokens / 1000) + "k</text></g>");
-    }
+    if (hub) svg.push('<g class="node" data-session="' + hub.id + '">' + hubCard(hub, hubX, hubY, hubW, wts.length) + "</g>");
 
     all.forEach(function (c) {
       var cardSel = state.selected.type === "wt" && state.selected.id === c.wt.id ? " is-sel" : "";
@@ -1071,6 +1077,7 @@
     });
 
     var maxBottom = G.pad;
+    if (hub) maxBottom = Math.max(maxBottom, hubBottom);
     all.forEach(function (c) { maxBottom = Math.max(maxBottom, c.y + c.h); });
     svg.push(overlay.join(""));
     state.boardW = totalW;
@@ -1153,7 +1160,6 @@
       var wt = byId(M.worktrees, state.selected.id);
       if (!wt) { setHTML(box, '<p class="empty">선택된 항목이 없습니다.</p>'); return; }
       var parent = wt.parent ? byId(M.worktrees, wt.parent) : null;
-      var group = byId(M.groups, wt.group);
       var wtSessions = activeSessions().filter(function (s) { return s.wt === wt.id; });
       setHTML(box,
         '<div class="insp-head"><h2>' + esc(wt.name) + '</h2><span class="pill">워크트리</span></div>'
@@ -1171,7 +1177,6 @@
         + '<div class="insp-actions">'
         + '<button class="btn" data-act="wt-rename">이름 수정</button>'
         + '<button class="btn" data-act="wt-parent">부모 변경</button>'
-        + (group && !group.hubSessionId ? '<button class="btn" data-act="wt-hub">허브로 지정</button>' : "")
         + (wt.orcaMissing ? '<button class="btn" data-act="wt-orca">Orca 복구</button>' : "")
         + '<button class="btn danger" data-act="wt-del">삭제</button></div>');
       bindInspector();
@@ -1184,7 +1189,7 @@
     setHTML(box,
       '<div class="insp-head"><h2>' + esc(s.title) + "</h2>" + pill(s.state) + "</div>"
       + '<dl class="kv"><dt>모델</dt><dd class="mono">' + esc(s.model) + "</dd>"
-      + "<dt>워크트리</dt><dd>" + esc((byId(M.worktrees, s.wt) || {}).name || s.wtName || s.wt) + "</dd>"
+      + "<dt>워크트리</dt><dd>" + (s.wt ? esc((byId(M.worktrees, s.wt) || {}).name || s.wtName || s.wt) : "그룹 폴더") + "</dd>"
       + "<dt>시작</dt><dd>" + esc(s.started) + "</dd>"
       + "<dt>마지막 활동</dt><dd>" + esc(s.last) + "</dd>"
       + "<dt>토큰</dt><dd>" + s.tokens.toLocaleString() + "</dd>"
@@ -1225,7 +1230,6 @@
         if (act === "stop") return toast("목업: 중단 명령은 실제로 보내지 않습니다");
         if (act === "wt-rename") return worktreeRenameDialog(state.selected.id);
         if (act === "wt-parent") return worktreeParentDialog(state.selected.id);
-        if (act === "wt-hub") return hubStart(state.selected.id);
         if (act === "wt-orca") return orcaDialog(state.selected.id);
         if (act === "wt-del") return worktreeDeleteDialog(state.selected.id);
         if (act === "s-rename") return sessionRenameDialog(state.selected.id);
@@ -1529,7 +1533,7 @@
       }).join("") || '<p class="empty">메시지 없음</p>';
       return '<div class="h-item' + (openH ? " is-open" : "") + '">'
         + '<div class="h-row" data-open="' + s.id + '"><div><div class="h-title">' + esc(s.title) + "</div>"
-        + '<div class="h-meta">' + esc(s.wtName || (byId(M.worktrees, s.wt) || {}).name || s.wt) + " · " + esc(short(s.model)) + " · " + esc(s.started) + "–" + esc(s.last) + (s.removed ? ' · <span class="hit">삭제됨</span>' : "") + "</div>"
+        + '<div class="h-meta">' + esc(!s.wt ? "그룹 폴더" : s.wtName || (byId(M.worktrees, s.wt) || {}).name || s.wt) + " · " + esc(short(s.model)) + " · " + esc(s.started) + "–" + esc(s.last) + (s.removed ? ' · <span class="hit">삭제됨</span>' : "") + "</div>"
         + hit + '</div><div class="h-side"><span class="h-tok">' + s.tokens.toLocaleString() + " tok</span>"
         + '<button type="button" class="h-toggle" data-hist="' + s.id + '" aria-expanded="' + (openH ? "true" : "false") + '" aria-label="히스토리 ' + (openH ? "접기" : "펼치기") + '">' + (openH ? "▾" : "▸") + "</button></div></div>"
         + '<div class="h-detail' + (openH ? "" : " hidden") + '" id="hist-' + s.id + '">' + evs + "</div></div>";
@@ -1691,10 +1695,6 @@
     return M.worktrees.filter(function (w) { return w.group === gid; });
   }
 
-  function hubWtOf(gid) {
-    return M.worktrees.filter(function (w) { return w.group === gid && w.hub; })[0] || null;
-  }
-
   function dfield(label, control) { return '<label class="field"><span class="lbl">' + label + '</span>' + control + '</label>'; }
   function dopts(list, selected) { return list.map(function (v) { return '<option' + (v === selected ? ' selected' : '') + '>' + esc(v) + '</option>'; }).join(''); }
 
@@ -1710,8 +1710,8 @@
       return '<dl class="kv">'
         + '<dt>프리셋</dt><dd>' + esc(PRESET_INFO[preset].name) + '</dd>'
         + '<dt>이름</dt><dd id="dlg-preview-name">' + (draft.name.trim() ? esc(draft.name.trim()) : '<span class="muted">아직 없음</span>') + '</dd>'
-        + '<dt>시작 상태</dt><dd>부모 워크트리 + 세션</dd>'
-        + '<dt>워크트리</dt><dd>1개</dd>'
+        + '<dt>시작 상태</dt><dd>허브 세션</dd>'
+        + '<dt>워크트리</dt><dd>0개</dd>'
         + '</dl>';
     }
 
@@ -1722,12 +1722,9 @@
           + '<span class="p-desc">' + PRESET_INFO[k].desc + '</span>'
           + '<span class="p-tag">' + (k === preset ? '선택됨' : '선택') + '</span></button>';
       }).join('');
-      var notice = preset === 'feature'
-        ? '부모 워크트리와 세션을 함께 시작합니다. 자식 워크트리는 보드에서 추가합니다.'
-        : '부모 워크트리(허브)와 세션을 함께 시작합니다. 워크트리는 보드에서 추가합니다.';
+      var notice = '허브 세션을 시작합니다. 워크트리는 보드에서 추가합니다.';
       var fields = '<div class="grid2">'
         + dfield('부모 저장소', '<input id="dlg-grepo" value="' + esc(repoValue()) + '">')
-        + dfield('브랜치', '<select id="dlg-gbranch">' + dopts(M.bases, M.bases[0]) + '</select>')
         + '</div>'
         + '<div class="grid2">'
         + dfield('모델', '<select id="dlg-gmodel">' + dopts(M.models, M.models[0]) + '</select>')
@@ -1797,10 +1794,8 @@
         var gid = 'g-' + Date.now().toString(36);
         var g = { id: gid, name: name, note: '새 그룹', hubSessionId: null, parentRepo: parentRepo };
         M.groups.push(g);
-        var wtId = 'wt-' + gid + '-hub';
-        M.worktrees.push({ id: wtId, group: gid, repo: 'hub', hub: true, name: name + '-hub', branch: $('dlg-gbranch').value || M.bases[0], parent: null, dirty: false, path: parentRepo });
         var sid = 's-' + Date.now().toString(36);
-        M.sessions.push({ id: sid, title: name + ' 관리', wt: wtId, group: gid, model: $('dlg-gmodel').value || M.models[0], state: 'running', started: now(), last: now(), tokens: 0, parent: null });
+        M.sessions.push({ id: sid, title: name + ' 관리', wt: null, group: gid, model: $('dlg-gmodel').value || M.models[0], state: 'running', started: now(), last: now(), tokens: 0, parent: null });
         M.messages[sid] = [{ role: 'user', at: now(), text: $('dlg-gprompt').value || '(첫 프롬프트 없음)' }];
         g.hubSessionId = sid;
         state.chat = sid;
@@ -1829,7 +1824,7 @@
       body: '<label>그룹 이름<input id="dlg-gedit" value="' + esc(g.name) + '"></label>'
         + '<label>부모 저장소<input id="dlg-grepo-edit" value="' + esc(g.parentRepo || '') + '"></label>'
         + '<label>메모<input id="dlg-gnote" value="' + esc(g.note || '') + '"></label>'
-        + (g.hubSessionId ? '<p class="muted">허브 세션: ' + esc((byId(M.sessions, g.hubSessionId) || {}).title || '—') + '</p>' : '<p class="muted">허브 세션이 없습니다. 워크트리 상세에서 지정할 수 있습니다.</p>'),
+        + (g.hubSessionId ? '<p class="muted">허브 세션: ' + esc((byId(M.sessions, g.hubSessionId) || {}).title || '—') + '</p>' : '<p class="muted">허브 세션이 없습니다.</p>'),
       onOk: function () {
         var v = $('dlg-gedit').value.trim();
         if (!v) { toast('그룹 이름은 비울 수 없습니다'); return false; }
@@ -1877,6 +1872,7 @@
         M.worktrees = M.worktrees.filter(function (w) { return !wtIds[w.id]; });
         M.sessions.forEach(function (s) {
           if (wtIds[s.wt]) { s.removed = true; s.state = 'idle'; s.wtName = names[s.wt] || s.wt; }
+          else if (!s.wt && s.group === gid) { s.removed = true; s.state = 'idle'; s.wtName = '그룹 폴더'; }
         });
         M.groups = M.groups.filter(function (x) { return x.id !== gid; });
         var left = M.groups[0];
@@ -1909,7 +1905,6 @@
       }).join('');
     }
     function body() {
-      var hub = hubWtOf(state.group);
       var head = (g ? '<p class="muted">' + esc(g.name) + ' 그룹에 추가합니다.</p>' : '');
       var tabs = '<div class="tabs">'
         + '<button type="button" class="tab' + (tab === 'new' ? ' is-active' : '') + '" data-tab="new">새 워크트리</button>'
@@ -1925,7 +1920,7 @@
           + '</div><div class="grid2">'
           + dfield('모델', '<select id="dlg-wtmodel">' + dopts(M.models, M.models[0]) + '</select>')
           + dfield('부모 워크트리', '<select id="dlg-parent"><option value="">없음 (루트로 추가)</option>'
-            + groupWtsOf(state.group).map(function (w) { return '<option value="' + w.id + '"' + (hub && hub.id === w.id ? ' selected' : '') + '>' + esc(w.name) + ' · ' + esc(w.branch) + '</option>'; }).join('') + '</select>')
+            + groupWtsOf(state.group).map(function (w) { return '<option value="' + w.id + '">' + esc(w.name) + ' · ' + esc(w.branch) + '</option>'; }).join('') + '</select>')
           + dfield('첫 프롬프트', '<textarea id="dlg-wtprompt" rows="2" placeholder="선택 · 입력하면 세션도 함께 만듭니다"></textarea>')
           + '</div>';
       }
@@ -2085,18 +2080,29 @@
   function sessionDeleteDialog(sid) {
     var s = byId(M.sessions, sid);
     if (!s) return;
+    var hubGroup = s.group ? byId(M.groups, s.group) : null;
+    var isHub = !!hubGroup && hubGroup.hubSessionId === s.id;
     openDialog({
       title: "세션 제거",
       okLabel: "제거",
       danger: true,
       body: "<p><b>" + esc(s.title) + "</b> 세션을 제거합니다.</p>"
         + '<div class="warn">보드와 채팅에서 사라지고, 히스토리에는 기록이 남습니다.</div>'
-        + '<p class="muted">워크트리와 파일은 유지됩니다.</p>',
+        + '<p class="muted">워크트리와 파일은 유지됩니다.</p>'
+        + (isHub ? '<div class="warn">허브 세션이라, 그룹 관리용 허브 세션이 새로 만들어집니다.</div>' : ''),
       onOk: function () {
         s.removed = true;
         s.state = "idle";
         s.wtName = (byId(M.worktrees, s.wt) || {}).name || s.wt;
-        state.chat = (activeSessions()[0] || {}).id || null;
+        if (isHub) {
+          var nid = "s-" + Date.now().toString(36);
+          M.sessions.push({ id: nid, title: hubGroup.name + " 관리", wt: null, group: hubGroup.id, model: s.model, state: "running", started: now(), last: now(), tokens: 0, parent: null });
+          M.messages[nid] = [{ role: "user", at: now(), text: "(첫 프롬프트 없음)" }];
+          hubGroup.hubSessionId = nid;
+          state.chat = nid;
+        } else {
+          state.chat = (activeSessions()[0] || {}).id || null;
+        }
         state.selected = { type: "session", id: state.chat };
         renderBoard();
         toast("세션 제거 — " + s.title);
@@ -2143,25 +2149,6 @@
         toast("Loop 저장 — " + wt.name);
       }
     });
-  }
-
-  function hubStart(wid) {
-    var wt = byId(M.worktrees, wid);
-    var g = wt ? byId(M.groups, wt.group) : null;
-    if (!wt || !g) return;
-    if (g.hubSessionId) {
-      var h = byId(M.sessions, g.hubSessionId);
-      if (h && !h.removed) { toast("이미 허브 세션이 있습니다"); return; }
-      g.hubSessionId = null;
-    }
-    var id = "s-" + Date.now().toString(36);
-    M.sessions.push({ id: id, title: wt.name + " 허브", wt: wid, group: g.id, model: M.models[0], state: "idle", started: now(), last: now(), tokens: 0, parent: null });
-    M.messages[id] = [{ role: "user", at: now(), text: "허브 세션을 시작했습니다. 자식 세션을 조율합니다." }];
-    g.hubSessionId = id;
-    state.chat = id;
-    state.selected = { type: "session", id: id };
-    renderBoard();
-    toast("허브 세션 시작 — " + wt.name);
   }
 
   function orcaDialog(wid) {
@@ -2222,7 +2209,7 @@
       if (s) { state.group = s.group; state.chat = id; }
       return renderBoard();
     }
-    var w = e.target.closest(".wt-more");
+    var w = e.target.closest("[data-wt]");
     if (w) {
       var wid = w.getAttribute("data-wt");
       var wt = byId(M.worktrees, wid);
