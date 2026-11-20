@@ -11,7 +11,7 @@ const ids = [...js.matchAll(/\$\("([a-z0-9-]+)"\)/g)].map((m) => m[1]);
 const all = (html + js).replace(/\\"/g, '"');
 const declared = new Set([...all.matchAll(/id="([a-z0-9-]+)"/g)].map((m) => m[1]));
 for (const id of new Set(ids)) if (!declared.has(id)) errs.push('missing id: ' + id);
-for (const v of ['board', 'chat', 'orch', 'history']) {
+for (const v of ['board', 'chat', 'orch', 'history', 'states']) {
   if (!declared.has('view-' + v)) errs.push('missing view-' + v);
   if (!html.includes('data-view="' + v + '"')) errs.push('missing nav ' + v);
 }
@@ -42,6 +42,9 @@ else {
   if (32 + maxToolW > colW - 10) errs.push('tool chip overflows column: ' + (32 + maxToolW) + ' > ' + (colW - 10));
   if (head + 4 + rowH < 40) errs.push('card header too short for one row');
 }
+if (!Array.isArray(M.specMessages) || M.specMessages.length !== 36) errs.push('specMessages !== 36');
+if (!M.specMessages.every((m) => m.id && m.area && m.state && m.trigger && m.message)) errs.push('specMessages incomplete');
+for (const m of M.specMessages) if (m.message !== '—' && !m.message.trim()) errs.push('spec message empty: ' + m.id);
 if (!Array.isArray(M.groups) || M.groups.length !== 6) errs.push('groups !== 6');
 if (M.worktrees.length !== 22) errs.push('worktrees !== 22');
 if (M.sessions.length !== 33) errs.push('sessions !== 33');

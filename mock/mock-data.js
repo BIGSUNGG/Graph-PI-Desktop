@@ -20,6 +20,44 @@ window.MOCK = {
   loopStates: ["idle", "running", "waiting", "paused", "done", "stopped"],
   goalStates: ["active", "auditing", "complete", "paused", "aborted"],
   auditVerdicts: ["approved", "rejected", "impossible", "error"],
+  specMessages: [
+    { id: "sm-1", area: "그룹 생성", state: "차단", trigger: "Feature·Loop 첫 프롬프트가 비어 있음", message: "이 프리셋은 첫 프롬프트가 필요합니다." },
+    { id: "sm-2", area: "그룹 생성", state: "대기", trigger: "Manual 첫 프롬프트가 비어 있음", message: "첫 프롬프트를 입력하면 허브가 작업을 시작합니다." },
+    { id: "sm-3", area: "그룹 생성", state: "정상", trigger: "허브가 워크트리·세션을 생성·변경·삭제함", message: "없음 — 보드에 바로 반영" },
+    { id: "sm-4", area: "그룹 생성", state: "정상", trigger: "허브가 워크트리를 삭제함", message: "없음 — 보드에서 제거, 하위 세션 처리 미정" },
+    { id: "sm-5", area: "Goal", state: "차단", trigger: "완료 조건 없이 Goal 생성 시도", message: "Goal을 만들려면 완료 조건이 하나 이상 필요합니다." },
+    { id: "sm-6", area: "Goal", state: "차단", trigger: "활성 Goal 없이 완료 주장", message: "완료를 주장할 활성 Goal이 없습니다." },
+    { id: "sm-7", area: "Audit", state: "일시정지", trigger: "Audit 세션 시작 실패", message: "Audit 세션을 시작하지 못했습니다. Goal을 일시정지했습니다." },
+    { id: "sm-8", area: "Audit", state: "거부", trigger: "Audit이 완료 조건을 거부함", message: "Audit이 완료 조건을 승인하지 않았습니다. 실패 항목을 확인하세요." },
+    { id: "sm-9", area: "Audit", state: "중단", trigger: "Audit이 불가능하다고 판정함", message: "이 Goal은 현재 조건으로 완료할 수 없다고 Audit이 판정했습니다." },
+    { id: "sm-10", area: "Audit", state: "오류", trigger: "Audit 중 인프라 오류", message: "감사 중 오류가 발생했습니다. 재시도 정책을 확인하세요." },
+    { id: "sm-11", area: "Goal", state: "차단", trigger: "하위 Goal이 aborted됨", message: "하위 Goal이 중단되어 허브 항목이 차단되었습니다. 재시도하거나 재배정하세요." },
+    { id: "sm-12", area: "Goal", state: "차단", trigger: "허브 항목에 하위 Goal이 없음", message: "이 허브 항목에는 배정된 하위 Goal이 없습니다." },
+    { id: "sm-13", area: "Goal", state: "차단", trigger: "유효 하위 Goal 미승인 상태에서 다음 항목 배정", message: "현재 허브 항목의 유효 하위 Goal이 모두 승인되지 않아 다음 항목을 시작할 수 없습니다." },
+    { id: "sm-14", area: "Goal", state: "대기", trigger: "하위 List가 일시정지 상태", message: "하위 List가 일시정지 상태입니다. 재개하면 Goal이 시작됩니다." },
+    { id: "sm-15", area: "Loop", state: "중단", trigger: "Loop가 상한에 도달함", message: "Loop 상한에 도달했습니다. 범위를 조정하거나 완료를 주장하세요." },
+    { id: "sm-16", area: "Audit", state: "오류", trigger: "감사 중 워크트리가 바뀜", message: "감사 중 워크트리가 변경되었습니다. 다시 감사합니다." },
+    { id: "sm-17", area: "Audit", state: "차단", trigger: "감사 중 소유 세션이 새 작업을 시작함", message: "감사 중에는 새 작업을 시작할 수 없습니다." },
+    { id: "sm-18", area: "Audit", state: "거부", trigger: "허브 Goal Audit이 거부됨", message: "허브 목표가 승인되지 않아 보완 항목을 만들었습니다." },
+    { id: "sm-19", area: "Audit", state: "일시정지", trigger: "Goal당 Audit 시도 상한 도달", message: "Audit 시도 상한에 도달했습니다. 범위를 조정하거나 중단하세요." },
+    { id: "sm-20", area: "Audit", state: "차단", trigger: "Loop 없는 Goal이 작업 없이 재주장", message: "감사 거부 후에는 작업과 증거를 갱신해야 다시 주장할 수 있습니다." },
+    { id: "sm-21", area: "Audit", state: "읽기 전용", trigger: "Audit 세션이 쓰기 도구를 호출함", message: "Audit 세션은 읽기 전용입니다." },
+    { id: "sm-22", area: "아카이브", state: "오류", trigger: "아카이브를 불러오지 못함", message: "아카이브를 불러오지 못했습니다." },
+    { id: "sm-23", area: "질문", state: "대기", trigger: "에이전트 질문이 도착함", message: "답변을 기다리는 질문이 있습니다." },
+    { id: "sm-24", area: "질문", state: "정상", trigger: "질문에 답변함", message: "없음 — 답변 전달, 카드·인라인 갱신" },
+    { id: "sm-25", area: "질문", state: "취소", trigger: "질문 대기 중 세션이 삭제됨", message: "세션이 종료되어 질문이 취소되었습니다." },
+    { id: "sm-26", area: "에이전트", state: "정상", trigger: "메시지 수신 세션이 비활성", message: "없음 — 자동 재개 후 전달" },
+    { id: "sm-27", area: "에이전트", state: "오류", trigger: "수신 세션 자동 재개 실패", message: "받는 세션을 재개하지 못했습니다. 메시지를 보관했습니다." },
+    { id: "sm-28", area: "에이전트", state: "오류", trigger: "수신 세션이 삭제됨", message: "받는 세션이 없어 메시지를 전달하지 못했습니다." },
+    { id: "sm-29", area: "@참조", state: "차단", trigger: "@ 프로젝트가 없음", message: "프로젝트를 찾을 수 없습니다." },
+    { id: "sm-30", area: "@참조", state: "확인", trigger: "@ 워크트리·브랜치가 없음", message: "이 브랜치의 워크트리가 없습니다. 브랜치와 워크트리를 만들까요?" },
+    { id: "sm-31", area: "@참조", state: "차단", trigger: "워크트리 생성 확인을 취소함", message: "참조를 해석하지 못했습니다." },
+    { id: "sm-32", area: "@참조", state: "오류", trigger: "워크트리 생성 실패", message: "워크트리를 만들지 못했습니다. 다시 시도해 주세요." },
+    { id: "sm-33", area: "@참조", state: "차단", trigger: "@ 파일·폴더가 없음", message: "파일 또는 폴더를 찾을 수 없습니다." },
+    { id: "sm-34", area: "@참조", state: "차단", trigger: "해석하지 못한 태그가 남음", message: "해석하지 못한 참조가 있습니다. 참조를 확인한 뒤 전송해 주세요." },
+    { id: "sm-35", area: "TODO", state: "오류", trigger: "TODO를 불러오지 못함", message: "TODO를 불러오지 못했습니다." },
+    { id: "sm-36", area: "하네스", state: "비활성", trigger: "하네스 패키지가 없거나 버전이 다름", message: "Pi 하네스 패키지가 없어 Goal·List·Loop·Audit·TODO·에이전트 대화·질문을 사용할 수 없습니다." }
+  ],
 
   goals: [
     { id: "goal-onb-hub", group: "g-feature", sessionId: "s-onb-hub", parentListItemId: null, objective: "온보딩 4레포를 하나의 흐름으로 통합", acceptance: ["4개 레포 구현이 모두 승인됨", "통합 기록과 API 계약이 남음", "원래 목표가 하위 결과에 매핑됨"], status: "auditing", revision: 2, loopId: null, latestAuditId: "aud-onb-hub", pauseReason: null, auditAttemptCount: 1, completedAt: null, completedRevision: null },
@@ -45,7 +83,7 @@ window.MOCK = {
     { id: "li-perf-2", group: "g-loop", parentGoalId: "goal-perf-hub", title: "통합 결과 검증", state: "queued", queueOrder: 2, childGoalIds: [], supersededGoalIds: [], completedAt: null, completedRevision: null, integrationNote: "모든 Loop 승인 후" },
     { id: "li-query-1", group: "g-loop", sessionId: "s-perf-query", goalId: "goal-perf-query", title: "느린 쿼리 제거", state: "active", queueOrder: 1 },
     { id: "li-sec-1", group: "g-manual", sessionId: "s-sec-audit", goalId: "goal-sec-audit", title: "OWASP 점검", state: "active", queueOrder: 1 },
-    { id: "li-fix-1", group: "g-fix", sessionId: "s-fix-sec", goalId: "goal-fix-sec", title: "세션 고정 수정", state: "blocked", queueOrder: 1 },
+    { id: "li-fix-1", group: "g-fix", sessionId: "s-fix-sec", goalId: "goal-fix-sec", title: "세션 고정 수정", state: "blocked", queueOrder: 1, integrationNote: "불가능 verdict — 재시도 필요" },
     { id: "li-fix-2", group: "g-fix", sessionId: "s-fix-perf", goalId: "goal-fix-perf", title: "N+1 제거", state: "active", queueOrder: 2 },
     { id: "li-bill-1", group: "g-billing", sessionId: "s-bill-web", goalId: "goal-bill-web", title: "플랜 선택 화면", state: "active", queueOrder: 1 },
     { id: "li-fix-hub-1", group: "g-fix", parentGoalId: "goal-fix-hub", title: "N+1 제거 통합", state: "active", queueOrder: 1, childGoalIds: ["goal-fix-perf"], supersededGoalIds: [], completedAt: null, completedRevision: null, integrationNote: "성능 수정 승인 대기" },
@@ -99,7 +137,15 @@ window.MOCK = {
     { id: "am-2", group: "g-feature", from: "s-onb-hub", to: "s-onb-web", body: "API 계약: POST /auth/login { email, password } → { token } · 오류 401/429.", status: "delivered", at: "09:45" },
     { id: "am-3", group: "g-loop", from: "s-perf-query", to: "s-perf-hub", body: "p95 287ms로 목표 250ms 미달입니다. 캐시 결과와 합칠까요?", status: "pending", at: "11:52" },
     { id: "am-4", group: "g-manual", from: "s-sec-audit", to: "s-sec-hub", body: "자격 증명 확인이 필요해 질문을 남겼습니다. 답변 전까지 Loop를 일시정지합니다.", status: "delivered", at: "13:48" },
-    { id: "am-5", group: "g-feature", from: "s-onb-api", to: "s-onb-hub", body: "API 계약 확정 전에는 프론트 연동을 시작하지 않습니다.", status: "delivered", at: "09:47" }
+    { id: "am-5", group: "g-feature", from: "s-onb-api", to: "s-onb-hub", body: "API 계약 확정 전에는 프론트 연동을 시작하지 않습니다.", status: "delivered", at: "09:47" },
+    { id: "am-6", group: "g-loop", from: "s-perf-hub", to: "s-perf-query", body: "캐시 결과를 합쳐 다음 회차를 진행하세요.", status: "failed", error: "받는 세션을 재개하지 못했습니다. 메시지를 보관했습니다.", at: "11:58" }
+  ],
+
+  hubActions: [
+    { id: "ha-1", group: "g-loop", action: "워크트리 생성", target: "wt-perf-cache", at: "11:02", confirmation: false },
+    { id: "ha-2", group: "g-loop", action: "세션 이름 변경", target: "s-perf-cache", at: "11:36", confirmation: false },
+    { id: "ha-3", group: "g-fix", action: "워크트리 삭제", target: "wt-fix-perf", at: "15:18", confirmation: false },
+    { id: "ha-4", group: "g-feature", action: "하위 세션 생성", target: "s-onb-qa", at: "09:40", confirmation: false }
   ],
 
   refProjects: [

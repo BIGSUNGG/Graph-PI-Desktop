@@ -22,6 +22,12 @@ const go = async (view) => { await page.click(`[data-view="${view}"]`); await pa
 const group = async (gid) => { if (!(await page.locator('#view-board').isVisible())) await go('board'); await page.click(`[data-grp="${gid}"]`); await page.waitForTimeout(300); };
 const session = async (sid) => { if (!(await page.locator('#view-board').isVisible())) await go('board'); await page.locator(`g[data-session="${sid}"]`).evaluate(el => el.dispatchEvent(new MouseEvent('click', { bubbles: true }))); await page.waitForTimeout(300); };
 const tab = async (name) => { await page.click(`.sup-tab[data-tab="${name}"]`); await page.waitForTimeout(160); };
+const contains = async (sel, needle, label) => {
+  try {
+    const t = await page.locator(sel).first().innerText();
+    if (!t.includes(needle)) errs.push(label + ' (missing ' + needle + ')');
+  } catch { errs.push(label + ' (selector ' + sel + ')'); }
+};
 const reload = async () => { await page.goto(url); await page.waitForTimeout(500); };
 
 await page.goto(url);
@@ -30,11 +36,13 @@ await page.waitForTimeout(500);
 // 1. group create / preset required / manual / empty group
 await page.click('#group-new');
 await page.waitForTimeout(250);
+if (await page.locator('.preset').count() < 3) errs.push('preset cards < 3');
 await shot('planning-group-create.png');
 await page.fill('#dlg-gname', '빈 오케스트레이션');
 await page.click('#dlg-ok');
 await page.waitForTimeout(250);
 await shot('planning-group-required.png');
+await contains('#dialog', '이 프리셋은 첫 프롬프트가 필요합니다.', 'preset required error');
 await page.click('[data-preset="manual"]');
 await page.waitForTimeout(160);
 await shot('planning-manual.png');
@@ -46,12 +54,26 @@ await reload();
 // 2. feature board / sessions / question
 await group('g-feature');
 await shot('planning-overview.png');
+await shot('planning-slot-priority.png');
 await shot('planning-board-badges.png');
+const badSlots = await page.locator('.slot-badges').evaluateAll(els => els.filter(e => e.querySelectorAll('[data-slot]').length !== 4).length);
+if (badSlots) errs.push('slot containers without 4 slots: ' + badSlots);
 await shot('planning-feature-worktrees.png');
 await shot('planning-sidebar.png', page.locator('.sidebar'));
 await session('s-onb-api');
 await shot('planning-feature-question.png', page.locator('.sup-question'));
 await shot('planning-readonly.png', page.locator('#inspector'));
+await group('g-feature');
+await session('s-onb-hub');
+await tab('audit');
+await shot('planning-audit-inprogress.png', page.locator('.sup-panel'));
+await contains('.sup-panel', 'Audit 세션', 'audit in-progress');
+await contains('.sup-panel', '읽기 전용', 'audit read-only');
+await session('s-onb-web');
+await tab('audit');
+await shot('planning-session-audit.png', page.locator('.sup-panel'));
+await contains('.sup-panel', '승인', 'audit approved history');
+await contains('.sup-panel', '이전 감사', 'audit history');
 await session('s-onb-web');
 await go('chat');
 await page.locator('#chat-log').evaluate(el => { el.scrollTop = 0; });
@@ -62,6 +84,9 @@ await shot('planning-chat.png');
 await session('s-onb-web');
 await shot('planning-todo.png', page.locator('.todo-panel'));
 await shot('planning-todo-status.png', page.locator('.todo-panel'));
+await contains('.todo-panel', '그룹', 'todo group');
+await contains('.todo-panel', '세션', 'todo session');
+if (await page.locator('.todo-panel button').count()) errs.push('todo panel is not read-only');
 
 // 3. loop preset / integration / fan-out / states
 await group('g-loop');
@@ -69,6 +94,9 @@ await shot('planning-loop-worktrees.png');
 await session('s-perf-hub');
 await tab('goal');
 await shot('planning-hub-goal.png', page.locator('.sup'));
+await shot('planning-hub-autonomy.png', page.locator('.sup'));
+await contains('.sup', '허브 활동', 'hub actions');
+await contains('.sup', '확인 없음', 'hub confirmation-free action');
 await shot('planning-hub-aggregate.png', page.locator('.sup'));
 await shot('planning-loop-integration.png', page.locator('.sup-panel'));
 await tab('list');
@@ -76,8 +104,8 @@ await shot('planning-hub-fanout.png', page.locator('.sup-panel'));
 await shot('planning-list-queue.png', page.locator('.sup-panel'));
 await session('s-perf-index');
 await tab('audit');
-await shot('planning-session-audit.png', page.locator('.sup-panel'));
 await shot('planning-audit-evidence.png', page.locator('.sup-panel'));
+await contains('.sup-panel', 'pass', 'audit criteria pass');
 await session('s-perf-query');
 await tab('goal');
 await shot('planning-session-goal.png', page.locator('.sup-panel'));
@@ -86,15 +114,22 @@ await shot('planning-agent-chat.png', page.locator('#chat-log'));
 await session('s-perf-cache');
 await tab('loop');
 await shot('planning-loop-states.png', page.locator('.sup-panel'));
+await tab('audit');
+await shot('planning-audit-rejected.png', page.locator('.sup-panel'));
+await contains('.sup-panel', '거부', 'audit rejected');
 await session('s-perf-query');
 await go('chat');
 await shot('planning-agent-pending.png', page.locator('#chat-log'));
+await shot('planning-agent-failed.png', page.locator('#chat-log'));
+await contains('#chat-log', '전달 실패', 'agent delivery failure');
 
 // 4. manual question / inline / sidebar / archive / blocked list
 await group('g-manual');
 await session('s-sec-audit');
 await shot('planning-question.png', page.locator('.sup-question'));
 await shot('planning-sidebar-question.png', page.locator('.sidebar'));
+await shot('planning-board-question.png');
+if (await page.locator('[data-attn="question"]').count() < 1) errs.push('board question attention missing');
 await go('chat');
 await shot('planning-question-inline.png', page.locator('#chat-log'));
 const qBefore = await page.locator('#chat-log [data-act="ask-answer"]').count();
@@ -104,8 +139,18 @@ else {
   await page.waitForTimeout(250);
   const qAfter = await page.locator('#chat-log [data-act="ask-answer"]').count();
   if (qAfter >= qBefore) errs.push('question did not resolve');
+  if (await page.locator('#inspector [data-act="ask-answer"]').count()) errs.push('inspector question did not sync');
 }
 await group('g-fix');
+await session('s-fix-sec');
+await tab('audit');
+await shot('planning-audit-impossible.png', page.locator('.sup-panel'));
+await contains('.sup-panel', '불가능', 'audit impossible');
+await tab('list');
+await page.click('[data-act="arch-toggle"]');
+await page.waitForTimeout(200);
+await shot('planning-archive-failed.png', page.locator('.sup-panel'));
+await contains('.sup-panel', '불가능', 'blocked archive');
 await session('s-fix-perf');
 await tab('loop');
 await shot('planning-loop-bounds.png', page.locator('.sup-panel'));
@@ -148,6 +193,11 @@ await page.waitForTimeout(200);
 await page.locator('#ref-menu .ref-item', { hasText: 'src/routes/onboarding.ts' }).click();
 await page.waitForTimeout(200);
 await shot('planning-ref-file.png');
+await page.fill('#chat-input', '@backend/src/routes/onboarding.ts 기준으로 API 연결 계획을 정리해.');
+await page.press('#chat-input', 'Enter');
+await page.waitForTimeout(450);
+if (!(await page.locator('#chat-log').innerText()).includes('@backend/src/routes/onboarding.ts')) errs.push('ref not handed off to prompt');
+await shot('planning-ref-prompt.png', page.locator('#chat-log'));
 await page.fill('#chat-input', '@nope');
 await page.dispatchEvent('#chat-input', 'input');
 await page.waitForTimeout(150);
@@ -159,10 +209,21 @@ await shot('planning-ref-blocked.png');
 // 6. ADE views / worktree dialog / 4 tabs + 4 slots
 await page.fill('#chat-input', '');
 await go('orch');
+await contains('#view-orch', '목적', 'run purpose label');
 await shot('planning-run-purpose.png');
 await shot('planning-orch.png');
 await go('history');
 await shot('planning-history.png');
+await go('states');
+const stateCards = await page.locator('.state-card').count();
+if (stateCards !== 36) errs.push('state message cards !== 36: ' + stateCards);
+for (const m of ['이 프리셋은 첫 프롬프트가 필요합니다.', 'Audit 세션은 읽기 전용입니다.', 'Loop 상한에 도달했습니다. 범위를 조정하거나 완료를 주장하세요.', '감사 중 워크트리가 변경되었습니다. 다시 감사합니다.', '아카이브를 불러오지 못했습니다.', '세션이 종료되어 질문이 취소되었습니다.', '받는 세션을 재개하지 못했습니다. 메시지를 보관했습니다.', '이 브랜치의 워크트리가 없습니다. 브랜치와 워크트리를 만들까요?', 'TODO를 불러오지 못했습니다.', 'Pi 하네스 패키지가 없어 Goal·List·Loop·Audit·TODO·에이전트 대화·질문을 사용할 수 없습니다.']) {
+  if (!(await page.locator('.state-card').filter({ hasText: m }).count())) errs.push('state card missing: ' + m);
+}
+const vp = page.viewportSize();
+await page.setViewportSize({ width: 1440, height: 1220 });
+await shot('planning-state-messages.png', page.locator('.states'));
+await page.setViewportSize(vp);
 await go('board');
 await group('g-feature');
 const tabs = await page.locator('.sup-tab').count();
@@ -175,10 +236,34 @@ await page.waitForTimeout(250);
 await shot('planning-worktree-add.png', page.locator('#dialog'));
 await page.click('#dlg-cancel');
 
+await group('g-billing');
+await session('s-bill-web');
+await tab('audit');
+await shot('planning-audit-error.png', page.locator('.sup-panel'));
+await contains('.sup-panel', '오류', 'audit error');
+
+await reload();
+await group('g-feature');
+await session('s-onb-api');
+await shot('planning-question-persist.png', page.locator('.sup-question'));
+if (await page.locator('.sup-question').count() < 1) errs.push('question not persisted after reload');
+
+await page.goto(url + '#harness-missing');
+await page.waitForTimeout(500);
+await group('g-feature');
+await session('s-onb-hub');
+await shot('planning-harness-missing.png');
+if (!(await page.locator('#harness-banner').isVisible())) errs.push('harness banner not visible');
+await contains('.sup-empty', '비활성', 'harness disabled message');
+if (await page.locator('[data-slot]').count()) errs.push('harness missing still shows slots');
+if (await page.locator('.audit-run').count()) errs.push('harness missing still shows audit card');
+if (await page.locator('#slot-legend').isVisible()) errs.push('harness missing still shows legend');
+await reload();
+
 // 7. coverage + screenshots
 const md = fs.readFileSync(coveragePath, 'utf8');
 const rows = md.split('\n').filter(l => /^\|\s*\d+\s*\|/.test(l));
-if (rows.length < 40) errs.push('COVERAGE rows < 40: ' + rows.length);
+if (rows.length < 49) errs.push('COVERAGE rows < 49: ' + rows.length);
 for (const r of rows) {
   if (!/`planning-[a-z-]+\.png`/.test(r)) errs.push('COVERAGE row missing screenshot: ' + r.slice(0, 60));
   if (!/(SPEC-hub-orchestration|SPEC-graph-pi-ade|같은 문서)/.test(r)) errs.push('COVERAGE row missing SPEC ref: ' + r.slice(0, 60));
@@ -188,6 +273,6 @@ for (const f of refs) {
   const p = path.join(ev, f);
   if (!fs.existsSync(p) || fs.statSync(p).size === 0) errs.push('missing screenshot ' + f);
 }
-console.log(JSON.stringify({ rows: rows.length, screenshots: refs.length, tabs, slots, errors: errs }, null, 2));
+console.log(JSON.stringify({ rows: rows.length, screenshots: refs.length, tabs, slots, messages: stateCards, errors: errs }, null, 2));
 await browser.close();
 if (errs.length) process.exit(1);

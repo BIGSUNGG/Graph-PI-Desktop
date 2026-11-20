@@ -1,0 +1,13 @@
+{
+  "name": "graph-pi-mock",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Graph PI ADE planning mock and visual verification",
+  "scripts": {
+    "check": "node _check.js",
+    "verify": "node verify-planning.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.65.1"
+  }
+}
