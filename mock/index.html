@@ -175,7 +175,7 @@
 
   .inspector{
     border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--shadow-sm);
-    padding:14px;overflow:auto;
+    padding:14px;overflow:auto;max-height:calc(100vh - 120px);
   }
   .insp-head{display:flex;align-items:flex-start;gap:8px}
   .insp-head h2{margin:0;font-size:13px;font-weight:600;line-height:1.35;letter-spacing:-.01em}
@@ -198,6 +198,16 @@
   .insp-loop textarea,.insp-loop input{width:100%;font:inherit;font-size:11.5px;color:var(--text);background:var(--panel-2);border:1px solid var(--input-line);border-radius:8px;padding:6px 8px;resize:vertical}
   .insp-loop .loop-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
   .insp-loop .loop-row .btn{flex:1 1 auto}
+  .insp-chat{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+  .insp-chat h3{display:flex;align-items:center;gap:6px;margin:0 0 8px;font-size:11px;font-weight:600;color:var(--muted)}
+  .insp-chat-n{margin-left:auto;font-size:10px;font-weight:400;color:var(--dim)}
+  .insp-thread{overflow:auto;display:flex;flex-direction:column;gap:14px;padding-right:4px}
+  .insp-thread .msg{font-size:11.5px}
+  .insp-resize{height:8px;margin:6px 0;cursor:ns-resize;border-radius:4px;background:linear-gradient(var(--line),var(--line)) center/32px 2px no-repeat}
+  .insp-resize:hover{background-color:rgb(255 255 255 / .04)}
+  .insp-form{display:flex;gap:6px;align-items:flex-end}
+  .insp-form textarea{flex:1;min-width:0;font:inherit;font-size:11.5px;color:var(--text);background:var(--panel-2);border:1px solid var(--input-line);border-radius:8px;padding:6px 8px;resize:vertical}
+  .insp-form .btn{flex:0 0 auto}
   .insp-tools{margin-top:14px;padding-top:10px;border-top:1px solid var(--line)}
   .insp-tools h3{margin:0 0 6px;font-size:11px;font-weight:600;color:var(--muted)}
   .insp-tools .tool-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px;align-items:baseline;padding:3px 0;font-size:11px}
@@ -604,6 +614,7 @@
     closed: {}, histOpen: {}, orca: true,
     run: M.runs[0].id, worker: M.workers[0].id, query: "", range: "30", results: null, indexed: 0,
     zoom: 1, vx: 0, vy: 0, boardW: 0, boardH: 0, nodePts: [], pan: null, dragMoved: false, _lastGroup: null,
+    inspChatH: 280,
     repo: M.repos[0]
   };
 
@@ -1075,6 +1086,23 @@
     applyView();
   }
 
+  function inspChatHTML(s) {
+    var msgs = M.messages[s.id] || [];
+    var turns = turnsOf(msgs);
+    var log = turns.length ? turns.map(function (t, i) { return turnHTML(t, i === turns.length - 1, s); }).join("")
+      : '<p class="empty">저장된 메시지가 없습니다.</p>';
+    var ro = !state.orca || s.removed;
+    return '<section class="insp-chat">'
+      + '<h3>채팅<span class="insp-chat-n">' + msgs.length + '개 메시지</span></h3>'
+      + '<div class="insp-thread" id="insp-thread" style="height:' + state.inspChatH + 'px">' + log + '</div>'
+      + '<div class="insp-resize" id="insp-resize" role="separator" aria-label="채팅 높이 조절" title="끌어서 높이 조절"></div>'
+      + '<form class="insp-form" id="insp-form"><textarea id="insp-input" rows="2" placeholder="'
+      + (s.removed ? '삭제된 세션 — 기록만 표시합니다' : state.orca ? '프롬프트를 입력하세요 (Enter 전송)' : 'Orca 연결 없음 — 보낼 수 없습니다')
+      + '"' + (ro ? ' disabled' : '') + '></textarea>'
+      + '<button class="btn primary" type="submit"' + (ro ? ' disabled' : '') + '>전송</button></form>'
+      + '</section>';
+  }
+
   function renderInspector() {
     var box = $("inspector");
     if (state.selected.type === "wt") {
@@ -1119,10 +1147,10 @@
       + "<dt>세션 ID</dt><dd class=\"mono\">" + esc(s.id) + "</dd>"
       + "<dt>최근 도구</dt><dd>" + (tool ? '<span class="mono">' + esc(toolName(tool)) + "</span> · " + esc(tool.at) : "없음") + "</dd>"
       + "</dl>"
+      + inspChatHTML(s)
       + '<div class="insp-actions">'
       + '<button class="btn primary" data-act="resume">재개</button>'
       + '<button class="btn" data-act="stop">중단</button>'
-      + '<button class="btn" data-act="open-chat">채팅 열기</button>'
       + '<button class="btn" data-act="s-rename">이름 수정</button>'
       + '<button class="btn danger" data-act="s-del">제거</button></div>' + (swt && swt.loop ? loopInspector(swt) : ""));
     bindInspector();
@@ -1148,10 +1176,9 @@
     [].forEach.call($("inspector").querySelectorAll("[data-act]"), function (b) {
       b.onclick = function () {
         var act = b.getAttribute("data-act");
-        if (!state.orca && act !== "open-chat" && act !== "s-rename" && act !== "s-del") return toast("Orca 연결이 없어 실행할 수 없습니다");
+        if (!state.orca && act !== "s-rename" && act !== "s-del") return toast("Orca 연결이 없어 실행할 수 없습니다");
         if (act === "resume") return toast("목업: 재개 명령은 실제로 보내지 않습니다");
         if (act === "stop") return toast("목업: 중단 명령은 실제로 보내지 않습니다");
-        if (act === "open-chat") { state.chat = state.selected.id; return setView("chat"); }
         if (act === "wt-rename") return worktreeRenameDialog(state.selected.id);
         if (act === "wt-parent") return worktreeParentDialog(state.selected.id);
         if (act === "wt-hub") return hubStart(state.selected.id);
@@ -1161,6 +1188,49 @@
         if (act === "s-del") return sessionDeleteDialog(state.selected.id);
       };
     });
+
+    var inspForm = $("insp-form");
+    if (inspForm) {
+      inspForm.onsubmit = function (e) {
+        e.preventDefault();
+        var input = $("insp-input");
+        var text = input.value.trim();
+        if (!text || !state.orca) return;
+        input.value = "";
+        state.chat = state.selected.id;
+        state.inspFocus = true;
+        sendPrompt(text, renderInspector);
+      };
+      $("insp-input").addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); inspForm.dispatchEvent(new Event("submit", { cancelable: true })); }
+      });
+    }
+    var handle = $("insp-resize");
+    if (handle) {
+      handle.onpointerdown = function (e) {
+        e.preventDefault();
+        var startY = e.clientY, startH = state.inspChatH, thread = $("insp-thread");
+        handle.setPointerCapture(e.pointerId);
+        handle.onpointermove = function (ev) {
+          var h = Math.min(720, Math.max(120, startH + (ev.clientY - startY)));
+          state.inspChatH = h;
+          if (thread) thread.style.height = h + "px";
+        };
+        handle.onpointerup = function () {
+          handle.onpointermove = null;
+          handle.onpointerup = null;
+          if (handle.releasePointerCapture) handle.releasePointerCapture(e.pointerId);
+        };
+      };
+    }
+
+    var inspThread = $("insp-thread");
+    if (inspThread) inspThread.scrollTop = inspThread.scrollHeight;
+    if (state.inspFocus) {
+      state.inspFocus = false;
+      var focusInput = $("insp-input");
+      if (focusInput) focusInput.focus();
+    }
 
     var selSess = state.selected.type === "session" ? byId(M.sessions, state.selected.id) : null;
     var wt = selSess ? byId(M.worktrees, selSess.wt) : null;
@@ -1319,13 +1389,14 @@
     if (list.length) list[list.length - 1].classList.add("is-new");
   }
 
-  function sendPrompt(text) {
+  function sendPrompt(text, after) {
     var s = byId(M.sessions, state.chat);
     if (!s || s.removed) return;
     if (!M.messages[s.id]) M.messages[s.id] = [];
     M.messages[s.id].push({ role: "user", at: now(), text: text });
     renderChat();
     markNew();
+    if (after) after();
     var typing = document.createElement("div");
     typing.className = "msg agent typing";
     setHTML(typing, '<details class="think" open><summary><span class="brain">✳</span><span class="think-label">Thinking...</span><span class="think-at">' + esc(now()) + '</span><span class="chev">›</span></summary><div class="think-body"><div class="dots"><i></i><i></i><i></i></div></div></details>');
@@ -1340,6 +1411,7 @@
       st.className = "status ok";
       M.messages[s.id].push({ role: "assistant", at: now(), thinkFor: 3, think: "요청을 읽고 목업 응답을 만들었습니다.", text: "목업 응답입니다. 실제 앱에서는 PTY로 전달되고 세션 파일에 user 레코드가 추가됩니다." });
       if (state.chat === s.id) { renderChat(); markNew(); }
+    if (after) after();
     }, 1000);
   }
 

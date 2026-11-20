@@ -129,6 +129,9 @@ for (const w of M.worktrees) {
 if (/M\.repo(?!s)/.test(js)) errs.push('M.repo still referenced');
 if (!js.includes('id="dlg-grepo"')) errs.push('missing id="dlg-grepo"');
 if (!js.includes('id="dlg-grepo-edit"')) errs.push('missing id="dlg-grepo-edit"');
+if (!js.includes('function inspChatHTML')) errs.push('missing function inspChatHTML');
+for (const f of ['id="insp-thread"', 'id="insp-input"', 'id="insp-resize"', 'inspChatH']) if (!js.includes(f)) errs.push('missing ' + f);
+if (js.includes('data-act="open-chat"')) errs.push('inspector chat button still present');
 console.log(
   errs.length
     ? 'FAIL\n' + errs.join('\n')
