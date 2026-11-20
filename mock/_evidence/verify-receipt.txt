@@ -1,0 +1,25 @@
+# Verification receipt
+
+## git status --porcelain
+exit=0
+
+## git log --oneline -3
+66d5cfa docs(worklog): record final supervision coverage
+21129df feat(mock): complete planning evidence coverage
+18e757c docs(spec): clarify supervision read-only scope
+exit=0
+
+## node mock/_check.js
+PASS ids=61 sessions=33 worktrees=22 tasks=19 workers=12
+exit=0
+
+## node mock/_evidence/verify-planning.mjs
+{
+  "rows": 49,
+  "screenshots": 54,
+  "tabs": 4,
+  "slots": 52,
+  "messages": 36,
+  "errors": []
+}
+exit=0
