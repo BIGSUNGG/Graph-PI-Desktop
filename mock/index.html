@@ -88,6 +88,21 @@
   .wt-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .wt-branch{margin-left:auto;font-size:10px;color:rgb(240 240 240 / .35);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:96px}
   .wt-dirty{flex:0 0 auto;font-size:10px;color:var(--amber);font-variant-numeric:tabular-nums}
+  .wt-item{display:block}
+  .wt-chev{flex:0 0 auto;margin-left:auto;font-size:9px;line-height:1;color:var(--dim)}
+  .wt-sess{margin:0 0 4px 13px;border-left:1px solid var(--line)}
+  .wt-sess-row{
+    display:flex;align-items:center;gap:6px;width:100%;height:24px;padding:0 6px 0 9px;border:0;border-radius:6px;
+    background:transparent;color:var(--muted);font-size:10.5px;text-align:left;cursor:pointer;
+  }
+  .wt-sess-row:hover{background:var(--sidebar-accent);color:var(--text)}
+  .wt-sess-row.is-sel{background:var(--sidebar-accent);color:var(--text)}
+  .wt-sess-row .d{flex:0 0 auto;width:5px;height:5px;border-radius:50%;background:var(--dim)}
+  .wt-sess-row .d.running{background:var(--amber)} .wt-sess-row .d.done{background:var(--green)}
+  .wt-sess-row .d.idle{background:var(--dim)} .wt-sess-row .d.failed{background:var(--red)}
+  .wt-sess-name{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .wt-sess-time{flex:0 0 auto;font-size:9.5px;color:var(--dim);font-variant-numeric:tabular-nums}
+  .wt-sess-empty{padding:4px 0 6px 15px;font-size:10px;color:var(--dim)}
   .side-foot{margin-top:auto;display:flex;flex-direction:column;gap:8px;padding-top:8px;border-top:1px solid var(--line)}
   .field{display:flex;flex-direction:column;gap:4px;font-size:10px;color:rgb(240 240 240 / .45);padding:0 4px}
   .hint{margin:0;padding:0 4px;font-size:10px;color:rgb(240 240 240 / .35);line-height:1.45}
@@ -411,9 +426,9 @@
   /* 사이드바: 그룹 펼침 / 선택 강조선 / 새 그룹 플래시 */
   .wt-row{position:relative;overflow:hidden}
   .grp.is-open-anim .wt-row{animation:row-in .26s ease-out both}
-  .grp.is-open-anim .wt-row:nth-child(2){animation-delay:.04s}
-  .grp.is-open-anim .wt-row:nth-child(3){animation-delay:.08s}
-  .grp.is-open-anim .wt-row:nth-child(4){animation-delay:.12s}
+  .grp.is-open-anim .wt-item:nth-child(2) .wt-row{animation-delay:.04s}
+  .grp.is-open-anim .wt-item:nth-child(3) .wt-row{animation-delay:.08s}
+  .grp.is-open-anim .wt-item:nth-child(4) .wt-row{animation-delay:.12s}
   .wt-row.is-sel::before{content:"";position:absolute;left:0;top:5px;bottom:5px;width:2px;border-radius:2px;background:var(--accent);transform-origin:top;animation:bar-sweep .4s ease-out both}
   .grp.is-flash .grp-head > span:nth-child(2){animation:grp-flash .7s ease-out both}
 
@@ -611,7 +626,7 @@
   var state = {
     view: "board", selected: { type: null, id: null }, chat: M.sessions[0].id,
     group: (M.groups.filter(function (g) { return "#" + g.id === location.hash; })[0] || M.groups[0]).id,
-    closed: {}, histOpen: {}, orca: true,
+    closed: {}, sideOpenWt: null, histOpen: {}, orca: true,
     run: M.runs[0].id, worker: M.workers[0].id, query: "", range: "30", results: null, indexed: 0,
     zoom: 1, vx: 0, vy: 0, boardW: 0, boardH: 0, nodePts: [], pan: null, dragMoved: false, _lastGroup: null,
     inspChatH: 280,
@@ -682,6 +697,7 @@
   }
 
   function renderSidebar() {
+    var selSess = state.selected.type === "session" ? byId(M.sessions, state.selected.id) : null;
     var rows = M.groups.map(function (g) {
       var wts = groupWts(g.id), closed = !!state.closed[g.id];
       var body = wts.map(function (w) {
@@ -689,9 +705,21 @@
         var st = ss.filter(function (s) { return s.state === "running"; }).length ? "running"
           : ss.filter(function (s) { return s.state === "failed"; }).length ? "failed" : "done";
         var sel = state.selected.type === "wt" && state.selected.id === w.id ? " is-sel" : "";
-        return '<button class="wt-row' + sel + '" data-wt="' + w.id + '"><span class="d ' + st + '"></span>'
+        var isOpen = state.sideOpenWt === w.id;
+        var list = isOpen ? '<div class="wt-sess">' + (ss.length ? ss.map(function (s) {
+          var on = selSess && selSess.id === s.id ? " is-sel" : "";
+          return '<button class="wt-sess-row' + on + '" data-sess="' + s.id + '">'
+            + '<span class="d ' + s.state + '"></span>'
+            + '<span class="wt-sess-name">' + esc(s.title) + "</span>"
+            + '<span class="wt-sess-time">' + esc(s.last) + "</span></button>";
+        }).join("") : '<div class="wt-sess-empty">세션 없음</div>') + "</div>" : "";
+        return '<div class="wt-item">'
+          + '<button class="wt-row' + sel + '" data-wt="' + w.id + '" aria-expanded="' + (isOpen ? "true" : "false") + '">'
+          + '<span class="d ' + st + '"></span>'
           + '<span class="wt-name">' + esc(w.repo) + ' · ' + esc(w.branch) + "</span>"
-          + (w.dirty ? '<span class="wt-dirty">미커밋</span>' : "") + "</button>";
+          + (w.dirty ? '<span class="wt-dirty">미커밋</span>' : "")
+          + '<span class="wt-chev">' + (isOpen ? "▾" : "▸") + "</span></button>"
+          + list + "</div>";
       }).join("");
       return '<div class="grp' + (closed ? " is-closed" : "") + (state.group === g.id ? " is-active" : "")
         + (state.openAnim === g.id ? " is-open-anim" : "") + (state.flash === g.id ? " is-flash" : "") + '">'
@@ -713,6 +741,7 @@
         if (!state.closed[gid]) state.openAnim = gid;
         if (state.group !== gid) {
           state.group = gid;
+          state.sideOpenWt = null;
           state.selected = { type: null, id: null };
           state.chat = (defaultChat(gid) || {}).id || null;
           state.query = ""; state.results = null;
@@ -738,10 +767,25 @@
         state.selected = { type: "wt", id: wid };
         var root = sessionRoot(wid);
         state.chat = root ? root.id : null;
+        state.sideOpenWt = state.sideOpenWt === wid ? null : wid;
         if (state.view === "chat") { renderSidebar(); renderChat(); return; }
         if (state.view === "orch") { renderSidebar(); renderOrch(); return; }
         if (state.view === "history") { renderSidebar(); renderHistory(); return; }
         setView("board");
+      };
+    });
+    [].forEach.call($("wt-list").querySelectorAll("[data-sess]"), function (b) {
+      b.onclick = function () {
+        var sid = b.getAttribute("data-sess");
+        var s = byId(M.sessions, sid);
+        if (!s) return;
+        state.group = s.group;
+        state.selected = { type: "session", id: sid };
+        state.chat = sid;
+        if (state.view === "chat") { renderChat(); renderSidebar(); return; }
+        if (state.view === "orch") { renderSidebar(); renderOrch(); return; }
+        if (state.view === "history") { setView("chat"); renderSidebar(); return; }
+        renderBoard();
       };
     });
   }

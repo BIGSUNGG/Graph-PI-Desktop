@@ -132,6 +132,23 @@ if (!js.includes('id="dlg-grepo-edit"')) errs.push('missing id="dlg-grepo-edit"'
 if (!js.includes('function inspChatHTML')) errs.push('missing function inspChatHTML');
 for (const f of ['id="insp-thread"', 'id="insp-input"', 'id="insp-resize"', 'inspChatH']) if (!js.includes(f)) errs.push('missing ' + f);
 if (js.includes('data-act="open-chat"')) errs.push('inspector chat button still present');
+
+// 사이드바: 워크트리 선택 시 하위 세션 펼침 (승인 설계: .wt-item/.wt-chev/.wt-sess/.wt-sess-row/.wt-sess-empty)
+for (const c of ['.wt-item', '.wt-chev', '.wt-sess', '.wt-sess-row', '.wt-sess-row.is-sel', '.wt-sess-name', '.wt-sess-time', '.wt-sess-empty']) {
+  if (!html.includes(c)) errs.push('missing ' + c);
+}
+for (const f of ['state.sideOpenWt', 'data-sess="', 'aria-expanded', '[data-sess]', 'state.selected = { type: "session", id: sid };', 'state.selected = { type: "wt", id: wid };', '세션 없음']) {
+  if (!js.includes(f)) errs.push('missing ' + f);
+}
+if (js.includes('state.openWt')) errs.push('state.openWt must be state.sideOpenWt');
+if (js.includes('data-wt-toggle')) errs.push('caret toggle handler must not exist, row click toggles');
+if (js.includes('function sessionsOf')) errs.push('sessionsOf is not in the approved design');
+if (!js.includes('state.sideOpenWt = state.sideOpenWt === wid ? null : wid;')) errs.push('worktree row click must toggle the session list');
+if (!js.includes('state.sideOpenWt = null;')) errs.push('group switch must clear the open worktree');
+if (!/state\.view === "history"\) \{ setView\("chat"\); renderSidebar\(\); return; \}/.test(js)) errs.push('history session click must open chat');
+if (js.includes('state.sideOpenWt = s.wt')) errs.push('board/chat must not auto-expand the sidebar');
+if (/' data-sess="' \+ s\.id \+ '" data-wt=/.test(js)) errs.push('session row must not carry data-wt');
+if ((js.match(/querySelectorAll\("\[data-sess\]"\)/g) || []).length !== 1) errs.push('sidebar session handler count !== 1');
 console.log(
   errs.length
     ? 'FAIL\n' + errs.join('\n')
