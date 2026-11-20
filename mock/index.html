@@ -1725,11 +1725,9 @@
       var notice = '허브 세션을 시작합니다. 워크트리는 보드에서 추가합니다.';
       var fields = '<div class="grid2">'
         + dfield('부모 저장소', '<input id="dlg-grepo" value="' + esc(repoValue()) + '">')
-        + '</div>'
-        + '<div class="grid2">'
         + dfield('모델', '<select id="dlg-gmodel">' + dopts(M.models, M.models[0]) + '</select>')
-        + dfield('첫 프롬프트', '<textarea id="dlg-gprompt" rows="2" placeholder="부모 세션에 보낼 첫 지시"></textarea>')
         + '</div>'
+        + dfield('첫 프롬프트', '<textarea id="dlg-gprompt" rows="4" placeholder="부모 세션에 보낼 첫 지시"></textarea>')
         + '<div class="notice"><span class="pill hub">허브</span><span>' + notice + ' 허브는 그룹 최상위 폴더(부모 저장소)에서 시작합니다.</span></div>';
       var nameField = '<label class="field' + (draft.error ? ' err' : '') + '"><span class="lbl">그룹 이름</span>'
         + '<input id="dlg-gname" value="' + esc(draft.name) + '" placeholder="예: 결제 리팩터링">'
@@ -1921,7 +1919,8 @@
           + dfield('모델', '<select id="dlg-wtmodel">' + dopts(M.models, M.models[0]) + '</select>')
           + dfield('부모 워크트리', '<select id="dlg-parent"><option value="">없음 (루트로 추가)</option>'
             + groupWtsOf(state.group).map(function (w) { return '<option value="' + w.id + '">' + esc(w.name) + ' · ' + esc(w.branch) + '</option>'; }).join('') + '</select>')
-          + dfield('첫 프롬프트', '<textarea id="dlg-wtprompt" rows="2" placeholder="선택 · 입력하면 세션도 함께 만듭니다"></textarea>')
+          + '</div>'
+          + dfield('첫 프롬프트', '<textarea id="dlg-wtprompt" rows="4" placeholder="선택 · 입력하면 세션도 함께 만듭니다"></textarea>')
           + '</div>';
       }
       return head + tabs + '<div class="form">'

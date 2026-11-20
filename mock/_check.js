@@ -137,6 +137,9 @@ for (const w of M.worktrees) {
 if (/M\.repo(?!s)/.test(js)) errs.push('M.repo still referenced');
 if (!js.includes('id="dlg-grepo"')) errs.push('missing id="dlg-grepo"');
 if (!js.includes('id="dlg-grepo-edit"')) errs.push('missing id="dlg-grepo-edit"');
+if (!/dfield\('부모 저장소'[\s\S]{0,240}?dfield\('모델'/.test(js)) errs.push('group create: model not on parent repo row');
+if (!js.includes('id="dlg-gprompt" rows="4"')) errs.push('group create: prompt rows != 4');
+if (!js.includes('id="dlg-wtprompt" rows="4"')) errs.push('worktree add: prompt rows != 4');
 if (!js.includes('function inspChatHTML')) errs.push('missing function inspChatHTML');
 for (const f of ['id="insp-thread"', 'id="insp-input"', 'id="insp-resize"', 'inspChatH']) if (!js.includes(f)) errs.push('missing ' + f);
 if (js.includes('data-act="open-chat"')) errs.push('inspector chat button still present');
