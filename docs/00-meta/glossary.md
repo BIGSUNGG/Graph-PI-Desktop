@@ -40,10 +40,11 @@ tags: []
 | Goal | 완료 조건을 가진 결과 단위. 작업 세션마다 활성 Goal 하나와 대기 Goal 큐를 가지며, 허브는 최상위 Goal 하나와 List를 가진다. `active`·`auditing`·`complete`·`paused`·`aborted` 상태를 쓴다. | [[SPEC-hub-orchestration]] |
 | List | 세션별 Goal 큐. 세션 List 항목은 Goal이고, 허브 List 항목은 Goal이 아니라 허브 Goal이 소유하는 오케스트레이션 작업 묶음이다. | [[SPEC-hub-orchestration]] |
 | Loop(감독) | 한 Goal을 측정값 또는 Audit 기준으로 반복하는 실행 단위. 회차는 1회 반복. 감사 대기는 `paused`, 상한·중지는 `stopped`다. | [[SPEC-hub-orchestration]] |
-| Audit | 세션 Audit과 그룹 Audit의 두 종류. 완료 조건과 증거를 읽기 전용으로 검사하며, 소스 수정은 금지하고 테스트·측정 명령은 실행할 수 있다. | [[SPEC-hub-orchestration]] |
+| Audit | 세션 Audit·상위 세션 Audit·그룹 Audit의 세 가지 표시. 완료 조건과 증거를 읽기 전용으로 검사하며, 소스 수정은 금지하고 테스트·측정 명령은 실행할 수 있다. | [[SPEC-hub-orchestration]] |
 | Audit 세션 | 감사를 수행하는 읽기 전용 실행 단위. 작업 세션과 분리되며, 보드의 독립 카드가 아니라 세션 또는 허브 Audit 탭과 이력에 남는다. | [[SPEC-hub-orchestration]] |
-| 세션 Audit | 세션 Goal 완료 주장 시 그 세션에서 작업한 내용만 검사하는 Audit. | [[SPEC-hub-orchestration]] |
-| 그룹 Audit | 그룹 Goal이 만든 세션에서 진행된 하위 Goal의 세션 Audit이 모두 승인된 뒤 허브 Goal의 통합 결과를 검사하는 Audit. 해당 하위 Goal이 없으면 실행하지 않으며, 감사 에이전트가 생략할 수 있다. 생략하면 그룹 Goal은 완료된다. | [[SPEC-hub-orchestration]] |
+| 세션 Audit | 자식 Goal이 없는 세션 Goal 완료 주장 시 그 세션에서 작업한 내용만 검사하는 Audit. | [[SPEC-hub-orchestration]] |
+| 상위 세션 Audit | 자식 Goal이 있는 비허브 세션의 Goal을 검사하는 Audit. 직계 자식 Goal의 Audit이 모두 승인·생략된 뒤 자기 작업과 자식 결과의 통합을 검사하며, 감사 에이전트가 생략할 수 있다. 생략하면 상위 Goal은 완료된다. | [[SPEC-hub-orchestration]] |
+| 그룹 Audit | 그룹 Goal이 만든 세션에서 진행된 직계 하위 Goal의 Audit이 모두 승인·생략된 뒤 허브 Goal의 통합 결과를 검사하는 상위 세션 Audit. 해당 하위 Goal이 없으면 실행하지 않으며, 감사 에이전트가 생략할 수 있다. 생략하면 그룹 Goal은 완료된다. | [[SPEC-hub-orchestration]] |
 | 완료 조건 | Goal이 완료됐다고 판정하는 데 필요한 조건. 하나 이상이어야 하며, Audit이 조건별 증거와 통과/실패를 기록한다. | [[SPEC-hub-orchestration]] |
 | 유효 하위 Goal | 허브 항목의 `childGoalIds` 중 재시도로 대체되지 않은 Goal. `supersededByGoalId`가 있는 Goal은 빠진다. | [[SPEC-hub-orchestration]] |
 | 보완 항목 | 허브 Goal Audit이 거부됐을 때 추가하는 오케스트레이션 항목. | [[SPEC-hub-orchestration]] |
