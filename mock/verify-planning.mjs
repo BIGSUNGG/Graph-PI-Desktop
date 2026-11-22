@@ -76,6 +76,8 @@ if (await page.locator('.sidebar .sess-parent-mark').count() < 1) errs.push('sid
 if (!(await page.locator('.sidebar').innerText()).includes('│  └─')) errs.push('sidebar depth-2 guide missing');
 if (await page.locator('#graph path.sess-edge.is-hub').count() < 1) errs.push('board hub session edge missing');
 if (await page.locator('#graph path.sess-edge.is-cross').count() < 1) errs.push('board cross-worktree session edge missing');
+if (await page.locator('#graph path.sess-edge:not([marker-end])').count()) errs.push('session edge without direction');
+if (await page.locator('#graph path[stroke="#525252"]').count()) errs.push('worktree hierarchy edge still drawn');
 if (await page.locator('#graph g[data-session="s-onb-audit"]').count() < 1) errs.push('board audit session node missing');
 await session('s-onb-api');
 await tab('audit');
@@ -192,6 +194,9 @@ else {
   if (await page.locator('#inspector [data-act="ask-answer"]').count()) errs.push('inspector question did not sync');
 }
 await group('g-fix');
+if (await page.locator('#graph path.sess-edge:not([marker-end])').count()) errs.push('g-fix session edge without direction');
+if (await page.locator('#graph path[stroke="#525252"]').count()) errs.push('g-fix worktree hierarchy edge still drawn');
+if (await page.locator('#graph path[stroke="#d4a300"]:not(.loop-arc)[marker-end="url(#arwl)"]').count() < 1) errs.push('worktree merge edge missing');
 await session('s-fix-sec');
 await tab('audit');
 await shot('planning-audit-impossible.png', page.locator('.sup-panel'));

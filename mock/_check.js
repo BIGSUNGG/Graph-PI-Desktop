@@ -85,21 +85,12 @@ const fixWts = M.worktrees.filter((w) => w.group === 'g-fix');
 const fixRoots = fixWts.filter((w) => fixWts.some((k) => k.parent === w.id));
 if (!(fixRoots.length === 1 && fixRoots[0].id === 'wt-develop')) errs.push('fix root must be wt-develop');
 if (fixWts.filter((w) => w.parent === 'wt-develop').length !== 2) errs.push('develop child count !== 2');
-for (const c of ['.edge-flow', '.edge-dot', 'prefers-reduced-motion', 'animateMotion']) if (!html.includes(c)) errs.push('missing ' + c);
+for (const c of ['.edge-flow', '.edge-dot', 'prefers-reduced-motion', 'animateMotion', 'id="sess-arw"', 'marker-end="url(#sess-arw)"']) if (!html.includes(c)) errs.push('missing ' + c);
 if (html.includes('class="legend"')) errs.push('legend markup still present');
 
-// 애니메이션 판정: 혼합 상태 픽스처 + 루프 경로
-const MOTION = require('./motion.js');
-if (MOTION.liveEdge('running', 'running') !== true) errs.push('liveEdge: both running must move');
-if (MOTION.liveEdge('running', 'idle') !== false) errs.push('liveEdge: mixed must stay static');
-if (MOTION.allLive([true, true]) !== true) errs.push('allLive: all true must move');
-if (MOTION.allLive([true, false]) !== false) errs.push('allLive: mixed must stay static');
-if (MOTION.allLive([]) !== false) errs.push('allLive: empty must stay static');
-if (!/MOTION\.allLive\(\[topLive\]\.concat\(cols\.map/.test(js)) errs.push('trunk must require all children live');
-if (!/MOTION\.allLive\(\[topLive, liveWt\(c\.wt\.id\)\]\)/.test(js)) errs.push('stub must require both endpoints');
+// 연결선: 루프 화살촉 + 제거된 회색 계층선
 if (!/class="loop-arc"[^;]*?marker-end="url\(#arwl\)"/.test(js)) errs.push('loop arc with marker-end missing');
-if (html.includes('function liveEdge')) errs.push('unused liveEdge still defined inline');
-if (!/<script src="\.\/motion\.js"><\/script>/.test(html)) errs.push('motion.js not loaded');
+if (/525252/.test(js)) errs.push('worktree hierarchy edge still drawn');
 
 for (const c of ['#dialog .dialog-wide', '#dialog .dialog-xl', '#dialog .wizard', '#dialog .preset-grid', '#dialog .preset', '#dialog .preset .p-name', '#dialog .preset .p-desc', '#dialog .preset .p-tag', '.panel', '#dialog .kv', '#dialog .side-actions', '#dialog .hintx', '#dialog .del-list', '#dialog .del-item', '#dialog .stats', '#dialog .imp-row', '#dialog .imp-main', '#dialog .imp-name', '#dialog .imp-meta', '#dialog .tabs', '#dialog .tab', '#dialog .loop-actions', '#dialog .field', '#dialog .grid2', '#dialog .notice']) if (!html.includes(c)) errs.push('missing ' + c);
 for (const c of ['insp-tools', '세션별 최근 도구', 'tool-row', 'data-tool']) if (!html.includes(c)) errs.push('missing ' + c);

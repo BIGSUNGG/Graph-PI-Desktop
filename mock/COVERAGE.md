@@ -52,7 +52,7 @@
 | 46 | 같은 문서 §10.4 | 그룹 Goal이 만든 세션에 진행된 Goal이 없으면 그룹 Audit을 실행하지 않는다 | 그룹 Audit 탭의 안내 문구, gate 없음 | `planning-group-audit-none.png` |
 | 47 | 같은 문서 §10.4 | 자식 Goal이 있는 세션은 자식 Audit이 모두 승인된 뒤 상위 세션 Audit을 시작하고, 자기 작업과 자식 결과를 통합 검사한다 | 상위 세션 Audit 탭의 gate 1/1·자식 QA 통합·승인 | `planning-parent-audit.png` |
 | 48 | `docs/30-specs/SPEC-graph-pi-ade.md` §2.3·§6 | 사이드바가 세션을 부모→자식 트리로 펼치고 다른 워크트리 자식은 부모 링크로 표시한다 | `.sess-guide`·`.sess-parent-mark`·`Audit` 배지 | `planning-session-lineage.png` |
-| 49 | 같은 문서 §2.4 | 보드가 부모→자식 세션 연결선을 그리고 허브에서 직계 자식까지 잇는다 | `path.sess-edge` | `planning-overview.png` |
+| 49 | 같은 문서 §2.4 | 보드의 세션 연결선이 자식 쪽 화살촉으로 방향을 보이고, 워크트리 계층선은 없으며 머지선은 유지된다 | `path.sess-edge[marker-end]`, `path[stroke="#525252"]` 0개, 머지선 `#d4a300`+`#arwl` | `_gfix-after.png`, `planning-overview.png` |
 | 50 | 같은 문서 §3.1 | 채팅 좌측 목록도 같은 세션 계보를 트리로 보여준다 | `#chat-list`의 `.sess-guide`·`.chat-name` | `planning-chat-lineage.png` |
 | 51 | 같은 문서 §2.5 | 인스펙터가 상위 계보와 전체 하위 세션을 보여준다 | `.insp-lineage`·`.lin-wt`·`.lin-audit` | `planning-session-lineage-inspector.png` |
 

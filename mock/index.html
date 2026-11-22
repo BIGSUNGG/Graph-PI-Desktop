@@ -698,7 +698,6 @@
 </div>
 <div class="toast hidden" id="toast"></div>
 
-<script src="./motion.js"></script>
 <script src="./mock-data.js"></script>
 <script>
 (function () {
@@ -1327,7 +1326,9 @@
       + '<marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">'
       + '<path d="M0 0 L10 5 L0 10 z" fill="#51a2ff"/></marker>'
       + '<marker id="arwl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">'
-      + '<path d="M0 0 L10 5 L0 10 z" fill="#d4a300"/></marker></defs>');
+      + '<path d="M0 0 L10 5 L0 10 z" fill="#d4a300"/></marker>'
+      + '<marker id="sess-arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">'
+      + '<path d="M0 0 L10 5 L0 10 z" fill="#a78bfa" fill-opacity=".7"/></marker></defs>');
 
     var edgeN = 0;
     function edge(d, color, active, arrow, dash, dots) {
@@ -1346,38 +1347,17 @@
       return out;
     }
 
-    function liveWt(wid) {
-      return activeSessions().some(function (s) { return s.wt === wid && s.state === "running"; });
-    }
-
     var hubX = G.pad, hubY = G.pad, hubW = totalW - G.pad * 2;
     var hubBottom = G.pad + G.hubH, hubCx = hubX + hubW / 2;
     var topBottom = root ? root.y + root.h : hub ? hubBottom : 0;
     var topCenter = root ? root.x + root.w / 2 : hubCx;
-    var topLive = root ? liveWt(root.wt.id) : hub ? hub.state === "running" : false;
-    var busY = topBottom + 16;
     var bottomExtra = 0;
-    if (hub && root) {
-      svg.push(edge("M" + hubCx + " " + hubBottom + " L" + hubCx + " " + root.y, "#525252", MOTION.allLive([hub.state === "running", topLive]), null));
-    }
-    if ((root || hub) && cols.length) {
-      var centers = cols.map(function (c) { return c.x + c.w / 2; });
-      var left = Math.min.apply(null, centers.concat([topCenter]));
-      var right = Math.max.apply(null, centers.concat([topCenter]));
-      var trunkLive = MOTION.allLive([topLive].concat(cols.map(function (c) { return liveWt(c.wt.id); })));
-      svg.push(edge("M" + topCenter + " " + topBottom + " L" + topCenter + " " + busY + " L" + right + " " + busY, "#525252", trunkLive, null));
-      svg.push(edge("M" + topCenter + " " + busY + " L" + left + " " + busY, "#525252", trunkLive, null));
-      cols.forEach(function (c) {
-        var cx = c.x + c.w / 2;
-        svg.push(edge("M" + cx + " " + busY + " L" + cx + " " + c.y, "#525252", MOTION.allLive([topLive, liveWt(c.wt.id)]), null));
-      });
-    }
 
     var colBottom = Math.max.apply(null, [childTop].concat(all.map(function (c) { return c.y + c.h; })));
     var hubBusY = hubBottom + 6;
     var sessSvg = [];
     function sessionEdge(d, active, kind) {
-      return '<path class="sess-edge' + (kind ? " is-" + kind : "") + '" d="' + d + '"' + (active && !kind ? ' style="stroke-opacity:.92"' : "") + "/>";
+      return '<path class="sess-edge' + (kind ? " is-" + kind : "") + '" d="' + d + '" marker-end="url(#sess-arw)"' + (active && !kind ? ' style="stroke-opacity:.92"' : "") + "/>";
     }
     activeSessions().forEach(function (s) {
       var cp = pos[s.id];
