@@ -43,7 +43,7 @@ tags: []
 | Audit | 세션 Audit과 그룹 Audit의 두 종류. 완료 조건과 증거를 읽기 전용으로 검사하며, 소스 수정은 금지하고 테스트·측정 명령은 실행할 수 있다. | [[SPEC-hub-orchestration]] |
 | Audit 세션 | 감사를 수행하는 읽기 전용 실행 단위. 작업 세션과 분리되며, 보드의 독립 카드가 아니라 세션 또는 허브 Audit 탭과 이력에 남는다. | [[SPEC-hub-orchestration]] |
 | 세션 Audit | 세션 Goal 완료 주장 시 그 세션에서 작업한 내용만 검사하는 Audit. | [[SPEC-hub-orchestration]] |
-| 그룹 Audit | 모든 하위 세션 Audit이 승인된 뒤 허브 Goal의 통합 결과를 검사하는 Audit. 감사 에이전트가 생략할 수 있고, 생략하면 그룹 Goal은 완료된다. | [[SPEC-hub-orchestration]] |
+| 그룹 Audit | 그룹 Goal이 만든 세션에서 진행된 하위 Goal의 세션 Audit이 모두 승인된 뒤 허브 Goal의 통합 결과를 검사하는 Audit. 해당 하위 Goal이 없으면 실행하지 않으며, 감사 에이전트가 생략할 수 있다. 생략하면 그룹 Goal은 완료된다. | [[SPEC-hub-orchestration]] |
 | 완료 조건 | Goal이 완료됐다고 판정하는 데 필요한 조건. 하나 이상이어야 하며, Audit이 조건별 증거와 통과/실패를 기록한다. | [[SPEC-hub-orchestration]] |
 | 유효 하위 Goal | 허브 항목의 `childGoalIds` 중 재시도로 대체되지 않은 Goal. `supersededByGoalId`가 있는 Goal은 빠진다. | [[SPEC-hub-orchestration]] |
 | 보완 항목 | 허브 Goal Audit이 거부됐을 때 추가하는 오케스트레이션 항목. | [[SPEC-hub-orchestration]] |
