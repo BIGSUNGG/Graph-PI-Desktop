@@ -17,6 +17,8 @@ tags: []
 | [[20-decisions/ADR-0002-pi-session-jsonl-data-source]] | active | 대화는 Pi JSONL, 제어는 Orca CLI를 함께 쓴다 |
 | [[20-decisions/ADR-0003-electron-and-sqlite-index]] | active | Electron + React + TS, 검색 인덱스는 SQLite FTS5 |
 | [[20-decisions/ADR-0004-orca-removal-then-pi-runtime-fork]] | active | MVP는 SPEC-graph-pi-ade 범위, 이후 Orca 전면 제거, 그 다음 업스트림 Pi 런타임 포크(어댑터 도입 확정, 포크는 업데이트를 계속 받는 형태) |
+| [[20-decisions/ADR-0005-mvp-scope-both-specs-and-remote-access]] | active | MVP 범위를 두 SPEC 전체(목업 47장면)로 넓히고, 원격 접속은 MVP에서 구현하지 않고 구조만 열어둔다. ADR-0004의 MVP 범위 문장만 대체 |
+| [[20-decisions/ADR-0006-electron-vite-single-app-with-contract]] | active | electron-vite 단일 앱. 데이터 접근은 main 어댑터, 렌더러는 preload 계약만. 원격은 계약 뒤 transport 교체 |
 
 ## 작성 규칙
 

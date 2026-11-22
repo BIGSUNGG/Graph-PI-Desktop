@@ -1,6 +1,6 @@
 ---
 type: spec
-status: draft
+status: active
 updated: 2026-11-20
 tags: [hub, preset, harness, chat, goal, list, loop, audit]
 ---

@@ -38,7 +38,7 @@ tags: [orca, pi, cli]
 | 워크트리 생성 | `orca worktree create --name <n> --repo <sel> [--agent <id>] [--prompt] [--model] [--base-branch] [--parent-worktree]` | 사용 가능 (실행은 미검증) |
 | 워크트리 삭제 | `orca worktree rm --worktree <sel> [--force] [--delete-branch]` | 사용 가능 (실행은 미검증) |
 | 워크트리 메타 | `orca worktree set`, `worktree show`, `worktree activate` | 사용 가능 |
-| 에이전트 실행 | `orca agent launch --agent <id> [--worktree] [--prompt] [--model] [--effort] [--surface chat\|terminal] [--focus]` | 사용 가능 (`pi` 지정은 미검증) |
+| 에이전트 실행 | `orca agent launch --agent <id> [--worktree] [--prompt] [--model] [--effort] [--surface chat\|terminal] [--focus]` | 사용 가능. `pi` 지정 실검증 완료(2026-11-22, 터미널 세션 생성) |
 | 터미널 생성 | `orca terminal create [--worktree] [--command] [--shell] [--title]` | 사용 가능 |
 | 터미널 읽기 | `orca terminal read [--terminal] [--cursor] [--limit] [--screen]` | 사용 가능 |
 | 터미널 입력 | `orca terminal send [--terminal] [--text] [--enter] [--interrupt] [--wait-submit <s>]` | 사용 가능 |
@@ -51,7 +51,7 @@ tags: [orca, pi, cli]
 ### 주의점 (실측)
 
 - `task-list` 와 `gate-list` 는 Run 바인딩이 없으면 `run_required` 오류를 낸다. `--run <run_id>` 를 명시해야 한다.
-- `agent launch --help` 는 `--agent` 허용 값을 나열하지 않는다. 예시는 `codex`, `claude` 뿐이라 **`pi` 지정 가능 여부는 미검증**이다. 실행 검증에는 실제 세션이 생성되므로 사용자 승인이 필요하다.
+- `agent launch --help` 는 `--agent` 허용 값을 나열하지 않는다. 예시는 `codex`, `claude` 뿐이다. 2026-11-22에 `orca agent launch --agent pi --worktree path:C:/Projects/Graph-PI-Desktop --json` 을 실행해 `ok:true`, `outcome.kind:"terminal"`, `receipt.reason:"user_default"` 를 확인했고 세션 JSONL이 생겼다. 따라서 `pi` 는 유효한 에이전트 id이고 기본 설정에서 터미널 표면으로 뜼다. 채팅 표면 가능 여부는 확인하지 않았다.
 - `--surface chat` 은 에이전트가 채팅을 지원하지 않으면 터미널로 대체된다. 대체 여부는 `outcome.kind`, `receipt.detail` 로 알려준다.
 - Orca CLI는 이벤트 푸시를 제공하지 않는다. 상태 변화는 폴링으로만 관찰된다.
 

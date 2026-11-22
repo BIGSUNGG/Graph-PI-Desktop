@@ -1,7 +1,7 @@
 ---
 type: index
 status: active
-updated: 2026-11-20
+updated: 2026-11-22
 tags: []
 ---
 
@@ -13,8 +13,9 @@ tags: []
 
 | 문서 | 상태 | 한 줄 요약 |
 | --- | --- | --- |
-| [[30-specs/SPEC-graph-pi-ade]] | draft | Pi 전용 ADE의 4개 화면·조작·오류·완료 조건 |
-| [[30-specs/SPEC-hub-orchestration]] | draft | 허브 자율 관리·프리셋·Goal/List/Loop/Audit·TODO/대화/질문·채팅 @참조 |
+| [[30-specs/SPEC-graph-pi-ade]] | active | Pi 전용 ADE의 4개 화면·조작·오류·완료 조건 |
+| [[30-specs/SPEC-hub-orchestration]] | active | 허브 자율 관리·프리셋·Goal/List/Loop/Audit·TODO/대화/질문·채팅 @참조 |
+| [[30-specs/SPEC-mvp-acceptance]] | active | 두 SPEC 완료 조건을 합친 MVP 판정표 64행 |
 
 ## 작성 규칙
 
