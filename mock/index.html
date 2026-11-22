@@ -829,14 +829,35 @@
     if (!hg) return [];
     return M.audits.filter(function (a) { return a.scope === "group" && a.goalId === hg.id; });
   }
-  function groupAuditGate(gid) {
+  function sessionCreatedByGroupGoal(s) {
+    var h = hubSession(s.group);
+    if (!h || s.id === h.id) return false;
+    var seen = {}, p = s.parent;
+    while (p) {
+      if (p === h.id) return true;
+      if (seen[p]) return false;
+      seen[p] = 1;
+      var ps = byId(M.sessions, p);
+      p = ps ? ps.parent : null;
+    }
+    return false;
+  }
+  function groupCreatedGoals(gid) {
     var h = hubSession(gid), hg = h ? goalOfSession(h.id) : null;
-    var child = goalsOfGroup(gid).filter(function (g) { return !hg || g.id !== hg.id; });
+    if (!hg) return [];
+    return goalsOfGroup(gid).filter(function (g) {
+      if (g.id === hg.id) return false;
+      var s = byId(M.sessions, g.sessionId);
+      return !!s && sessionCreatedByGroupGoal(s);
+    });
+  }
+  function groupAuditGate(gid) {
+    var child = groupCreatedGoals(gid);
     var ok = child.filter(function (g) {
       var a = latestAuditOf(g);
       return g.status === "complete" && a && a.verdict === "approved";
     }).length;
-    return { ok: ok, total: child.length, ready: child.length > 0 && ok === child.length };
+    return { hasGoals: child.length > 0, ok: ok, total: child.length, ready: child.length > 0 && ok === child.length };
   }
   function latestAuditOf(g) { return g && g.latestAuditId ? auditById(g.latestAuditId) : null; }
   function openQuestion(sid) {
@@ -1576,9 +1597,12 @@
   function auditTabHTML(audits, type, gate) {
     var ro = '<div class="audit-ro">읽기 전용 · 소스 수정 불가 · 테스트·측정만 실행</div>';
     var head = type === "group"
-      ? '<div class="sup-sub">그룹 Audit · 모든 세션 작업을 통합 검사</div>'
+      ? '<div class="sup-sub">그룹 Audit · 그룹 Goal이 만든 세션의 작업을 통합 검사</div>'
       : '<div class="sup-sub">세션 Audit · 이 세션에서 작업한 내용만</div>';
     if (type === "group") {
+      if (!gate.hasGoals) {
+        return ro + head + '<div class="sup-empty">그룹 Goal이 만든 세션에서 진행된 Goal이 없어 그룹 Audit을 실행하지 않습니다.</div>';
+      }
       head += '<div class="audit-gate ' + (gate.ready ? "ready" : "wait") + '">'
         + (gate.ready ? "시작 가능" : "대기") + ' · ' + gate.ok + '/' + gate.total + ' 세션 승인'
         + (gate.ready ? " · 감사 에이전트가 생략할 수 있습니다" : "") + '</div>';
@@ -1586,7 +1610,7 @@
     if (!audits.length) {
       return ro + head + '<div class="sup-empty">'
         + (type === "group"
-          ? "모든 세션 Audit이 승인되면 그룹 Audit을 시작할 수 있습니다.<br>감사 에이전트는 통합 감사를 생략할 수 있습니다."
+          ? "대상 하위 Goal의 세션 Audit이 모두 승인되면 그룹 Audit을 시작할 수 있습니다.<br>감사 에이전트는 통합 감사를 생략할 수 있습니다."
           : "아직 감사 기록이 없습니다.<br>이 세션의 Goal 완료를 주장하면 세션 Audit이 시작됩니다.")
         + '</div>';
     }

@@ -61,7 +61,7 @@ window.MOCK = {
   ],
 
   audits: [
-    { id: "aud-onb-group", goalId: "goal-onb-hub", scope: "group", state: "skipped", skipReason: "모든 세션 Audit이 승인되어 통합 감사를 생략했습니다.", skippedBy: "audit-agent", skippedAt: "16:20", createdAt: "16:20", report: "세션별 승인 2/2 — 통합 감사 불필요" },
+    { id: "aud-onb-group", goalId: "goal-onb-hub", scope: "group", state: "skipped", skipReason: "대상 하위 Goal의 세션 Audit이 모두 승인되어 통합 감사를 생략했습니다.", skippedBy: "audit-agent", skippedAt: "16:20", createdAt: "16:20", report: "세션별 승인 2/2 — 통합 감사 불필요" },
     { id: "aud-onb-api", goalId: "goal-onb-api", scope: "session", verdict: "approved", criteriaResults: [{ criterion: "company_id + step_id 업서트", result: "pass", evidence: "onboarding upsert 통합 테스트 6 passed" }, { criterion: "완료 이벤트 발행", result: "pass", evidence: "step.completed 이벤트 로그" }], evidenceSummary: "2개 조건 모두 통과", report: "승인 — 세션 작업 범위 통과", model: "openai/gpt-5", commitHash: "b41d7e2", worktreeState: "clean", revision: 2, createdAt: "16:12" },
     { id: "aud-onb-web-r1", goalId: "goal-onb-web", scope: "session", verdict: "rejected", criteriaResults: [{ criterion: "위저드 3단계가 저장됨", result: "pass", evidence: "playwright 9 passed" }, { criterion: "선택한 목업 B안이 적용됨", result: "fail", evidence: "2단계 레이아웃이 A안" }], evidenceSummary: "B안 선택 후 2단계 미반영", report: "2단계 레이아웃 수정 필요", model: "openai/gpt-5", commitHash: "9c1e004", worktreeState: "clean", revision: 2, createdAt: "09:40" },
     { id: "aud-onb-web", goalId: "goal-onb-web", scope: "session", verdict: "approved", criteriaResults: [{ criterion: "위저드 3단계가 저장됨", result: "pass", evidence: "playwright 9 passed" }, { criterion: "선택한 목업 B안이 적용됨", result: "pass", evidence: "2단계 B안 스크린샷 일치" }], evidenceSummary: "2개 조건 모두 통과", report: "승인 — 다음 List 항목 없음", model: "openai/gpt-5", commitHash: "d20c9a1", worktreeState: "clean", revision: 3, createdAt: "09:48" },
@@ -173,9 +173,9 @@ window.MOCK = {
 
     { id: "s-perf-hub", title: "API 성능 루프 관리", wt: null, group: "g-loop", model: "anthropic/claude-sonnet-4.5", state: "idle", started: "11:00", last: "11:58", tokens: 0, parent: null },
     { id: "s-perf-root", title: "성능 루프 감시", wt: "wt-perf-api", group: "g-loop", model: "anthropic/claude-sonnet-4.5", state: "idle", started: "11:02", last: "11:40", tokens: 4200, parent: null },
-    { id: "s-perf-query", title: "느린 쿼리 제거", wt: "wt-perf-query", group: "g-loop", model: "anthropic/claude-sonnet-4.5", state: "running", started: "11:05", last: "11:52", tokens: 22100, parent: null, loop: true },
-    { id: "s-perf-cache", title: "캐시 히트율 개선", wt: "wt-perf-cache", group: "g-loop", model: "openai/gpt-5", state: "running", started: "11:08", last: "11:54", tokens: 18300, parent: null, loop: true },
-    { id: "s-perf-index", title: "인덱스 후보 검토", wt: "wt-perf-index", group: "g-loop", model: "openai/gpt-5", state: "done", started: "11:10", last: "11:38", tokens: 12700, parent: null, loop: true },
+    { id: "s-perf-query", title: "느린 쿼리 제거", wt: "wt-perf-query", group: "g-loop", model: "anthropic/claude-sonnet-4.5", state: "running", started: "11:05", last: "11:52", tokens: 22100, parent: "s-perf-hub", loop: true },
+    { id: "s-perf-cache", title: "캐시 히트율 개선", wt: "wt-perf-cache", group: "g-loop", model: "openai/gpt-5", state: "running", started: "11:08", last: "11:54", tokens: 18300, parent: "s-perf-hub", loop: true },
+    { id: "s-perf-index", title: "인덱스 후보 검토", wt: "wt-perf-index", group: "g-loop", model: "openai/gpt-5", state: "done", started: "11:10", last: "11:38", tokens: 12700, parent: "s-perf-hub", loop: true },
 
     { id: "s-sec-hub", title: "보안 점검 관리", wt: null, group: "g-manual", model: "anthropic/claude-sonnet-4.5", state: "idle", started: "13:00", last: "13:55", tokens: 0, parent: null },
     { id: "s-sec-root", title: "보안 점검 총괄", wt: "wt-sec-api", group: "g-manual", model: "anthropic/claude-sonnet-4.5", state: "idle", started: "13:02", last: "13:30", tokens: 3800, parent: null },
