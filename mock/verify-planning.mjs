@@ -19,7 +19,16 @@ const shot = async (name, locator) => {
   else await page.screenshot({ path: path.join(ev, name) });
 };
 const go = async (view) => { await page.click(`[data-view="${view}"]`); await page.waitForTimeout(250); };
-const group = async (gid) => { if (!(await page.locator('#view-board').isVisible())) await go('board'); await page.click(`[data-grp="${gid}"]`); await page.waitForTimeout(300); };
+const group = async (gid) => {
+  if (!(await page.locator('#view-board').isVisible())) await go('board');
+  const row = page.locator('.grp').filter({ has: page.locator(`[data-grp="${gid}"]`) }).first();
+  for (let i = 0; i < 2; i++) {
+    const cls = (await row.getAttribute('class')) || '';
+    if (cls.includes('is-active') && !cls.includes('is-closed')) return;
+    await page.click(`[data-grp="${gid}"]`);
+    await page.waitForTimeout(300);
+  }
+};
 const session = async (sid) => { if (!(await page.locator('#view-board').isVisible())) await go('board'); await page.locator(`g[data-session="${sid}"]`).evaluate(el => el.dispatchEvent(new MouseEvent('click', { bubbles: true }))); await page.waitForTimeout(300); };
 const tab = async (name) => { await page.click(`.sup-tab[data-tab="${name}"]`); await page.waitForTimeout(160); };
 const contains = async (sel, needle, label) => {
@@ -60,6 +69,14 @@ const badSlots = await page.locator('.slot-badges').evaluateAll(els => els.filte
 if (badSlots) errs.push('slot containers without 4 slots: ' + badSlots);
 await shot('planning-feature-worktrees.png');
 await shot('planning-sidebar.png', page.locator('.sidebar'));
+await shot('planning-session-lineage.png', page.locator('.sidebar'));
+if (await page.locator('.sidebar .sess-guide').count() < 2) errs.push('sidebar lineage guide missing');
+if (await page.locator('.sidebar .audit-badge').count() < 1) errs.push('sidebar audit badge missing');
+if (await page.locator('.sidebar .sess-parent-mark').count() < 1) errs.push('sidebar cross-worktree parent mark missing');
+if (!(await page.locator('.sidebar').innerText()).includes('│  └─')) errs.push('sidebar depth-2 guide missing');
+if (await page.locator('#graph path.sess-edge.is-hub').count() < 1) errs.push('board hub session edge missing');
+if (await page.locator('#graph path.sess-edge.is-cross').count() < 1) errs.push('board cross-worktree session edge missing');
+if (await page.locator('#graph g[data-session="s-onb-audit"]').count() < 1) errs.push('board audit session node missing');
 await session('s-onb-api');
 await tab('audit');
 await shot('planning-session-audit-complete.png', page.locator('.sup-panel'));
@@ -88,6 +105,13 @@ await contains('.audit-gate', '시작 가능 · 1/1 자식 Goal 승인', 'parent
 await contains('.sup-panel', '승인', 'parent audit approved');
 await contains('.sup-panel', '자식 QA 1/1 포함', 'parent audit child integration');
 await contains('.sup-panel', '이전 감사', 'audit history');
+await shot('planning-session-lineage-inspector.png', page.locator('.insp-lineage'));
+await contains('.insp-lineage', 'Code Review', 'inspector lineage review');
+await contains('.insp-lineage', 'Goal Audit', 'inspector lineage audit');
+await contains('.insp-lineage', '온보딩 E2E', 'inspector lineage qa');
+await session('s-onb-worker');
+await contains('.insp-lineage', '온보딩 API', 'inspector lineage cross parent');
+if (await page.locator('.insp-lineage .lin-wt').count() < 1) errs.push('inspector cross-worktree badge missing');
 await session('s-onb-web');
 await go('chat');
 await page.locator('#chat-log').evaluate(el => { el.scrollTop = 0; });
@@ -95,6 +119,10 @@ await shot('planning-feature-mockup.png', page.locator('#chat-log'));
 await page.locator('.agent-msg').last().scrollIntoViewIfNeeded();
 await shot('planning-feature-api.png', page.locator('#chat-log'));
 await shot('planning-chat.png');
+await shot('planning-chat-lineage.png', page.locator('#chat-list'));
+await contains('#chat-list', 'Code Review', 'chat lineage review');
+if (await page.locator('#chat-list .sess-guide').count() < 2) errs.push('chat lineage guide missing');
+if (await page.locator('#chat-list .sess-parent-mark').count() < 1) errs.push('chat cross-worktree parent mark missing');
 await session('s-onb-web');
 await shot('planning-todo.png', page.locator('.todo-panel'));
 await shot('planning-todo-status.png', page.locator('.todo-panel'));

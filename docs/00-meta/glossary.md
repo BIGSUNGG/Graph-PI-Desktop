@@ -36,6 +36,7 @@ tags: []
 | 부모 저장소 | 그룹의 최상위 폴더. 기본값은 `C:\Users\DAESUNG\orca\workspaces\<그룹 이름 슬러그>` 이고, 그룹에 추가한 하위 워크트리는 이 폴더 아래에 생긴다. 허브 세션은 이 폴더에서 시작한다. | [[SPEC-graph-pi-ade]] |
 | 허브 | 그룹 전체를 관리하는 세션. 워크트리가 아니며 그룹 소유(`hubSessionId`)이고, 실행 위치는 부모 저장소 폴더다. 그룹당 하나이며 허브를 제거하면 그룹 관리용 허브 세션을 새로 만든다. | [[SPEC-graph-pi-ade]] |
 | 하위 세션 | 허브가 그룹 안의 워크트리에 만든 세션. 허브와 에이전트 메시지·에이전트 질문으로 협업한다. | [[SPEC-hub-orchestration]] |
+| 세션 계보 | 부모 세션에서 파생된 자식 세션의 관계. 화면별 표현은 [[SPEC-graph-pi-ade]] §2.3·§2.5·§3.1을 따른다. | [[SPEC-graph-pi-ade]] |
 | 프리셋 | 그룹 생성 시 허브의 초기 작업 구조를 정하는 선택. Feature·Loop·Manual 세 가지이며 그룹 데이터에 저장하지 않는다. | [[SPEC-hub-orchestration]] |
 | Pi 하네스 패키지 | Goal·List·Loop·Audit·TODO·에이전트 대화·에이전트 질문 도구를 Pi 세션에 제공하는 이 저장소의 워크스페이스 패키지. | [[SPEC-hub-orchestration]] |
 | 업스트림 Pi 런타임 | Pi 에이전트를 실행하는 상위 하네스 런타임(CLI·에이전트 루프). 이 저장소가 만드는 'Pi 하네스 패키지'와 구분하며, [[ADR-0004-orca-removal-then-pi-runtime-fork]] 3단계의 포크 대상이다. | [[ADR-0004-orca-removal-then-pi-runtime-fork]] |
@@ -43,7 +44,7 @@ tags: []
 | List | 세션별 Goal 큐. 세션 List 항목은 Goal이고, 허브 List 항목은 Goal이 아니라 허브 Goal이 소유하는 오케스트레이션 작업 묶음이다. | [[SPEC-hub-orchestration]] |
 | Loop(감독) | 한 Goal을 측정값 또는 Audit 기준으로 반복하는 실행 단위. 회차는 1회 반복. 감사 대기는 `paused`, 상한·중지는 `stopped`다. | [[SPEC-hub-orchestration]] |
 | Audit | 세션 Audit·상위 세션 Audit·그룹 Audit의 세 가지 표시. 완료 조건과 증거를 읽기 전용으로 검사하며, 소스 수정은 금지하고 테스트·측정 명령은 실행할 수 있다. | [[SPEC-hub-orchestration]] |
-| Audit 세션 | 감사를 수행하는 읽기 전용 실행 단위. 작업 세션과 분리되며, 보드의 독립 카드가 아니라 세션 또는 허브 Audit 탭과 이력에 남는다. | [[SPEC-hub-orchestration]] |
+| Audit 세션 | 감사를 수행하는 읽기 전용 실행 단위. 작업 세션과 분리되며, 보드의 독립 카드가 아니라 세션 또는 허브 Audit 탭과 이력에 남는다. 세션 계보에서는 자식 세션으로 표시되고 `Audit` 배지가 붙는다. | [[SPEC-hub-orchestration]] |
 | 세션 Audit | 자식 Goal이 없는 세션 Goal 완료 주장 시 그 세션에서 작업한 내용만 검사하는 Audit. | [[SPEC-hub-orchestration]] |
 | 상위 세션 Audit | 자식 Goal이 있는 비허브 세션의 Goal을 검사하는 Audit. 직계 자식 Goal의 Audit이 모두 승인·생략된 뒤 자기 작업과 자식 결과의 통합을 검사하며, 감사 에이전트가 생략할 수 있다. 생략하면 상위 Goal은 완료된다. | [[SPEC-hub-orchestration]] |
 | 그룹 Audit | 그룹 Goal이 만든 세션에서 진행된 직계 하위 Goal의 Audit이 모두 승인·생략된 뒤 허브 Goal의 통합 결과를 검사하는 상위 세션 Audit. 해당 하위 Goal이 없으면 실행하지 않으며, 감사 에이전트가 생략할 수 있다. 생략하면 그룹 Goal은 완료된다. | [[SPEC-hub-orchestration]] |

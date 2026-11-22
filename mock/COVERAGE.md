@@ -1,6 +1,6 @@
 # 기획 반영 커버리지
 
-두 SPEC의 사용자 가시 요구사항을 47개 장면으로 대응시킨 표다. 각 행의 증거는 `node mock/verify-planning.mjs`가 생성하는 `mock/_evidence/planning-*.png`다. 스크립트는 행 수·파일 존재와 아래 상호작용을 실제로 연다: 4탭, 4슬롯, TODO 읽기 전용, 질문 답변·재로드, 에이전트 전달 실패, @ 참조·생성 확인·프롬프트 전달, 프리셋 3종·필수 오류, 세션 Audit 승인/거부/오류/불가능, 그룹 Audit gate·생략·대상 없음, 아카이브, 하네스 비활성, Run `목적`. 실제 패키지 실행·Audit 런타임은 목업 상태와 문구로 대신하며, 내부 저장 형식·감사 알고리즘은 범위 밖이다.
+두 SPEC의 사용자 가시 요구사항을 51개 장면으로 대응시킨 표다. 각 행의 증거는 `node mock/verify-planning.mjs`가 생성하는 `mock/_evidence/planning-*.png`다. 스크립트는 행 수·파일 존재와 아래 상호작용을 실제로 연다: 4탭, 4슬롯, TODO 읽기 전용, 질문 답변·재로드, 에이전트 전달 실패, @ 참조·생성 확인·프롬프트 전달, 프리셋 3종·필수 오류, 세션 Audit 승인/거부/오류/불가능, 그룹 Audit gate·생략·대상 없음, 아카이브, 하네스 비활성, Run `목적`. 실제 패키지 실행·Audit 런타임은 목업 상태와 문구로 대신하며, 내부 저장 형식·감사 알고리즘은 범위 밖이다.
 
 | # | SPEC | 요구사항 | 목업에서 확인 | 증거 |
 | --- | --- | --- | --- | --- |
@@ -41,7 +41,7 @@
 | 35 | 같은 문서 §3 | 채팅에서 세션 대화와 도구 호출을 본다 | 채팅 로그·Thinking·도구 | `planning-chat.png` |
 | 36 | 같은 문서 §4 | 오케스트레이션에서 Run·Task·Worker·Gate를 본다 | 오케스트레이션 뷰 | `planning-orch.png` |
 | 37 | 같은 문서 §5 | 히스토리에서 과거 세션·검색을 본다 | 히스토리 뷰 | `planning-history.png` |
-| 38 | 같은 문서 §6 | 사이드바에서 워크트리와 하위 세션을 펼친다 | `.wt-item`·`.wt-sess-row` | `planning-sidebar.png` |
+| 38 | 같은 문서 §6 | 사이드바에서 워크트리와 하위 세션 계보를 항상 펼쳐 보여준다 | `.wt-item`·`.sess-guide`·`.wt-sess-row` | `planning-sidebar.png` |
 | 39 | 같은 문서 §6 | 워크트리 추가 팝업은 레포·브랜치·부모·모델·프롬프트를 받는다 | `#dlg-wtrepo`·`#dlg-wtbase`·`#dlg-wtprompt` | `planning-worktree-add.png` |
 | 40 | 같은 문서 §10.1·§11 | 하네스 패키지가 없으면 안내하고 감독 기능을 비활성화한다 | `Pi 하네스 패키지 없음` 배너와 비활성 감독 카드 | `planning-harness-missing.png` |
 | 41 | 같은 문서 §5 | 허브의 이름 변경·삭제는 사용자 확인 없이 실행되고 앱에 남는다 | `허브 활동 · 사용자 확인 없음` 목록 | `planning-hub-autonomy.png` |
@@ -51,6 +51,10 @@
 | 45 | 같은 문서 §10.4 | 감사 에이전트가 통합 감사를 생략할 수 있고, 생략하면 그룹 Goal은 완료된다 | `통합 감사 생략` 카드와 사유·`audit-agent` | `planning-group-audit-skip.png` |
 | 46 | 같은 문서 §10.4 | 그룹 Goal이 만든 세션에 진행된 Goal이 없으면 그룹 Audit을 실행하지 않는다 | 그룹 Audit 탭의 안내 문구, gate 없음 | `planning-group-audit-none.png` |
 | 47 | 같은 문서 §10.4 | 자식 Goal이 있는 세션은 자식 Audit이 모두 승인된 뒤 상위 세션 Audit을 시작하고, 자기 작업과 자식 결과를 통합 검사한다 | 상위 세션 Audit 탭의 gate 1/1·자식 QA 통합·승인 | `planning-parent-audit.png` |
+| 48 | `docs/30-specs/SPEC-graph-pi-ade.md` §2.3·§6 | 사이드바가 세션을 부모→자식 트리로 펼치고 다른 워크트리 자식은 부모 링크로 표시한다 | `.sess-guide`·`.sess-parent-mark`·`Audit` 배지 | `planning-session-lineage.png` |
+| 49 | 같은 문서 §2.4 | 보드가 부모→자식 세션 연결선을 그리고 허브에서 직계 자식까지 잇는다 | `path.sess-edge` | `planning-overview.png` |
+| 50 | 같은 문서 §3.1 | 채팅 좌측 목록도 같은 세션 계보를 트리로 보여준다 | `#chat-list`의 `.sess-guide`·`.chat-name` | `planning-chat-lineage.png` |
+| 51 | 같은 문서 §2.5 | 인스펙터가 상위 계보와 전체 하위 세션을 보여준다 | `.insp-lineage`·`.lin-wt`·`.lin-audit` | `planning-session-lineage-inspector.png` |
 
 ## 검증
 
@@ -59,4 +63,4 @@ node mock/_check.js
 node mock/verify-planning.mjs
 ```
 
-`verify-planning.mjs`는 위 표의 행 수(47개 이상)와 `mock/_evidence/planning-*.png`의 존재·크기를 확인하고, 4탭·4슬롯·TODO 읽기 전용·질문 답변/재로드·에이전트 실패·@ 참조·프리셋 필수 검증·Audit verdict·아카이브·하네스 비활성·Run 목적을 실제로 연다. 스크린샷은 저장소에서 ignore되므로 검증할 때마다 다시 만든다.
+`verify-planning.mjs`는 위 표의 행 수(51개 이상)와 `mock/_evidence/planning-*.png`의 존재·크기를 확인하고, 4탭·4슬롯·TODO 읽기 전용·질문 답변/재로드·에이전트 실패·@ 참조·프리셋 필수 검증·Audit verdict·아카이브·하네스 비활성·Run 목적을 실제로 연다. 스크린샷은 저장소에서 ignore되므로 검증할 때마다 다시 만든다.

@@ -44,7 +44,7 @@ else {
 }
 if (!Array.isArray(M.groups) || M.groups.length !== 6) errs.push('groups !== 6');
 if (M.worktrees.length !== 22) errs.push('worktrees !== 22');
-if (M.sessions.length !== 33) errs.push('sessions !== 33');
+if (M.sessions.length !== 35) errs.push('sessions !== 35');
 if (M.tasks.length < 15) errs.push('tasks < 15');
 if (M.workers.length < 8) errs.push('workers < 8');
 if (M.gates.length < 6) errs.push('gates < 6');
@@ -57,6 +57,22 @@ for (const g of M.groups) {
 }
 if (M.worktrees.some((w) => w.hub === true)) errs.push('hub worktrees must be 0');
 if (!M.sessions.every((s) => Array.isArray(M.messages[s.id]) && M.messages[s.id].length >= 1)) errs.push('session messages missing');
+const sessIds = new Set(M.sessions.map((s) => s.id));
+const parentOf = (id) => { const s = M.sessions.find((k) => k.id === id); return s && s.parent; };
+if (!M.sessions.every((s) => !s.parent || sessIds.has(s.parent))) errs.push('session parent orphan');
+if (M.sessions.some((s) => s.parent === s.id)) errs.push('session parent self');
+if (M.sessions.some((s) => {
+  let slow = s.id, fast = s.id;
+  for (let i = 0; i < 40; i++) {
+    slow = parentOf(slow); fast = parentOf(parentOf(fast));
+    if (!slow || !fast) return false;
+    if (slow === fast) return true;
+  }
+  return true;
+})) errs.push('session parent cycle');
+if (!M.sessions.some((s) => s.id === 's-onb-review' && s.parent === 's-onb-web' && s.wt === 'wt-onb-web')) errs.push('review session missing');
+if (!M.sessions.some((s) => s.id === 's-onb-audit' && s.parent === 's-onb-web' && s.audit)) errs.push('audit session missing');
+if (!M.sessions.some((s) => s.id === 's-onb-qa' && s.parent === 's-onb-review')) errs.push('review child session mismatch');
 if (!M.worktrees.every((w) => w.loop == null || (w.loop.prompt && w.loop.maxRounds >= 1 && w.loop.round >= 0 && M.loopStates.includes(w.loop.status)))) errs.push('loop invalid');
 if (!M.orcaOnly.every((o) => !o.blockedBy || M.groups.some((g) => g.id === o.blockedBy))) errs.push('orcaOnly blockedBy orphan');
 if (!Object.keys(M.deletePreview).every((gid) => M.groups.some((g) => g.id === gid))) errs.push('deletePreview group orphan');
@@ -89,7 +105,7 @@ for (const c of ['#dialog .dialog-wide', '#dialog .dialog-xl', '#dialog .wizard'
 for (const c of ['insp-tools', '세션별 최근 도구', 'tool-row', 'data-tool']) if (!html.includes(c)) errs.push('missing ' + c);
 for (const f of ['function lastTool', 'function toolName', 'function toolTextW', 'var maxW = c.w - 42', 'measureText']) if (!js.includes(f)) errs.push('missing ' + f);
 for (const f of ['function applyView', 'function setZoom', 'function resetView', 'state.nodePts =', 'pointerdown']) if (!js.includes(f)) errs.push('missing ' + f);
-for (const f of ['function sessionRoot', 'function defaultChat', 'function chatTarget', 'groupSessions(state.group)']) if (!js.includes(f)) errs.push('missing ' + f);
+for (const f of ['function sessionRoot', 'function sessionParent', 'function sessionForest', 'function lineageHTML', 'function defaultChat', 'function chatTarget', 'groupSessions(state.group)']) if (!js.includes(f)) errs.push('missing ' + f);
 if (!M.runs.every((r) => M.groups.some((g) => g.id === r.group))) errs.push('run group missing');
 for (const f of ['M.runs.filter(function (r) { return r.group === state.group; })', '(s.group || "") === state.group', 'histOpen', 'h-item', 'h-detail', 'h-ev', 'h-toggle', 'data-hist']) if (!html.includes(f)) errs.push('missing ' + f);
 for (const c of ['.msg.user .bubble', '.think', '.think-line', '.tool-row', '.think-count', '.think .think-at', '.msg.agent .answer-at', '.tool-at']) if (!html.includes(c)) errs.push('missing ' + c);
@@ -192,19 +208,16 @@ if (!M.questions.every((q) => M.sessions.some((s) => s.id === q.sessionId))) err
 if (!M.agentMessages.every((m) => M.sessions.some((s) => s.id === m.from) && M.sessions.some((s) => s.id === m.to))) errs.push('agent message session orphan');
 
 // 사이드바: 워크트리 선택 시 하위 세션 펼침 (승인 설계: .wt-item/.wt-chev/.wt-sess/.wt-sess-row/.wt-sess-empty)
-for (const c of ['.wt-item', '.wt-chev', '.wt-sess', '.wt-sess-row', '.wt-sess-row.is-sel', '.wt-sess-name', '.wt-sess-time', '.wt-sess-empty']) {
+for (const c of ['.wt-item', '.wt-chev', '.wt-sess', '.wt-sess-row', '.wt-sess-row.is-sel', '.wt-sess-name', '.wt-sess-time', '.wt-sess-empty', '.sess-guide', '.audit-badge', '.sess-parent-mark', '.sess-edge', '.insp-lineage', '.lin-wt']) {
   if (!html.includes(c)) errs.push('missing ' + c);
 }
-for (const f of ['state.sideOpenWt', 'data-sess="', 'aria-expanded', '[data-sess]', 'state.selected = { type: "session", id: sid };', 'state.selected = { type: "wt", id: wid };', '세션 없음']) {
+for (const f of ['data-sess="', 'aria-expanded="true"', '[data-sess]', 'state.selected = { type: "session", id: sid };', 'state.selected = { type: "wt", id: wid };', '세션 없음']) {
   if (!js.includes(f)) errs.push('missing ' + f);
 }
-if (js.includes('state.openWt')) errs.push('state.openWt must be state.sideOpenWt');
-if (js.includes('data-wt-toggle')) errs.push('caret toggle handler must not exist, row click toggles');
+if (js.includes('sideOpenWt')) errs.push('sidebar tree must stay open, not toggle');
+if (js.includes('data-wt-toggle')) errs.push('caret toggle handler must not exist, row click selects');
 if (js.includes('function sessionsOf')) errs.push('sessionsOf is not in the approved design');
-if (!js.includes('state.sideOpenWt = state.sideOpenWt === wid ? null : wid;')) errs.push('worktree row click must toggle the session list');
-if (!js.includes('state.sideOpenWt = null;')) errs.push('group switch must clear the open worktree');
 if (!/state\.view === "history"\) \{ setView\("chat"\); renderSidebar\(\); return; \}/.test(js)) errs.push('history session click must open chat');
-if (js.includes('state.sideOpenWt = s.wt')) errs.push('board/chat must not auto-expand the sidebar');
 if (/' data-sess="' \+ s\.id \+ '" data-wt=/.test(js)) errs.push('session row must not carry data-wt');
 if ((js.match(/querySelectorAll\("\[data-sess\]"\)/g) || []).length !== 1) errs.push('sidebar session handler count !== 1');
 console.log(

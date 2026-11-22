@@ -103,6 +103,9 @@
   .wt-sess-name{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .wt-sess-time{flex:0 0 auto;font-size:9.5px;color:var(--dim);font-variant-numeric:tabular-nums}
   .wt-sess-empty{padding:4px 0 6px 15px;font-size:10px;color:var(--dim)}
+  .sess-guide{flex:0 0 auto;font-family:var(--mono);font-size:9px;line-height:1;color:rgb(240 240 240 / .28);white-space:pre}
+  .audit-badge{flex:0 0 auto;padding:0 3px;border:1px solid rgb(192 132 252 / .45);border-radius:3px;background:rgb(192 132 252 / .1);color:#d8b4fe;font-size:7.5px;font-weight:600;letter-spacing:.04em;line-height:12px}
+  .sess-parent-mark{flex:0 0 auto;color:#c4b5fd;font-size:9px;cursor:help}
   .side-foot{margin-top:auto;display:flex;flex-direction:column;gap:8px;padding-top:8px;border-top:1px solid var(--line)}
   .field{display:flex;flex-direction:column;gap:4px;font-size:10px;color:rgb(240 240 240 / .45);padding:0 4px}
   .hint{margin:0;padding:0 4px;font-size:10px;color:rgb(240 240 240 / .35);line-height:1.45}
@@ -177,6 +180,9 @@
   @keyframes loop-turn{to{stroke-dashoffset:-22}}
   .loop-ring{animation:loop-turn 1s linear infinite}
   .edge-dot{pointer-events:none}
+  .sess-edge{fill:none;stroke:#a78bfa;stroke-width:1.2;stroke-opacity:.62;pointer-events:none}
+  .sess-edge.is-hub{stroke-width:1;stroke-opacity:.28;stroke-dasharray:2 3}
+  .sess-edge.is-cross{stroke-opacity:.4;stroke-dasharray:4 3}
   @keyframes edge-dash{to{stroke-dashoffset:-12}}
   @media (prefers-reduced-motion: reduce){
     .edge-flow{animation:none;stroke-dasharray:none}
@@ -308,6 +314,15 @@
   .preset-required{font-size:8.5px;color:var(--amber)}
   .preset-flow{font-size:8.5px;color:var(--dim);line-height:1.4}
   .goal-field-error{font-size:10px;color:#ffb3b4;margin-top:-4px}
+  .insp-lineage{margin-top:14px;padding-top:10px;border-top:1px solid var(--line)}
+  .insp-lineage h3{margin:0 0 6px;font-size:11px;font-weight:600;color:var(--muted)}
+  .lin-parent{margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:var(--dim)}
+  .lin-parent b{color:var(--muted);font-weight:500}
+  .lin-row{display:flex;align-items:center;gap:5px;min-height:20px;font-size:10.5px;color:var(--muted)}
+  .lin-row.is-self{color:var(--text)}
+  .lin-guide{flex:0 0 auto;font-family:var(--mono);font-size:9px;color:rgb(240 240 240 / .25);white-space:pre}
+  .lin-wt{margin-left:auto;padding:0 4px;border:1px solid var(--line);border-radius:3px;color:var(--dim);font-size:8px}
+  .lin-audit{padding:0 3px;border:1px solid rgb(192 132 252 / .35);border-radius:3px;color:#d8b4fe;font-size:7.5px}
   .insp-thread{overflow:auto;display:flex;flex-direction:column;gap:14px;padding-right:4px}
   .insp-thread .msg{font-size:11.5px}
   .insp-resize{height:8px;margin:6px 0;cursor:ns-resize;border-radius:4px;background:linear-gradient(var(--line),var(--line)) center/32px 2px no-repeat}
@@ -333,6 +348,9 @@
   .chat-item .d{flex:0 0 auto;width:6px;height:6px;border-radius:50%;margin-top:5px;background:var(--dim)}
   .chat-item.running .d{background:var(--amber)} .chat-item.done .d{background:var(--green)}
   .chat-item.idle .d{background:var(--dim)} .chat-item.failed .d{background:var(--red)}
+  .chat-item .chat-name{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .chat-item .sess-guide{font-size:8.5px}
+  .chat-item .audit-badge{line-height:11px}
   .chat-main{display:flex;flex-direction:column;min-height:0;border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--shadow-sm);overflow:hidden}
   .chat-head{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:12px}
   .chat-head .who{font-weight:600}
@@ -721,7 +739,7 @@
   var state = {
     view: "board", selected: { type: null, id: null }, chat: M.sessions[0].id,
     group: (M.groups.filter(function (g) { return "#" + g.id === location.hash; })[0] || M.groups[0]).id,
-    closed: {}, sideOpenWt: null, histOpen: {}, orca: true, harnessMissing: location.hash === "#harness-missing",
+    closed: {}, histOpen: {}, orca: true, harnessMissing: location.hash === "#harness-missing",
     run: M.runs[0].id, worker: M.workers[0].id, query: "", range: "30", results: null, indexed: 0,
     zoom: 1, vx: 0, vy: 0, boardW: 0, boardH: 0, nodePts: [], pan: null, dragMoved: false, _lastGroup: null,
     inspChatH: 280,
@@ -750,6 +768,38 @@
       if (!p || p.wt !== wid) return list[i];
     }
     return list[0] || null;
+  }
+  function byStarted(a, b) {
+    return a.started < b.started ? -1 : a.started > b.started ? 1 : 0;
+  }
+  function sessionParent(s) {
+    return s && s.parent ? byId(M.sessions, s.parent) : null;
+  }
+  function sessionForest(list, sameWt) {
+    var ids = {}, children = {}, roots = [], seen = {};
+    list.forEach(function (s) { ids[s.id] = 1; });
+    list.forEach(function (s) {
+      var p = sessionParent(s);
+      if (p && !p.removed && ids[p.id] && sameWt(s, p)) (children[p.id] = children[p.id] || []).push(s);
+      else roots.push(s);
+    });
+    roots.sort(byStarted);
+    Object.keys(children).forEach(function (id) { children[id].sort(byStarted); });
+    var out = [];
+    function walk(s, depth, prefix, isLast) {
+      if (seen[s.id]) return;
+      seen[s.id] = 1;
+      out.push({ s: s, depth: depth, guide: depth ? prefix + (isLast ? "└─ " : "├─ ") : "", cross: null });
+      var kids = children[s.id] || [];
+      kids.forEach(function (k, i) { walk(k, depth + 1, depth ? prefix + (isLast ? "   " : "│  ") : "", i === kids.length - 1); });
+    }
+    roots.forEach(function (s) { walk(s, 0, "", true); });
+    list.forEach(function (s) { if (!seen[s.id]) walk(s, 0, "", true); });
+    out.forEach(function (e) {
+      var p = sessionParent(e.s);
+      if (!e.depth && p && !p.removed && !sameWt(e.s, p) && !isHubSession(p)) e.cross = p;
+    });
+    return out;
   }
   function defaultChat(gid) {
     var g = byId(M.groups, gid);
@@ -1017,21 +1067,25 @@
         var st = ss.filter(function (s) { return s.state === "running"; }).length ? "running"
           : ss.filter(function (s) { return s.state === "failed"; }).length ? "failed" : "done";
         var sel = state.selected.type === "wt" && state.selected.id === w.id ? " is-sel" : "";
-        var isOpen = state.sideOpenWt === w.id;
-        var list = isOpen ? '<div class="wt-sess">' + (ss.length ? ss.map(function (s) {
+        var forest = sessionForest(ss, function (child, parent) { return child.wt === parent.wt; });
+        var list = '<div class="wt-sess">' + (forest.length ? forest.map(function (e) {
+          var s = e.s;
           var on = selSess && selSess.id === s.id ? " is-sel" : "";
           return '<button class="wt-sess-row' + on + (attention(s) ? " session-attn" : "") + '" data-sess="' + s.id + '">'
+            + (e.guide ? '<span class="sess-guide">' + esc(e.guide) + "</span>" : "")
             + '<span class="d ' + s.state + '"></span>'
             + '<span class="wt-sess-name">' + esc(s.title) + "</span>"
+            + (s.audit ? '<span class="audit-badge">AUDIT</span>' : "")
+            + (e.cross ? '<span class="sess-parent-mark" title="상위: ' + esc(e.cross.title) + '" aria-label="상위: ' + esc(e.cross.title) + '">↖</span>' : "")
             + (!state.harnessMissing && openQuestion(s.id) ? '<span class="wt-sess-time" style="color:var(--amber)" title="질문 대기">?</span>' : "")
             + '<span class="wt-sess-time">' + esc(s.last) + "</span>" + sessionSlots(s) + "</button>";
-        }).join("") : '<div class="wt-sess-empty">세션 없음</div>') + "</div>" : "";
+        }).join("") : '<div class="wt-sess-empty">세션 없음</div>') + "</div>";
         return '<div class="wt-item">'
-          + '<button class="wt-row' + sel + '" data-wt="' + w.id + '" aria-expanded="' + (isOpen ? "true" : "false") + '">'
+          + '<button class="wt-row' + sel + '" data-wt="' + w.id + '" aria-expanded="true">'
           + '<span class="d ' + st + '"></span>'
           + '<span class="wt-name">' + esc(w.repo) + ' · ' + esc(w.branch) + "</span>"
           + (w.dirty ? '<span class="wt-dirty">미커밋</span>' : "")
-          + '<span class="wt-chev">' + (isOpen ? "▾" : "▸") + "</span></button>"
+          + '<span class="wt-chev">▾</span></button>'
           + list + "</div>";
       }).join("");
       return '<div class="grp' + (closed ? " is-closed" : "") + (state.group === g.id ? " is-active" : "")
@@ -1055,7 +1109,6 @@
         if (!state.closed[gid]) state.openAnim = gid;
         if (state.group !== gid) {
           state.group = gid;
-          state.sideOpenWt = null;
           var hubSess = hubSession(gid);
           state.selected = hubSess ? { type: "session", id: hubSess.id } : { type: null, id: null };
           state.chat = hubSess ? hubSess.id : (defaultChat(gid) || {}).id || null;
@@ -1082,7 +1135,6 @@
         state.selected = { type: "wt", id: wid };
         var root = sessionRoot(wid);
         state.chat = root ? root.id : null;
-        state.sideOpenWt = state.sideOpenWt === wid ? null : wid;
         if (state.view === "chat") { renderSidebar(); renderChat(); return; }
         if (state.view === "orch") { renderSidebar(); renderOrch(); return; }
         if (state.view === "history") { renderSidebar(); renderHistory(); return; }
@@ -1192,11 +1244,10 @@
 
   function rowsOf(wid, skip, startY) {
     var rows = [], y = startY;
-    activeSessions().filter(function (s) {
-      return s.wt === wid && s.id !== skip;
-    }).sort(function (a, b) { return a.started < b.started ? -1 : 1; }).forEach(function (s) {
-      var tool = lastTool(s);
-      rows.push({ s: s, tool: tool, y: y });
+    var base = activeSessions().filter(function (s) { return s.wt === wid && s.id !== skip; });
+    sessionForest(base, function (child, parent) { return child.wt === parent.wt; }).forEach(function (e) {
+      var s = e.s, tool = lastTool(s);
+      rows.push({ s: s, tool: tool, y: y, depth: e.depth, cross: e.cross });
       y += G.rowH + (tool ? G.chipH : 0);
     });
     return rows;
@@ -1268,7 +1319,7 @@
     var all = root ? [root].concat(cols) : cols;
     var pos = {};
     all.forEach(function (c) {
-      c.rows.forEach(function (r) { pos[r.s.id] = { x: c.x + 20, y: r.y + 9, col: c }; });
+      c.rows.forEach(function (r) { pos[r.s.id] = { x: c.x + 20 + (r.depth || 0) * 10, y: r.y + 9, col: c, depth: r.depth || 0, cross: r.cross || null }; });
     });
 
     var svg = [];
@@ -1304,11 +1355,12 @@
     var topBottom = root ? root.y + root.h : hub ? hubBottom : 0;
     var topCenter = root ? root.x + root.w / 2 : hubCx;
     var topLive = root ? liveWt(root.wt.id) : hub ? hub.state === "running" : false;
+    var busY = topBottom + 16;
+    var bottomExtra = 0;
     if (hub && root) {
       svg.push(edge("M" + hubCx + " " + hubBottom + " L" + hubCx + " " + root.y, "#525252", MOTION.allLive([hub.state === "running", topLive]), null));
     }
     if ((root || hub) && cols.length) {
-      var busY = topBottom + 16;
       var centers = cols.map(function (c) { return c.x + c.w / 2; });
       var left = Math.min.apply(null, centers.concat([topCenter]));
       var right = Math.max.apply(null, centers.concat([topCenter]));
@@ -1321,8 +1373,42 @@
       });
     }
 
+    var colBottom = Math.max.apply(null, [childTop].concat(all.map(function (c) { return c.y + c.h; })));
+    var hubBusY = hubBottom + 6;
+    var sessSvg = [];
+    function sessionEdge(d, active, kind) {
+      return '<path class="sess-edge' + (kind ? " is-" + kind : "") + '" d="' + d + '"' + (active && !kind ? ' style="stroke-opacity:.92"' : "") + "/>";
+    }
+    activeSessions().forEach(function (s) {
+      var cp = pos[s.id];
+      var p = sessionParent(s);
+      if (!cp || !p || p.removed) return;
+      var pp = pos[p.id];
+      if (!pp && !isHubSession(p)) return;
+      var active = s.state === "running" || p.state === "running";
+      if (isHubSession(p)) {
+        var hl = cp.col.x - 7;
+        sessSvg.push(sessionEdge("M" + hubCx + " " + hubBottom + " L" + hubCx + " " + hubBusY
+          + " L" + hl + " " + hubBusY + " L" + hl + " " + cp.y
+          + " L" + (cp.x - 6) + " " + cp.y, active, "hub"));
+        bottomExtra = Math.max(bottomExtra, hubBusY + 8);
+        return;
+      }
+      if (pp.col === cp.col) {
+        var lane = cp.col.x + 7 + cp.depth * 2;
+        sessSvg.push(sessionEdge("M" + (pp.x - 6) + " " + pp.y + " L" + lane + " " + pp.y
+          + " L" + lane + " " + cp.y + " L" + (cp.x - 6) + " " + cp.y, active));
+      } else {
+        var laneY = colBottom + 14;
+        var pl = pp.col.x - 7, cl = cp.col.x - 7;
+        sessSvg.push(sessionEdge("M" + (pp.x - 6) + " " + pp.y + " L" + pl + " " + pp.y
+          + " L" + pl + " " + laneY + " L" + cl + " " + laneY
+          + " L" + cl + " " + cp.y + " L" + (cp.x - 6) + " " + cp.y, active, "cross"));
+        bottomExtra = Math.max(bottomExtra, laneY);
+      }
+    });
+
     var overlay = [];
-    var bottomExtra = 0;
     activeSessions().forEach(function (s) {
       var p = pos[s.id];
       if (!p) return;
@@ -1373,10 +1459,13 @@
         var fill = s.state === "failed" ? "#ff656826" : s.state === "running" ? "#d4a30026" : s.state === "idle" ? "#73737326" : "#10b98126";
         var stroke = s.state === "failed" ? "#ff6568" : s.state === "running" ? "#d4a300" : s.state === "idle" ? "#a3a3a3" : "#51a2ff";
         svg.push('<g class="node' + (sel ? " is-sel" : "") + '" data-session="' + s.id + '"' + (attn ? ' data-attn="question"' : '') + '>');
-        if (s.state === "running" && !s.loop) svg.push('<circle class="node-ring" cx="' + (c.x + 20) + '" cy="' + (r.y + 9) + '" r="5" fill="none" stroke="' + stroke + '" stroke-width="1.3"/>');
-        svg.push('<circle cx="' + (c.x + 20) + '" cy="' + (r.y + 9) + '" r="5" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.4"/>');
-        svg.push('<text x="' + (c.x + 32) + '" y="' + (r.y + 13) + '" fill="#f0f0f0" font-size="11">' + esc(clip(s.title, 19)) + '</text>');
-        svg.push('<text x="' + (c.x + 32) + '" y="' + (r.y + 26) + '" fill="#737373" font-size="9">'
+        var indent = (r.depth || 0) * 10;
+        var nx = c.x + 20 + indent, tx = c.x + 32 + indent;
+        if (s.state === "running" && !s.loop) svg.push('<circle class="node-ring" cx="' + nx + '" cy="' + (r.y + 9) + '" r="5" fill="none" stroke="' + stroke + '" stroke-width="1.3"/>');
+        svg.push('<circle cx="' + nx + '" cy="' + (r.y + 9) + '" r="5" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.4"/>');
+        svg.push('<text x="' + tx + '" y="' + (r.y + 13) + '" fill="#f0f0f0" font-size="11">' + esc(clip(s.title, s.audit ? 13 : 19)) + '</text>');
+        if (s.audit) svg.push('<text x="' + (c.x + c.w - 10) + '" y="' + (r.y + 13) + '" fill="#d8b4fe" font-size="7.5" font-weight="600" text-anchor="end">AUDIT</text>');
+        svg.push('<text x="' + tx + '" y="' + (r.y + 26) + '" fill="#737373" font-size="9">'
           + esc(short(s.model)) + " · " + esc(s.started) + " · " + Math.round(s.tokens / 1000) + "k</text>");
         sessionSlotColors(s).forEach(function (k, i) {
           svg.push('<circle data-slot="' + ["goal", "list", "loop", "audit"][i] + '" cx="' + (c.x + c.w - 9 - i * 7) + '" cy="' + (r.y + 26) + '" r="2.1" fill="' + slotColor(k) + '"/>');
@@ -1386,6 +1475,7 @@
         if (!r.tool) return;
         var full = toolName(r.tool) || "도구";
         var maxW = c.w - 42;
+        maxW -= indent;
         var label = full;
         var tw = Math.ceil(toolTextW(label)) + 10;
         if (tw > maxW) {
@@ -1397,11 +1487,13 @@
         }
         tw = Math.max(24, Math.min(maxW, tw));
         svg.push('<g class="node" data-tool="' + esc(full) + '">'
-          + '<rect x="' + (c.x + 32) + '" y="' + (r.y + 30) + '" width="' + tw + '" height="15" rx="4" fill="#262626" stroke="#ffffff1f"/>'
-          + '<text x="' + (c.x + 37) + '" y="' + (r.y + 41) + '" fill="#acacac" font-size="8.5">' + esc(label) + '</text></g>');
+          + '<rect x="' + tx + '" y="' + (r.y + 30) + '" width="' + tw + '" height="15" rx="4" fill="#262626" stroke="#ffffff1f"/>'
+          + '<text x="' + (tx + 5) + '" y="' + (r.y + 41) + '" fill="#acacac" font-size="8.5">' + esc(label) + '</text></g>');
       });
       svg.push("</g>");
     });
+
+    svg.push(sessSvg.join(""));
 
     var maxBottom = G.pad;
     if (hub) maxBottom = Math.max(maxBottom, hubBottom);
@@ -1647,6 +1739,36 @@
       + questionHTML(q, false) + '<div class="sup-tabs">' + tabs + '</div><div class="sup-panel">' + panel + '</div>' + todoHTML + '</section>';
   }
 
+  function lineageHTML(s) {
+    var chain = [], p = sessionParent(s);
+    while (p && chain.length < 8) { chain.unshift(p); p = sessionParent(p); }
+    var ids = [s.id], seen = {};
+    seen[s.id] = 1;
+    for (var i = 0; i < ids.length; i++) {
+      M.sessions.forEach(function (k) {
+        if (k.parent === ids[i] && !seen[k.id]) { seen[k.id] = 1; ids.push(k.id); }
+      });
+    }
+    var list = ids.map(function (id) { return byId(M.sessions, id); }).filter(Boolean);
+    var forest = sessionForest(list, function () { return true; });
+    var head = chain.length
+      ? '<div class="lin-parent">상위 · ' + chain.map(function (x) {
+          var xw = x.wt ? byId(M.worktrees, x.wt) : null;
+          return '<b>' + esc(x.title) + '</b>' + (xw && xw.id !== s.wt ? '<span class="lin-wt">' + esc(xw.name) + '</span>' : "");
+        }).join(' → ') + '</div>'
+      : '<div class="lin-parent">최상위 세션</div>';
+    var rows = forest.map(function (e) {
+      var wt = e.s.wt ? byId(M.worktrees, e.s.wt) : null;
+      var badge = wt && wt.id !== s.wt ? '<span class="lin-wt">' + esc(wt.name) + '</span>' : "";
+      return '<div class="lin-row' + (e.s.id === s.id ? ' is-self' : '') + '">'
+        + (e.guide ? '<span class="lin-guide">' + esc(e.guide) + '</span>' : '')
+        + '<span>' + esc(e.s.title) + '</span>'
+        + (e.s.audit ? '<span class="lin-audit">AUDIT</span>' : '')
+        + badge + '</div>';
+    }).join("");
+    return '<section class="insp-lineage"><h3>세션 계보</h3>' + head + rows + '</section>';
+  }
+
   function renderInspector() {
     var box = $("inspector");
     if (state.selected.type === "wt") {
@@ -1690,6 +1812,7 @@
       + "<dt>세션 ID</dt><dd class=\"mono\">" + esc(s.id) + "</dd>"
       + "<dt>최근 도구</dt><dd>" + (tool ? '<span class="mono">' + esc(toolName(tool)) + "</span> · " + esc(tool.at) : "없음") + "</dd>"
       + "</dl>"
+      + lineageHTML(s)
       + inspChatHTML(s)
       + supervisionHTML(s)
       + '<div class="insp-actions">'
@@ -1834,9 +1957,15 @@
     state.chat = target ? target.id : null;
     var pool = groupSessions(state.group);
     if (target && target.group === state.group && pool.indexOf(target) < 0) pool = [target].concat(pool);
-    setHTML($("chat-list"), pool.map(function (x) {
+    var forest = sessionForest(pool, function (child, parent) { return child.wt === parent.wt || isHubSession(parent); });
+    setHTML($("chat-list"), forest.map(function (e) {
+      var x = e.s;
       return '<button class="chat-item ' + x.state + (x.id === state.chat ? " is-active" : "") + '" data-chat="' + x.id + '">'
-        + '<span class="d"></span><span>' + esc(x.title) + "</span></button>";
+        + (e.guide ? '<span class="sess-guide">' + esc(e.guide) + "</span>" : "")
+        + '<span class="d"></span><span class="chat-name">' + esc(x.title) + "</span>"
+        + (x.audit ? '<span class="audit-badge">AUDIT</span>' : "")
+        + (e.cross ? '<span class="sess-parent-mark" title="상위: ' + esc(e.cross.title) + '" aria-label="상위: ' + esc(e.cross.title) + '">↖</span>' : "")
+        + "</button>";
     }).join(""));
     [].forEach.call($("chat-list").querySelectorAll("[data-chat]"), function (b) {
       b.onclick = function () {

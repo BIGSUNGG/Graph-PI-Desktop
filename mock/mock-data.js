@@ -164,7 +164,9 @@ window.MOCK = {
     { id: "s-onb-api", title: "온보딩 API · 단계 저장", wt: "wt-onb-api", group: "g-feature", model: "anthropic/claude-sonnet-4.5", state: "done", started: "09:12", last: "09:57", tokens: 28700, parent: "s-onb-hub" },
     { id: "s-onb-shared", title: "온보딩 공통 스키마", wt: "wt-onb-shared", group: "g-feature", model: "openai/gpt-5", state: "done", started: "09:15", last: "09:48", tokens: 9600, parent: "s-onb-hub" },
     { id: "s-onb-worker", title: "온보딩 메일 워커", wt: "wt-onb-worker", group: "g-feature", model: "openai/gpt-5", state: "done", started: "09:30", last: "09:44", tokens: 5200, parent: "s-onb-api" },
-    { id: "s-onb-qa", title: "온보딩 E2E 시나리오", wt: "wt-onb-web", group: "g-feature", model: "google/gemini-2.5-pro", state: "done", started: "09:40", last: "09:52", tokens: 7400, parent: "s-onb-web" },
+    { id: "s-onb-review", title: "Code Review", wt: "wt-onb-web", group: "g-feature", model: "openai/gpt-5", state: "done", started: "09:34", last: "09:52", tokens: 6800, parent: "s-onb-web" },
+    { id: "s-onb-qa", title: "온보딩 E2E 시나리오", wt: "wt-onb-web", group: "g-feature", model: "google/gemini-2.5-pro", state: "done", started: "09:40", last: "09:52", tokens: 7400, parent: "s-onb-review" },
+    { id: "s-onb-audit", title: "Goal Audit", wt: "wt-onb-web", group: "g-feature", model: "openai/gpt-5", state: "done", started: "09:53", last: "09:57", tokens: 4200, parent: "s-onb-web", audit: true },
     { id: "s-onb-docs", title: "온보딩 가이드", wt: "wt-onb-shared", group: "g-feature", model: "google/gemini-2.5-pro", state: "done", started: "09:50", last: "09:58", tokens: 2600, parent: "s-onb-shared" },
 
     { id: "s-bill-hub", title: "구독 결제 3레포 통합", wt: null, group: "g-billing", model: "anthropic/claude-sonnet-4.5", state: "running", started: "10:02", last: "10:58", tokens: 15600, parent: null },
@@ -227,9 +229,17 @@ window.MOCK = {
       { role: "user", at: "09:30", text: "온보딩 완료 메일을 보내는 워커를 붙여줘. 재시도는 3회." },
       { role: "assistant", at: "09:32", text: "큐 컨슈머를 추가했습니다. 실패 시 지수 백오프로 3회 재시도하고 dead letter로 보냅니다." }
     ],
+    "s-onb-review": [
+      { role: "user", at: "09:34", text: "위저드 변경분을 코드 리뷰해줘. 회귀 위험이 큰 부분부터." },
+      { role: "assistant", at: "09:52", text: "리뷰 완료 — 단계 저장 경계와 재시도 처리 2건을 지적했고, QA 회귀를 자식 세션으로 넘겼습니다." }
+    ],
     "s-onb-qa": [
       { role: "user", at: "09:40", text: "신규 회사가 온보딩을 끝까지 마치는 E2E를 만들어줘." },
       { role: "assistant", at: "09:52", text: "빈 회사 → 3단계 → 완료 메일까지 1개 시나리오를 추가했습니다. worker는 목으로 대체했습니다." }
+    ],
+    "s-onb-audit": [
+      { role: "user", at: "09:53", text: "이 작업의 Goal Audit을 실행해줘." },
+      { role: "assistant", at: "09:57", text: "감사 승인 — 완료 조건 3개와 자식 QA 결과를 확인했습니다." }
     ],
     "s-onb-docs": [
       { role: "user", at: "09:50", text: "온보딩 운영 가이드를 짧게 정리해줘." },
@@ -438,7 +448,7 @@ window.MOCK = {
   ],
 
   deletePreview: {
-    "g-feature": { worktreeIds: ["wt-onb-web", "wt-onb-api", "wt-onb-shared", "wt-onb-worker"], runningSessions: 3, dirtyWorktrees: 2, sessionCount: 7 },
+    "g-feature": { worktreeIds: ["wt-onb-web", "wt-onb-api", "wt-onb-shared", "wt-onb-worker"], runningSessions: 3, dirtyWorktrees: 2, sessionCount: 9 },
     "g-billing": { worktreeIds: ["wt-bill-web", "wt-bill-api", "wt-bill-worker"], runningSessions: 2, dirtyWorktrees: 1, sessionCount: 5 },
     "g-loop": { worktreeIds: ["wt-perf-api", "wt-perf-query", "wt-perf-cache", "wt-perf-index"], runningSessions: 2, dirtyWorktrees: 2, sessionCount: 4 },
     "g-manual": { worktreeIds: ["wt-sec-api", "wt-sec-web", "wt-sec-audit", "wt-sec-secrets"], runningSessions: 2, dirtyWorktrees: 1, sessionCount: 4 },
