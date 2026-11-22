@@ -1,7 +1,7 @@
 ---
 type: meta
 status: active
-updated: 2026-11-20
+updated: 2026-11-22
 tags: []
 ---
 
@@ -26,6 +26,7 @@ tags: []
 | 용어 | 정의 | 관련 문서 |
 | --- | --- | --- |
 | ADE | Agent Development Environment. 프로세스로 돌아가는 에이전트 세션을 한 화면에서 관찰·제어하는 개발 환경 앱. 이 저장소에서는 Pi 전용 데스크톱 앱을 가리킨다. | [[SPEC-graph-pi-ade]] |
+| MVP | Minimum Viable Product. 이 프로젝트에서는 [[SPEC-graph-pi-ade]]의 포함·제외 범위와 완료 조건 체크리스트로 판정하는 첫 단계. | [[ADR-0004-orca-removal-then-pi-runtime-fork]] |
 | Pi 세션 | Pi 에이전트가 한 번의 대화 흐름을 기록한 JSONL 파일. `~/.pi/agent/sessions/` 아래에 프로젝트 슬러그 폴더로 나뉘어 저장된다. | [[orca-cli-and-pi-sessions]] |
 | 워크스페이스 | Orca가 관리하는 작업 공간 단위. 이 프로젝트에서는 목록·그래프·히스토리를 묶는 기준 단위다. | [[SPEC-graph-pi-ade]] |
 | 워크트리 | 저장소에서 분기해 별도 폴더로 체크아웃한 Git worktree. Orca가 생성·삭제를 관리한다. | [[orca-cli-and-pi-sessions]] |
@@ -37,6 +38,7 @@ tags: []
 | 하위 세션 | 허브가 그룹 안의 워크트리에 만든 세션. 허브와 에이전트 메시지·에이전트 질문으로 협업한다. | [[SPEC-hub-orchestration]] |
 | 프리셋 | 그룹 생성 시 허브의 초기 작업 구조를 정하는 선택. Feature·Loop·Manual 세 가지이며 그룹 데이터에 저장하지 않는다. | [[SPEC-hub-orchestration]] |
 | Pi 하네스 패키지 | Goal·List·Loop·Audit·TODO·에이전트 대화·에이전트 질문 도구를 Pi 세션에 제공하는 이 저장소의 워크스페이스 패키지. | [[SPEC-hub-orchestration]] |
+| 업스트림 Pi 런타임 | Pi 에이전트를 실행하는 상위 하네스 런타임(CLI·에이전트 루프). 이 저장소가 만드는 'Pi 하네스 패키지'와 구분하며, [[ADR-0004-orca-removal-then-pi-runtime-fork]] 3단계의 포크 대상이다. | [[ADR-0004-orca-removal-then-pi-runtime-fork]] |
 | Goal | 완료 조건을 가진 결과 단위. 작업 세션마다 활성 Goal 하나와 대기 Goal 큐를 가지며, 허브는 최상위 Goal 하나와 List를 가진다. `active`·`auditing`·`complete`·`paused`·`aborted` 상태를 쓴다. | [[SPEC-hub-orchestration]] |
 | List | 세션별 Goal 큐. 세션 List 항목은 Goal이고, 허브 List 항목은 Goal이 아니라 허브 Goal이 소유하는 오케스트레이션 작업 묶음이다. | [[SPEC-hub-orchestration]] |
 | Loop(감독) | 한 Goal을 측정값 또는 Audit 기준으로 반복하는 실행 단위. 회차는 1회 반복. 감사 대기는 `paused`, 상한·중지는 `stopped`다. | [[SPEC-hub-orchestration]] |
