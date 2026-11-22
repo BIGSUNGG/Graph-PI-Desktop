@@ -82,8 +82,11 @@ if (gateStyle.bg === 'rgba(0, 0, 0, 0)') errs.push('group audit gate ready has n
 if (await page.locator('.sup-panel').innerText().then(t => t.includes('Audit 세션'))) errs.push('standalone audit session still shown');
 await session('s-onb-web');
 await tab('audit');
-await shot('planning-session-audit.png', page.locator('.sup-panel'));
-await contains('.sup-panel', '승인', 'audit approved history');
+await shot('planning-parent-audit.png', page.locator('.sup-panel'));
+await contains('.sup-panel', '상위 세션 Audit', 'parent audit scope');
+await contains('.audit-gate', '시작 가능 · 1/1 자식 Goal 승인', 'parent audit gate ready');
+await contains('.sup-panel', '승인', 'parent audit approved');
+await contains('.sup-panel', '자식 QA 1/1 포함', 'parent audit child integration');
 await contains('.sup-panel', '이전 감사', 'audit history');
 await session('s-onb-web');
 await go('chat');

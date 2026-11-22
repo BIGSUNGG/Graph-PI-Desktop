@@ -813,10 +813,6 @@
     var ids = {}; goalsOfGroup(gid).forEach(function (g) { if (g.loopId) ids[g.loopId] = 1; });
     return M.loops.filter(function (l) { return ids[l.id]; });
   }
-  function auditsOfGroup(gid) {
-    var ids = {}; goalsOfGroup(gid).forEach(function (g) { ids[g.id] = 1; });
-    return M.audits.filter(function (a) { return ids[a.goalId]; });
-  }
   function sessionAuditsOf(sid) {
     return M.audits.filter(function (a) {
       if (a.scope !== "session") return false;
@@ -824,40 +820,30 @@
       return g && g.sessionId === sid;
     });
   }
+  function parentAuditsOf(goalId) {
+    return M.audits.filter(function (a) { return a.scope === "parent" && a.goalId === goalId; });
+  }
   function groupAuditsOf(gid) {
     var h = hubSession(gid), hg = h ? goalOfSession(h.id) : null;
     if (!hg) return [];
     return M.audits.filter(function (a) { return a.scope === "group" && a.goalId === hg.id; });
   }
-  function sessionCreatedByGroupGoal(s) {
-    var h = hubSession(s.group);
-    if (!h || s.id === h.id) return false;
-    var seen = {}, p = s.parent;
-    while (p) {
-      if (p === h.id) return true;
-      if (seen[p]) return false;
-      seen[p] = 1;
-      var ps = byId(M.sessions, p);
-      p = ps ? ps.parent : null;
-    }
-    return false;
+  function childGoalsOf(goalId) {
+    return M.goals.filter(function (g) { return g.parentGoalId === goalId; });
   }
-  function groupCreatedGoals(gid) {
-    var h = hubSession(gid), hg = h ? goalOfSession(h.id) : null;
-    if (!hg) return [];
-    return goalsOfGroup(gid).filter(function (g) {
-      if (g.id === hg.id) return false;
-      var s = byId(M.sessions, g.sessionId);
-      return !!s && sessionCreatedByGroupGoal(s);
-    });
+  function auditSettled(g) {
+    var a = latestAuditOf(g);
+    return !!g && g.status === "complete" && !!a && (a.verdict === "approved" || a.state === "skipped");
   }
-  function groupAuditGate(gid) {
-    var child = groupCreatedGoals(gid);
-    var ok = child.filter(function (g) {
-      var a = latestAuditOf(g);
-      return g.status === "complete" && a && a.verdict === "approved";
-    }).length;
+  function goalAuditGate(goal) {
+    var child = goal ? childGoalsOf(goal.id) : [];
+    var ok = child.filter(auditSettled).length;
     return { hasGoals: child.length > 0, ok: ok, total: child.length, ready: child.length > 0 && ok === child.length };
+  }
+  function auditsForSession(s) {
+    var g = goalOfSession(s.id);
+    if (g && childGoalsOf(g.id).length) return parentAuditsOf(g.id);
+    return sessionAuditsOf(s.id);
   }
   function latestAuditOf(g) { return g && g.latestAuditId ? auditById(g.latestAuditId) : null; }
   function openQuestion(sid) {
@@ -923,12 +909,12 @@
   function groupSlotColors(gid) {
     if (state.harnessMissing) return [];
     var h = hubSession(gid);
-    return [goalSlot(h ? goalOfSession(h.id) : null), listSlot(listOfGroup(gid)), loopSlot(loopsOfGroup(gid)), auditSlot(auditsOfGroup(gid))];
+    return [goalSlot(h ? goalOfSession(h.id) : null), listSlot(listOfGroup(gid)), loopSlot(loopsOfGroup(gid)), auditSlot(groupAuditsOf(gid))];
   }
   function groupSlots(gid) {
     if (state.harnessMissing) return "";
     var h = hubSession(gid);
-    return slotsHTML(h ? goalOfSession(h.id) : null, listOfGroup(gid), loopsOfGroup(gid), auditsOfGroup(gid));
+    return slotsHTML(h ? goalOfSession(h.id) : null, listOfGroup(gid), loopsOfGroup(gid), groupAuditsOf(gid));
   }
   function attention(s) {
     if (state.harnessMissing) return false;
@@ -1598,20 +1584,25 @@
     var ro = '<div class="audit-ro">읽기 전용 · 소스 수정 불가 · 테스트·측정만 실행</div>';
     var head = type === "group"
       ? '<div class="sup-sub">그룹 Audit · 그룹 Goal이 만든 세션의 작업을 통합 검사</div>'
-      : '<div class="sup-sub">세션 Audit · 이 세션에서 작업한 내용만</div>';
-    if (type === "group") {
+      : type === "parent"
+        ? '<div class="sup-sub">상위 세션 Audit · 이 세션과 자식 세션의 작업을 통합 검사</div>'
+        : '<div class="sup-sub">세션 Audit · 이 세션에서 작업한 내용만</div>';
+    if (type === "group" || type === "parent") {
       if (!gate.hasGoals) {
         return ro + head + '<div class="sup-empty">그룹 Goal이 만든 세션에서 진행된 Goal이 없어 그룹 Audit을 실행하지 않습니다.</div>';
       }
       head += '<div class="audit-gate ' + (gate.ready ? "ready" : "wait") + '">'
-        + (gate.ready ? "시작 가능" : "대기") + ' · ' + gate.ok + '/' + gate.total + ' 세션 승인'
+        + (gate.ready ? "시작 가능" : "대기") + ' · ' + gate.ok + '/' + gate.total
+        + (type === "group" ? ' 세션 승인' : ' 자식 Goal 승인')
         + (gate.ready ? " · 감사 에이전트가 생략할 수 있습니다" : "") + '</div>';
     }
     if (!audits.length) {
       return ro + head + '<div class="sup-empty">'
         + (type === "group"
-          ? "대상 하위 Goal의 세션 Audit이 모두 승인되면 그룹 Audit을 시작할 수 있습니다.<br>감사 에이전트는 통합 감사를 생략할 수 있습니다."
-          : "아직 감사 기록이 없습니다.<br>이 세션의 Goal 완료를 주장하면 세션 Audit이 시작됩니다.")
+          ? "대상 하위 Goal의 Audit이 모두 승인되면 그룹 Audit을 시작할 수 있습니다.<br>감사 에이전트는 통합 감사를 생략할 수 있습니다."
+          : type === "parent"
+            ? "자식 Goal의 Audit이 모두 승인되면 상위 세션 Audit을 시작할 수 있습니다.<br>감사 에이전트는 통합 감사를 생략할 수 있습니다."
+            : "아직 감사 기록이 없습니다.<br>이 세션의 Goal 완료를 주장하면 세션 Audit이 시작됩니다.")
         + '</div>';
     }
     return ro + head + audits.map(function (a, idx) {
@@ -1634,8 +1625,10 @@
     var g = goalOfSession(s.id);
     var items = isHub ? listOfGroup(s.group) : listOfSession(s.id);
     var loops = isHub ? loopsOfGroup(s.group) : M.loops.filter(function (l) { var x = goalById(l.goalId); return x && x.sessionId === s.id; });
-    var audits = isHub ? groupAuditsOf(s.group) : sessionAuditsOf(s.id);
-    var gate = isHub ? groupAuditGate(s.group) : null;
+    var isParent = !isHub && g && childGoalsOf(g.id).length > 0;
+    var type = isHub ? "group" : isParent ? "parent" : "session";
+    var gate = (isHub || isParent) ? goalAuditGate(g) : null;
+    var audits = type === "group" ? groupAuditsOf(s.group) : type === "parent" ? parentAuditsOf(g.id) : sessionAuditsOf(s.id);
     var q = openQuestion(s.id);
     var tab = state.inspTab || "goal";
     var tabs = [
@@ -1644,7 +1637,7 @@
       '<button class="sup-tab' + (tab === "loop" ? " is-active" : "") + '" data-tab="loop">Loop<span class="cnt">' + loops.length + '</span></button>',
       '<button class="sup-tab' + (tab === "audit" ? " is-active" : "") + '" data-tab="audit">Audit<span class="cnt">' + audits.length + '</span></button>'
     ].join("");
-    var panel = tab === "list" ? listTabHTML(s, items, isHub) : tab === "loop" ? loopTabHTML(loops) : tab === "audit" ? auditTabHTML(audits, isHub ? "group" : "session", gate) : goalTabHTML(s, g, isHub);
+    var panel = tab === "list" ? listTabHTML(s, items, isHub) : tab === "loop" ? loopTabHTML(loops) : tab === "audit" ? auditTabHTML(audits, type, gate) : goalTabHTML(s, g, isHub);
     var todos = todosOf(s.group, s.id);
     var todoHTML = '<div class="todo-panel"><div class="sup-head">TODO<span class="n">읽기 전용</span></div>'
       + (todos.length ? todos.map(function (t) {

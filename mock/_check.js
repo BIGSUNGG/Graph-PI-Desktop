@@ -159,13 +159,29 @@ if (!Array.isArray(M.agentMessages) || !M.agentMessages.length) errs.push('agent
 if (!Array.isArray(M.refProjects) || !M.refProjects.some((p) => p.branches.includes('feature/account'))) errs.push('refProjects missing');
 if (!M.goals.every((g) => M.sessions.some((s) => s.id === g.sessionId))) errs.push('goal session orphan');
 if (!M.audits.every((a) => M.goals.some((g) => g.id === a.goalId))) errs.push('audit goal orphan');
-if (!M.audits.every((a) => a.scope === 'session' || a.scope === 'group')) errs.push('audit scope invalid');
+if (!M.audits.every((a) => a.scope === 'session' || a.scope === 'parent' || a.scope === 'group')) errs.push('audit scope invalid');
 if (M.auditRuns || M.audits.some((a) => a.sessionId)) errs.push('legacy audit session shape remains');
+const goalIds = new Set(M.goals.map((g) => g.id));
+if (!M.goals.every((g) => Object.prototype.hasOwnProperty.call(g, 'parentGoalId') && (g.parentGoalId === null || goalIds.has(g.parentGoalId)))) errs.push('goal parentGoalId orphan');
+const hasCycle = M.goals.some((g) => {
+  let cur = g, seen = new Set();
+  while (cur && cur.parentGoalId) {
+    if (seen.has(cur.id)) return true;
+    seen.add(cur.id);
+    cur = M.goals.find((x) => x.id === cur.parentGoalId);
+  }
+  return false;
+});
+if (hasCycle) errs.push('goal parentGoalId cycle');
 const auditFieldsOk = M.audits.every((a) => {
-  if (a.scope === 'session') return Boolean(a.verdict);
-  const hubGoal = M.goals.find((g) => g.id === a.goalId);
-  const inHub = hubGoal && M.groups.some((g) => g.hubSessionId === hubGoal.sessionId);
-  return Boolean(inHub) && (a.state === 'skipped' ? Boolean(a.skipReason) : Boolean(a.verdict));
+  const target = M.goals.find((g) => g.id === a.goalId);
+  const hasChild = M.goals.some((g) => g.parentGoalId === a.goalId);
+  const isHub = target && M.groups.some((g) => g.hubSessionId === target.sessionId);
+  const payloadOk = a.state === 'skipped' ? Boolean(a.skipReason) : Boolean(a.verdict);
+  if (!payloadOk) return false;
+  if (a.scope === 'session') return !hasChild;
+  if (a.scope === 'parent') return hasChild && !isHub;
+  return Boolean(isHub);
 });
 if (!auditFieldsOk) errs.push('audit scope fields invalid');
 if (!M.audits.some((a) => a.scope === 'group' && a.state === 'skipped')) errs.push('group audit skip example missing');

@@ -1,6 +1,6 @@
 # 기획 반영 커버리지
 
-두 SPEC의 사용자 가시 요구사항을 46개 장면으로 대응시킨 표다. 각 행의 증거는 `node mock/verify-planning.mjs`가 생성하는 `mock/_evidence/planning-*.png`다. 스크립트는 행 수·파일 존재와 아래 상호작용을 실제로 연다: 4탭, 4슬롯, TODO 읽기 전용, 질문 답변·재로드, 에이전트 전달 실패, @ 참조·생성 확인·프롬프트 전달, 프리셋 3종·필수 오류, 세션 Audit 승인/거부/오류/불가능, 그룹 Audit gate·생략·대상 없음, 아카이브, 하네스 비활성, Run `목적`. 실제 패키지 실행·Audit 런타임은 목업 상태와 문구로 대신하며, 내부 저장 형식·감사 알고리즘은 범위 밖이다.
+두 SPEC의 사용자 가시 요구사항을 47개 장면으로 대응시킨 표다. 각 행의 증거는 `node mock/verify-planning.mjs`가 생성하는 `mock/_evidence/planning-*.png`다. 스크립트는 행 수·파일 존재와 아래 상호작용을 실제로 연다: 4탭, 4슬롯, TODO 읽기 전용, 질문 답변·재로드, 에이전트 전달 실패, @ 참조·생성 확인·프롬프트 전달, 프리셋 3종·필수 오류, 세션 Audit 승인/거부/오류/불가능, 그룹 Audit gate·생략·대상 없음, 아카이브, 하네스 비활성, Run `목적`. 실제 패키지 실행·Audit 런타임은 목업 상태와 문구로 대신하며, 내부 저장 형식·감사 알고리즘은 범위 밖이다.
 
 | # | SPEC | 요구사항 | 목업에서 확인 | 증거 |
 | --- | --- | --- | --- | --- |
@@ -27,7 +27,7 @@
 | 21 | 같은 문서 §9.2 | 파일·폴더 참조를 붙이고 프롬프트에 전달한다 | 파일 후보 선택 후 전송된 메시지에 참조가 남음 | `planning-ref-file.png`, `planning-ref-prompt.png` |
 | 22 | 같은 문서 §9.3 | 해석하지 못한 참조는 전송을 막는다 | 미해석 @ 전송 시 toast | `planning-ref-blocked.png` |
 | 23 | 같은 문서 §10.1 | Goal은 활성 1개+대기 큐, 완료 조건·revision을 가진다 | Goal 탭의 `revision`·완료 조건 체크 | `planning-session-goal.png` |
-| 24 | 같은 문서 §10.1 | 세션 Audit은 그 세션 작업만 승인·거부·불가능·오류로 판정한다 | 세션 Audit 탭의 `승인`·`거부`·`이전 감사` 이력 | `planning-session-audit-complete.png`, `planning-session-audit.png`, `planning-audit-rejected.png` |
+| 24 | 같은 문서 §10.1 | 세션 Audit은 그 세션 작업만 승인·거부·불가능·오류로 판정한다 | 세션 Audit 탭의 `승인`·`거부`·`이전 감사` 이력 | `planning-session-audit-complete.png`, `planning-audit-rejected.png` |
 | 25 | 같은 문서 §10.4 | Audit은 읽기 전용으로 조건별 증거와 verdict를 남긴다 | `.audit-criteria`의 pass/fail/unknown과 error/impossible | `planning-audit-evidence.png`, `planning-audit-error.png`, `planning-audit-impossible.png` |
 | 26 | 같은 문서 §10.2 | List는 승인 후 다음 항목으로 넘어가고 aborted는 멈춘다 | 허브 List의 `active`·`queued`·`blocked` | `planning-list-queue.png` |
 | 27 | 같은 문서 §10.2 | 허브 항목은 여러 하위 Goal로 fan-out되고 롤업된다 | `li-perf-1`의 `childGoalIds` 3개 | `planning-hub-fanout.png` |
@@ -50,6 +50,7 @@
 | 44 | 같은 문서 §10.4 | 그룹 생성 세션의 Audit이 하나라도 미승인이면 그룹 Audit은 대기한다 | `대기 · 1/3 세션 승인` gate | `planning-group-audit-wait.png` |
 | 45 | 같은 문서 §10.4 | 감사 에이전트가 통합 감사를 생략할 수 있고, 생략하면 그룹 Goal은 완료된다 | `통합 감사 생략` 카드와 사유·`audit-agent` | `planning-group-audit-skip.png` |
 | 46 | 같은 문서 §10.4 | 그룹 Goal이 만든 세션에 진행된 Goal이 없으면 그룹 Audit을 실행하지 않는다 | 그룹 Audit 탭의 안내 문구, gate 없음 | `planning-group-audit-none.png` |
+| 47 | 같은 문서 §10.4 | 자식 Goal이 있는 세션은 자식 Audit이 모두 승인된 뒤 상위 세션 Audit을 시작하고, 자기 작업과 자식 결과를 통합 검사한다 | 상위 세션 Audit 탭의 gate 1/1·자식 QA 통합·승인 | `planning-parent-audit.png` |
 
 ## 검증
 
@@ -58,4 +59,4 @@ node mock/_check.js
 node mock/verify-planning.mjs
 ```
 
-`verify-planning.mjs`는 위 표의 행 수(46개 이상)와 `mock/_evidence/planning-*.png`의 존재·크기를 확인하고, 4탭·4슬롯·TODO 읽기 전용·질문 답변/재로드·에이전트 실패·@ 참조·프리셋 필수 검증·Audit verdict·아카이브·하네스 비활성·Run 목적을 실제로 연다. 스크린샷은 저장소에서 ignore되므로 검증할 때마다 다시 만든다.
+`verify-planning.mjs`는 위 표의 행 수(47개 이상)와 `mock/_evidence/planning-*.png`의 존재·크기를 확인하고, 4탭·4슬롯·TODO 읽기 전용·질문 답변/재로드·에이전트 실패·@ 참조·프리셋 필수 검증·Audit verdict·아카이브·하네스 비활성·Run 목적을 실제로 연다. 스크린샷은 저장소에서 ignore되므로 검증할 때마다 다시 만든다.
