@@ -11,7 +11,7 @@ const ids = [...js.matchAll(/\$\("([a-z0-9-]+)"\)/g)].map((m) => m[1]);
 const all = (html + js).replace(/\\"/g, '"');
 const declared = new Set([...all.matchAll(/id="([a-z0-9-]+)"/g)].map((m) => m[1]));
 for (const id of new Set(ids)) if (!declared.has(id)) errs.push('missing id: ' + id);
-for (const v of ['board', 'chat', 'orch', 'history', 'states']) {
+for (const v of ['board', 'chat', 'orch', 'history']) {
   if (!declared.has('view-' + v)) errs.push('missing view-' + v);
   if (!html.includes('data-view="' + v + '"')) errs.push('missing nav ' + v);
 }
@@ -42,9 +42,6 @@ else {
   if (32 + maxToolW > colW - 10) errs.push('tool chip overflows column: ' + (32 + maxToolW) + ' > ' + (colW - 10));
   if (head + 4 + rowH < 40) errs.push('card header too short for one row');
 }
-if (!Array.isArray(M.specMessages) || M.specMessages.length !== 36) errs.push('specMessages !== 36');
-if (!M.specMessages.every((m) => m.id && m.area && m.state && m.trigger && m.message)) errs.push('specMessages incomplete');
-for (const m of M.specMessages) if (m.message !== '—' && !m.message.trim()) errs.push('spec message empty: ' + m.id);
 if (!Array.isArray(M.groups) || M.groups.length !== 6) errs.push('groups !== 6');
 if (M.worktrees.length !== 22) errs.push('worktrees !== 22');
 if (M.sessions.length !== 33) errs.push('sessions !== 33');
@@ -155,19 +152,28 @@ if (!html.includes('id="ref-menu"')) errs.push('missing ref-menu');
 if (!Array.isArray(M.goals) || M.goals.length < 10) errs.push('goals missing');
 if (!Array.isArray(M.listItems) || M.listItems.length < 10) errs.push('listItems missing');
 if (!Array.isArray(M.loops) || M.loops.length < 5) errs.push('loops missing');
-if (!Array.isArray(M.audits) || M.audits.length < 6) errs.push('audits missing');
+if (!Array.isArray(M.audits) || M.audits.length < 8) errs.push('audits missing');
 if (!Array.isArray(M.todos) || M.todos.length < 8) errs.push('todos missing');
 if (!Array.isArray(M.questions) || !M.questions.some((q) => q.status === 'pending')) errs.push('pending question missing');
 if (!Array.isArray(M.agentMessages) || !M.agentMessages.length) errs.push('agentMessages missing');
 if (!Array.isArray(M.refProjects) || !M.refProjects.some((p) => p.branches.includes('feature/account'))) errs.push('refProjects missing');
 if (!M.goals.every((g) => M.sessions.some((s) => s.id === g.sessionId))) errs.push('goal session orphan');
 if (!M.audits.every((a) => M.goals.some((g) => g.id === a.goalId))) errs.push('audit goal orphan');
+if (!M.audits.every((a) => a.scope === 'session' || a.scope === 'group')) errs.push('audit scope invalid');
+if (M.auditRuns || M.audits.some((a) => a.sessionId)) errs.push('legacy audit session shape remains');
+const auditFieldsOk = M.audits.every((a) => {
+  if (a.scope === 'session') return Boolean(a.verdict);
+  const hubGoal = M.goals.find((g) => g.id === a.goalId);
+  const inHub = hubGoal && M.groups.some((g) => g.hubSessionId === hubGoal.sessionId);
+  return Boolean(inHub) && (a.state === 'skipped' ? Boolean(a.skipReason) : Boolean(a.verdict));
+});
+if (!auditFieldsOk) errs.push('audit scope fields invalid');
+if (!M.audits.some((a) => a.scope === 'group' && a.state === 'skipped')) errs.push('group audit skip example missing');
 if (!M.loops.every((l) => M.goals.some((g) => g.id === l.goalId))) errs.push('loop goal orphan');
 if (!M.listItems.every((li) => (!li.parentGoalId || M.goals.some((g) => g.id === li.parentGoalId)) && (!li.sessionId || M.sessions.some((s) => s.id === li.sessionId)))) errs.push('list goal/session orphan');
 if (!M.todos.every((t) => M.groups.some((g) => g.id === t.groupId) && (!t.sessionId || M.sessions.some((s) => s.id === t.sessionId)))) errs.push('todo group/session orphan');
 if (!M.questions.every((q) => M.sessions.some((s) => s.id === q.sessionId))) errs.push('question session orphan');
 if (!M.agentMessages.every((m) => M.sessions.some((s) => s.id === m.from) && M.sessions.some((s) => s.id === m.to))) errs.push('agent message session orphan');
-if (!M.auditRuns.every((r) => M.groups.some((g) => g.id === r.group) && M.goals.some((g) => g.id === r.goalId) && M.sessions.some((s) => s.id === r.targetSessionId))) errs.push('audit run group/goal/session orphan');
 
 // 사이드바: 워크트리 선택 시 하위 세션 펼침 (승인 설계: .wt-item/.wt-chev/.wt-sess/.wt-sess-row/.wt-sess-empty)
 for (const c of ['.wt-item', '.wt-chev', '.wt-sess', '.wt-sess-row', '.wt-sess-row.is-sel', '.wt-sess-name', '.wt-sess-time', '.wt-sess-empty']) {

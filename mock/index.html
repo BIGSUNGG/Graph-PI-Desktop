@@ -282,6 +282,12 @@
   .hub-action{display:flex;align-items:baseline;gap:6px;padding:3px 0;font-size:10px;color:var(--muted)}
   .hub-action .ha-a{color:var(--text)} .hub-action .ha-x{color:var(--dim);font-family:var(--mono);font-size:9px} .hub-action .ha-t{margin-left:auto;color:var(--amber);font-size:9px}
   .audit-ro{margin:4px 0 6px;padding:4px 6px;border:1px solid rgb(81 162 255 / .25);border-radius:6px;color:#9ecbff;background:rgb(81 162 255 / .06);font-size:9.5px}
+  .audit-gate{margin:4px 0 7px;padding:5px 7px;border:1px solid var(--line);border-radius:6px;font-size:9.5px;color:var(--muted);word-break:keep-all;overflow-wrap:anywhere}
+  .audit-gate.ready{border-color:rgb(16 185 129 / .35);background:rgb(16 185 129 / .08);color:#9fe8c8}
+  .audit-gate.wait{border-color:rgb(212 163 0 / .35);background:rgb(212 163 0 / .08);color:#e7c46a}
+  .audit-verdict.skipped{color:#c4b5fd;border-color:rgb(192 132 252 / .35);background:rgb(192 132 252 / .12)}
+  .audit-card.skipped{border-color:rgb(192 132 252 / .35)}
+  .audit-card.skipped .g-meta{word-break:keep-all;overflow-wrap:anywhere}
   .session-attn{outline:1px solid rgb(212 163 0 / .5);outline-offset:1px;border-radius:7px}
   .agent-msg{margin:5px 0;padding:6px 8px;border-left:2px solid var(--purple);background:rgb(192 132 252 / .08);border-radius:0 6px 6px 0;font-size:10.5px;line-height:1.45}
   .agent-msg .am-h{font-size:9px;color:#d8b4fe;margin-bottom:2px}
@@ -405,18 +411,6 @@
   .indexbar .bar{flex:1;height:4px;border-radius:999px;background:rgb(255 255 255 / .08);overflow:hidden}
   .indexbar .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .18s ease}
   .history-list{display:flex;flex-direction:column;gap:6px}
-  .states{display:flex;flex-direction:column;gap:10px;max-width:1180px}
-  .states-head{display:flex;align-items:center;gap:8px;font-size:11px}
-  .states-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
-  .state-card{border:1px solid var(--line);border-radius:9px;background:var(--card);padding:8px 9px;display:flex;flex-direction:column;gap:4px}
-  .state-card .sc-h{display:flex;align-items:center;gap:6px}
-  .state-card .sc-area{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em}
-  .state-card .sc-state{font-size:9px;padding:1px 6px;border-radius:999px;background:rgb(255 255 255 / .06);color:var(--muted);margin-left:auto;white-space:nowrap}
-  .state-card .sc-state.error{background:rgb(255 101 104 / .12);color:#ff9a9c}
-  .state-card .sc-state.blocked{background:rgb(212 163 0 / .12);color:#e7c46a}
-  .state-card .sc-state.readonly{background:rgb(81 162 255 / .12);color:#9bc6ff}
-  .state-card .sc-msg{font-size:10.5px;line-height:1.5;color:var(--text)}
-  .state-card .sc-trigger{font-size:9.5px;line-height:1.45;color:var(--dim)}
   .h-item{border:1px solid var(--line);border-radius:10px;background:var(--card);overflow:hidden}
   .h-row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;cursor:pointer;transition:background .12s ease}
   .h-row:hover{background:#1c1c1c}
@@ -598,7 +592,6 @@
       <button class="nav-item" data-view="chat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 12a8 8 0 0 1-8 8H8l-5 3 1.6-5A8 8 0 1 1 21 12z"></path></svg>채팅<b id="n-chat">3</b></button>
       <button class="nav-item" data-view="orch"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="6" cy="6" r="2.5"></circle><circle cx="6" cy="18" r="2.5"></circle><circle cx="18" cy="12" r="2.5"></circle><path d="M8.5 6H13a2.5 2.5 0 0 1 2.5 2.5v1M8.5 18H13a2.5 2.5 0 0 0 2.5-2.5v-1"></path></svg>오케스트레이션<b id="n-orch">4</b></button>
       <button class="nav-item" data-view="history"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path></svg>히스토리<b id="n-history">9</b></button>
-      <button class="nav-item" data-view="states"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 8v5"></path><circle cx="12" cy="16.2" r=".9" fill="currentColor" stroke="none"></circle></svg>상태·오류<b id="n-states">36</b></button>
     </nav>
     <div class="side-sec">
       <div class="side-head">워크스페이스<span id="wt-count">3</span><button class="side-add" id="group-new" type="button" title="새 그룹">+</button></div>
@@ -656,13 +649,6 @@
             <div class="panel"><h3>Worker</h3><div id="worker-list"></div></div>
             <div class="panel"><h3>Worker 출력</h3><pre class="out" id="worker-out"></pre><h3 class="mt">Gate</h3><div id="gate-list"></div></div>
           </div>
-        </div>
-      </section>
-
-      <section class="view hidden" id="view-states">
-        <div class="states">
-          <div class="states-head"><span class="pill readonly">SPEC §상태·오류 처리</span><span class="muted">확정된 사용자 메시지 36개 · 목업 검토용</span></div>
-          <div class="states-grid" id="states-list"></div>
         </div>
       </section>
 
@@ -729,8 +715,7 @@
     board: ["상태 보드", "그룹 안 레포·워크트리와 관리 세션, 머지·루프 관계"],
     chat: ["채팅", "세션 메시지 열람과 프롬프트 전송"],
     orch: ["오케스트레이션", "run · task · worker 조회 (읽기 전용)"],
-    history: ["히스토리", "로컬 세션 본문 검색 · 인덱싱 진행"],
-    states: ["상태·오류", "SPEC에 확정된 사용자 메시지와 상태 (읽기 전용)"]
+    history: ["히스토리", "로컬 세션 본문 검색 · 인덱싱 진행"]
   };
 
   var state = {
@@ -832,6 +817,27 @@
     var ids = {}; goalsOfGroup(gid).forEach(function (g) { ids[g.id] = 1; });
     return M.audits.filter(function (a) { return ids[a.goalId]; });
   }
+  function sessionAuditsOf(sid) {
+    return M.audits.filter(function (a) {
+      if (a.scope !== "session") return false;
+      var g = goalById(a.goalId);
+      return g && g.sessionId === sid;
+    });
+  }
+  function groupAuditsOf(gid) {
+    var h = hubSession(gid), hg = h ? goalOfSession(h.id) : null;
+    if (!hg) return [];
+    return M.audits.filter(function (a) { return a.scope === "group" && a.goalId === hg.id; });
+  }
+  function groupAuditGate(gid) {
+    var h = hubSession(gid), hg = h ? goalOfSession(h.id) : null;
+    var child = goalsOfGroup(gid).filter(function (g) { return !hg || g.id !== hg.id; });
+    var ok = child.filter(function (g) {
+      var a = latestAuditOf(g);
+      return g.status === "complete" && a && a.verdict === "approved";
+    }).length;
+    return { ok: ok, total: child.length, ready: child.length > 0 && ok === child.length };
+  }
   function latestAuditOf(g) { return g && g.latestAuditId ? auditById(g.latestAuditId) : null; }
   function openQuestion(sid) {
     return M.questions.filter(function (q) { return q.sessionId === sid && q.status === "pending"; })[0] || null;
@@ -843,9 +849,6 @@
   }
   function agentMessagesOf(sid) {
     return M.agentMessages.filter(function (m) { return m.from === sid || m.to === sid; });
-  }
-  function auditRunOf(gid, goalId) {
-    return M.auditRuns.filter(function (r) { return r.group === gid && r.goalId === goalId; })[0] || null;
   }
   function goalSlot(g) {
     if (!g) return "";
@@ -871,7 +874,7 @@
   function auditSlot(audits) {
     if (!audits.length) return "";
     if (audits.some(function (a) { return a.verdict === "rejected" || a.verdict === "impossible" || a.verdict === "error"; })) return "bad";
-    if (audits.some(function (a) { return a.verdict === "approved"; })) return "good";
+    if (audits.some(function (a) { return a.verdict === "approved" || a.state === "skipped"; })) return "good";
     return "wait";
   }
   function slotsHTML(g, items, loops, audits) {
@@ -883,7 +886,7 @@
     if (state.harnessMissing) return "";
     var g = goalOfSession(s.id), items = listOfSession(s.id);
     var loops = M.loops.filter(function (l) { var x = goalById(l.goalId); return x && x.sessionId === s.id; });
-    var audits = M.audits.filter(function (a) { var x = goalById(a.goalId); return x && x.sessionId === s.id; });
+    var audits = isHubSession(s) ? groupAuditsOf(s.group) : sessionAuditsOf(s.id);
     return slotsHTML(g, items, loops, audits);
   }
   function slotColor(kind) {
@@ -893,7 +896,7 @@
     if (state.harnessMissing) return [];
     var g = goalOfSession(s.id), items = listOfSession(s.id);
     var loops = M.loops.filter(function (l) { var x = goalById(l.goalId); return x && x.sessionId === s.id; });
-    var audits = M.audits.filter(function (a) { var x = goalById(a.goalId); return x && x.sessionId === s.id; });
+    var audits = isHubSession(s) ? groupAuditsOf(s.group) : sessionAuditsOf(s.id);
     return [goalSlot(g), listSlot(items), loopSlot(loops), auditSlot(audits)];
   }
   function groupSlotColors(gid) {
@@ -1098,7 +1101,7 @@
   function renderTop() {
     var acts = {
       board: '<button class="btn" data-act="wt-new">워크트리</button><button class="btn primary" data-act="s-new">새 세션</button>',
-      chat: "", orch: "", history: "", states: ""
+      chat: "", orch: "", history: ""
     }[state.view];
     setHTML($("top-actions"), acts);
     [].forEach.call($("top-actions").querySelectorAll("[data-act]"), function (b) {
@@ -1125,7 +1128,6 @@
     if (v === "chat") renderChat();
     if (v === "orch") renderOrch();
     if (v === "history") renderHistory();
-    if (v === "states") renderStates();
   }
 
   function banner() {
@@ -1397,17 +1399,6 @@
     var maxBottom = G.pad;
     if (hub) maxBottom = Math.max(maxBottom, hubBottom);
     all.forEach(function (c) { maxBottom = Math.max(maxBottom, c.y + c.h); });
-    var ar = state.harnessMissing ? null : M.auditRuns.filter(function (r) { return r.group === state.group && (r.state === "running" || r.state === "error"); })[0];
-    if (ar) {
-      var ay = maxBottom + 18, aw = Math.min(300, totalW - G.pad * 2), ag = goalById(ar.goalId);
-      svg.push('<g class="node audit-run" data-audit="' + ar.id + '">'
-        + '<rect x="' + G.pad + '" y="' + ay + '" width="' + aw + '" height="54" rx="9" fill="#171717" stroke="' + (ar.state === "error" ? "#ff6568" : "#c084fc") + '"/>'
-        + '<circle cx="' + (G.pad + 15) + '" cy="' + (ay + 18) + '" r="3.5" fill="' + (ar.state === "error" ? "#ff6568" : "#c084fc") + '"/>'
-        + '<text x="' + (G.pad + 26) + '" y="' + (ay + 21) + '" fill="#f0f0f0" font-size="10.5" font-weight="600">Audit 세션 · ' + (ar.state === "error" ? "오류" : "진행 중") + '</text>'
-        + '<text x="' + (G.pad + 12) + '" y="' + (ay + 38) + '" fill="#a3a3a3" font-size="9">' + esc(clip(ag ? ag.objective : ar.id, 34)) + '</text>'
-        + '<text x="' + (G.pad + aw - 12) + '" y="' + (ay + 21) + '" fill="#737373" font-size="8.5" text-anchor="end">' + esc(ar.last) + '</text></g>');
-      maxBottom = ay + 62;
-    }
     svg.push(overlay.join(""));
     state.boardW = totalW;
     state.boardH = Math.max(maxBottom, bottomExtra) + G.pad;
@@ -1582,13 +1573,30 @@
     }).join("");
   }
 
-  function auditTabHTML(audits, runs) {
-    var run = runs[0];
-    var runHTML = '<div class="audit-ro">읽기 전용 · 소스 수정 불가 · 테스트·측정만 실행</div>';
-    runHTML += run ? '<div class="audit-card"><div class="a-top"><span class="a-verdict">Audit 세션 · ' + (run.state === "error" ? "오류" : "진행 중") + '</span><span class="pill ' + (run.state === "error" ? "failed" : "running") + '"><span class="d"></span>' + esc(run.state) + '</span></div><div class="g-meta">대상 ' + esc(run.targetSessionId) + ' · ' + esc(run.started) + ' 시작</div></div>' : "";
-    if (!audits.length) return runHTML + '<div class="sup-empty">아직 감사 기록이 없습니다.<br>Goal 완료를 주장하면 별도 Audit 세션이 검증합니다.</div>';
-    return runHTML + audits.map(function (a, idx) {
-      var crit = a.criteriaResults.map(function (c) { return '<li><span class="cr ' + esc(c.result) + '">' + esc(c.result) + '</span>' + esc(c.criterion) + ' — ' + esc(c.evidence) + '</li>'; }).join("");
+  function auditTabHTML(audits, type, gate) {
+    var ro = '<div class="audit-ro">읽기 전용 · 소스 수정 불가 · 테스트·측정만 실행</div>';
+    var head = type === "group"
+      ? '<div class="sup-sub">그룹 Audit · 모든 세션 작업을 통합 검사</div>'
+      : '<div class="sup-sub">세션 Audit · 이 세션에서 작업한 내용만</div>';
+    if (type === "group") {
+      head += '<div class="audit-gate ' + (gate.ready ? "ready" : "wait") + '">'
+        + (gate.ready ? "시작 가능" : "대기") + ' · ' + gate.ok + '/' + gate.total + ' 세션 승인'
+        + (gate.ready ? " · 감사 에이전트가 생략할 수 있습니다" : "") + '</div>';
+    }
+    if (!audits.length) {
+      return ro + head + '<div class="sup-empty">'
+        + (type === "group"
+          ? "모든 세션 Audit이 승인되면 그룹 Audit을 시작할 수 있습니다.<br>감사 에이전트는 통합 감사를 생략할 수 있습니다."
+          : "아직 감사 기록이 없습니다.<br>이 세션의 Goal 완료를 주장하면 세션 Audit이 시작됩니다.")
+        + '</div>';
+    }
+    return ro + head + audits.map(function (a, idx) {
+      if (a.state === "skipped") {
+        return '<div class="audit-card skipped"><div class="a-top"><span class="a-verdict">통합 감사 생략</span><span class="audit-verdict skipped">생략</span></div>'
+          + '<div class="g-meta">' + esc(a.skippedAt) + ' · ' + esc(a.skippedBy) + ' 판단</div>'
+          + '<div class="g-meta" style="margin-top:4px">' + esc(a.skipReason) + '</div></div>';
+      }
+      var crit = (a.criteriaResults || []).map(function (c) { return '<li><span class="cr ' + esc(c.result) + '">' + esc(c.result) + '</span>' + esc(c.criterion) + ' — ' + esc(c.evidence) + '</li>'; }).join("");
       return '<div class="audit-card"><div class="a-top"><span class="a-verdict">' + (idx === 0 ? "최신 감사" : "이전 감사") + '</span><span class="audit-verdict ' + esc(a.verdict) + '">' + verdictLabel(a.verdict) + '</span></div>'
         + '<div class="g-meta">' + esc(a.createdAt) + ' · ' + esc(a.model) + ' · commit ' + esc(a.commitHash) + ' · ' + esc(a.worktreeState) + '</div>'
         + '<ul class="audit-criteria">' + crit + '</ul>'
@@ -1602,8 +1610,8 @@
     var g = goalOfSession(s.id);
     var items = isHub ? listOfGroup(s.group) : listOfSession(s.id);
     var loops = isHub ? loopsOfGroup(s.group) : M.loops.filter(function (l) { var x = goalById(l.goalId); return x && x.sessionId === s.id; });
-    var audits = isHub ? auditsOfGroup(s.group) : M.audits.filter(function (a) { var x = goalById(a.goalId); return x && x.sessionId === s.id; });
-    var runs = isHub ? M.auditRuns.filter(function (r) { return r.group === s.group && (r.state === "running" || r.state === "error"); }) : M.auditRuns.filter(function (r) { return r.targetSessionId === s.id; });
+    var audits = isHub ? groupAuditsOf(s.group) : sessionAuditsOf(s.id);
+    var gate = isHub ? groupAuditGate(s.group) : null;
     var q = openQuestion(s.id);
     var tab = state.inspTab || "goal";
     var tabs = [
@@ -1612,7 +1620,7 @@
       '<button class="sup-tab' + (tab === "loop" ? " is-active" : "") + '" data-tab="loop">Loop<span class="cnt">' + loops.length + '</span></button>',
       '<button class="sup-tab' + (tab === "audit" ? " is-active" : "") + '" data-tab="audit">Audit<span class="cnt">' + audits.length + '</span></button>'
     ].join("");
-    var panel = tab === "list" ? listTabHTML(s, items, isHub) : tab === "loop" ? loopTabHTML(loops) : tab === "audit" ? auditTabHTML(audits, runs) : goalTabHTML(s, g, isHub);
+    var panel = tab === "list" ? listTabHTML(s, items, isHub) : tab === "loop" ? loopTabHTML(loops) : tab === "audit" ? auditTabHTML(audits, isHub ? "group" : "session", gate) : goalTabHTML(s, g, isHub);
     var todos = todosOf(s.group, s.id);
     var todoHTML = '<div class="todo-panel"><div class="sup-head">TODO<span class="n">읽기 전용</span></div>'
       + (todos.length ? todos.map(function (t) {
@@ -2020,16 +2028,6 @@
   }
 
   /* ---------- history ---------- */
-  function renderStates() {
-    var CLS = { "오류": "error", "차단": "blocked", "읽기 전용": "readonly" };
-    setHTML($("states-list"), M.specMessages.map(function (m) {
-      return '<div class="state-card">'
-        + '<div class="sc-h"><span class="sc-area">' + esc(m.area) + '</span><span class="sc-state ' + (CLS[m.state] || "") + '">' + esc(m.state) + '</span></div>'
-        + '<div class="sc-msg">' + esc(m.message) + '</div>'
-        + '<div class="sc-trigger">' + esc(m.trigger) + '</div></div>';
-    }).join(""));
-  }
-
   function renderHistory() {
     var base = state.results || M.sessions.slice();
     var list = base.filter(function (s) { return (s.group || "") === state.group; });

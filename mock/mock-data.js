@@ -20,49 +20,11 @@ window.MOCK = {
   loopStates: ["idle", "running", "waiting", "paused", "done", "stopped"],
   goalStates: ["active", "auditing", "complete", "paused", "aborted"],
   auditVerdicts: ["approved", "rejected", "impossible", "error"],
-  specMessages: [
-    { id: "sm-1", area: "그룹 생성", state: "차단", trigger: "Feature·Loop 첫 프롬프트가 비어 있음", message: "이 프리셋은 첫 프롬프트가 필요합니다." },
-    { id: "sm-2", area: "그룹 생성", state: "대기", trigger: "Manual 첫 프롬프트가 비어 있음", message: "첫 프롬프트를 입력하면 허브가 작업을 시작합니다." },
-    { id: "sm-3", area: "그룹 생성", state: "정상", trigger: "허브가 워크트리·세션을 생성·변경·삭제함", message: "없음 — 보드에 바로 반영" },
-    { id: "sm-4", area: "그룹 생성", state: "정상", trigger: "허브가 워크트리를 삭제함", message: "없음 — 보드에서 제거, 하위 세션 처리 미정" },
-    { id: "sm-5", area: "Goal", state: "차단", trigger: "완료 조건 없이 Goal 생성 시도", message: "Goal을 만들려면 완료 조건이 하나 이상 필요합니다." },
-    { id: "sm-6", area: "Goal", state: "차단", trigger: "활성 Goal 없이 완료 주장", message: "완료를 주장할 활성 Goal이 없습니다." },
-    { id: "sm-7", area: "Audit", state: "일시정지", trigger: "Audit 세션 시작 실패", message: "Audit 세션을 시작하지 못했습니다. Goal을 일시정지했습니다." },
-    { id: "sm-8", area: "Audit", state: "거부", trigger: "Audit이 완료 조건을 거부함", message: "Audit이 완료 조건을 승인하지 않았습니다. 실패 항목을 확인하세요." },
-    { id: "sm-9", area: "Audit", state: "중단", trigger: "Audit이 불가능하다고 판정함", message: "이 Goal은 현재 조건으로 완료할 수 없다고 Audit이 판정했습니다." },
-    { id: "sm-10", area: "Audit", state: "오류", trigger: "Audit 중 인프라 오류", message: "감사 중 오류가 발생했습니다. 재시도 정책을 확인하세요." },
-    { id: "sm-11", area: "Goal", state: "차단", trigger: "하위 Goal이 aborted됨", message: "하위 Goal이 중단되어 허브 항목이 차단되었습니다. 재시도하거나 재배정하세요." },
-    { id: "sm-12", area: "Goal", state: "차단", trigger: "허브 항목에 하위 Goal이 없음", message: "이 허브 항목에는 배정된 하위 Goal이 없습니다." },
-    { id: "sm-13", area: "Goal", state: "차단", trigger: "유효 하위 Goal 미승인 상태에서 다음 항목 배정", message: "현재 허브 항목의 유효 하위 Goal이 모두 승인되지 않아 다음 항목을 시작할 수 없습니다." },
-    { id: "sm-14", area: "Goal", state: "대기", trigger: "하위 List가 일시정지 상태", message: "하위 List가 일시정지 상태입니다. 재개하면 Goal이 시작됩니다." },
-    { id: "sm-15", area: "Loop", state: "중단", trigger: "Loop가 상한에 도달함", message: "Loop 상한에 도달했습니다. 범위를 조정하거나 완료를 주장하세요." },
-    { id: "sm-16", area: "Audit", state: "오류", trigger: "감사 중 워크트리가 바뀜", message: "감사 중 워크트리가 변경되었습니다. 다시 감사합니다." },
-    { id: "sm-17", area: "Audit", state: "차단", trigger: "감사 중 소유 세션이 새 작업을 시작함", message: "감사 중에는 새 작업을 시작할 수 없습니다." },
-    { id: "sm-18", area: "Audit", state: "거부", trigger: "허브 Goal Audit이 거부됨", message: "허브 목표가 승인되지 않아 보완 항목을 만들었습니다." },
-    { id: "sm-19", area: "Audit", state: "일시정지", trigger: "Goal당 Audit 시도 상한 도달", message: "Audit 시도 상한에 도달했습니다. 범위를 조정하거나 중단하세요." },
-    { id: "sm-20", area: "Audit", state: "차단", trigger: "Loop 없는 Goal이 작업 없이 재주장", message: "감사 거부 후에는 작업과 증거를 갱신해야 다시 주장할 수 있습니다." },
-    { id: "sm-21", area: "Audit", state: "읽기 전용", trigger: "Audit 세션이 쓰기 도구를 호출함", message: "Audit 세션은 읽기 전용입니다." },
-    { id: "sm-22", area: "아카이브", state: "오류", trigger: "아카이브를 불러오지 못함", message: "아카이브를 불러오지 못했습니다." },
-    { id: "sm-23", area: "질문", state: "대기", trigger: "에이전트 질문이 도착함", message: "답변을 기다리는 질문이 있습니다." },
-    { id: "sm-24", area: "질문", state: "정상", trigger: "질문에 답변함", message: "없음 — 답변 전달, 카드·인라인 갱신" },
-    { id: "sm-25", area: "질문", state: "취소", trigger: "질문 대기 중 세션이 삭제됨", message: "세션이 종료되어 질문이 취소되었습니다." },
-    { id: "sm-26", area: "에이전트", state: "정상", trigger: "메시지 수신 세션이 비활성", message: "없음 — 자동 재개 후 전달" },
-    { id: "sm-27", area: "에이전트", state: "오류", trigger: "수신 세션 자동 재개 실패", message: "받는 세션을 재개하지 못했습니다. 메시지를 보관했습니다." },
-    { id: "sm-28", area: "에이전트", state: "오류", trigger: "수신 세션이 삭제됨", message: "받는 세션이 없어 메시지를 전달하지 못했습니다." },
-    { id: "sm-29", area: "@참조", state: "차단", trigger: "@ 프로젝트가 없음", message: "프로젝트를 찾을 수 없습니다." },
-    { id: "sm-30", area: "@참조", state: "확인", trigger: "@ 워크트리·브랜치가 없음", message: "이 브랜치의 워크트리가 없습니다. 브랜치와 워크트리를 만들까요?" },
-    { id: "sm-31", area: "@참조", state: "차단", trigger: "워크트리 생성 확인을 취소함", message: "참조를 해석하지 못했습니다." },
-    { id: "sm-32", area: "@참조", state: "오류", trigger: "워크트리 생성 실패", message: "워크트리를 만들지 못했습니다. 다시 시도해 주세요." },
-    { id: "sm-33", area: "@참조", state: "차단", trigger: "@ 파일·폴더가 없음", message: "파일 또는 폴더를 찾을 수 없습니다." },
-    { id: "sm-34", area: "@참조", state: "차단", trigger: "해석하지 못한 태그가 남음", message: "해석하지 못한 참조가 있습니다. 참조를 확인한 뒤 전송해 주세요." },
-    { id: "sm-35", area: "TODO", state: "오류", trigger: "TODO를 불러오지 못함", message: "TODO를 불러오지 못했습니다." },
-    { id: "sm-36", area: "하네스", state: "비활성", trigger: "하네스 패키지가 없거나 버전이 다름", message: "Pi 하네스 패키지가 없어 Goal·List·Loop·Audit·TODO·에이전트 대화·질문을 사용할 수 없습니다." }
-  ],
 
   goals: [
-    { id: "goal-onb-hub", group: "g-feature", sessionId: "s-onb-hub", parentListItemId: null, objective: "온보딩 4레포를 하나의 흐름으로 통합", acceptance: ["4개 레포 구현이 모두 승인됨", "통합 기록과 API 계약이 남음", "원래 목표가 하위 결과에 매핑됨"], status: "auditing", revision: 2, loopId: null, latestAuditId: "aud-onb-hub", pauseReason: null, auditAttemptCount: 1, completedAt: null, completedRevision: null },
+    { id: "goal-onb-hub", group: "g-feature", sessionId: "s-onb-hub", parentListItemId: null, objective: "온보딩 4레포를 하나의 흐름으로 통합", acceptance: ["4개 레포 구현이 모두 승인됨", "통합 기록과 API 계약이 남음", "원래 목표가 하위 결과에 매핑됨"], status: "complete", revision: 3, loopId: null, latestAuditId: "aud-onb-group", pauseReason: null, auditAttemptCount: 0, completedAt: "16:20", completedRevision: 3 },
     { id: "goal-onb-web", group: "g-feature", sessionId: "s-onb-web", parentListItemId: "li-onb-1", objective: "온보딩 위저드 UI와 선택한 목업 반영", acceptance: ["위저드 3단계가 저장됨", "선택한 목업 B안이 적용됨"], status: "complete", revision: 3, loopId: null, latestAuditId: "aud-onb-web", pauseReason: null, auditAttemptCount: 2, completedAt: "09:48", completedRevision: 3 },
-    { id: "goal-onb-api", group: "g-feature", sessionId: "s-onb-api", parentListItemId: "li-onb-1", objective: "온보딩 단계 저장 API와 재개", acceptance: ["company_id + step_id 업서트", "완료 이벤트 발행"], status: "active", revision: 1, loopId: null, latestAuditId: null, pauseReason: "question", auditAttemptCount: 0, completedAt: null, completedRevision: null },
+    { id: "goal-onb-api", group: "g-feature", sessionId: "s-onb-api", parentListItemId: "li-onb-1", objective: "온보딩 단계 저장 API와 재개", acceptance: ["company_id + step_id 업서트", "완료 이벤트 발행"], status: "complete", revision: 2, loopId: null, latestAuditId: "aud-onb-api", pauseReason: null, auditAttemptCount: 1, completedAt: "16:12", completedRevision: 2 },
     { id: "goal-perf-hub", group: "g-loop", sessionId: "s-perf-hub", parentListItemId: null, objective: "API p95 250ms 달성과 통합", acceptance: ["3개 Loop 결과가 통합됨", "p95가 250ms 이하", "감사 승인"], status: "active", revision: 1, loopId: null, latestAuditId: null, pauseReason: null, auditAttemptCount: 0, completedAt: null, completedRevision: null },
     { id: "goal-perf-query", group: "g-loop", sessionId: "s-perf-query", parentListItemId: "li-perf-1", objective: "느린 쿼리 상위 3개 제거로 p95 개선", acceptance: ["p95 < 250ms", "EXPLAIN 근거가 남음"], status: "active", revision: 1, loopId: "loop-perf-query", latestAuditId: null, pauseReason: null, auditAttemptCount: 0, completedAt: null, completedRevision: null },
     { id: "goal-perf-cache", group: "g-loop", sessionId: "s-perf-cache", parentListItemId: "li-perf-1", objective: "캐시 히트율 75% 이상", acceptance: ["히트율 75% 이상", "TTL·키 변경 근거"], status: "auditing", revision: 2, loopId: "loop-perf-cache", latestAuditId: "aud-perf-cache", pauseReason: "audit_error", auditAttemptCount: 1, completedAt: null, completedRevision: null },
@@ -75,10 +37,9 @@ window.MOCK = {
   ],
 
   listItems: [
-    { id: "li-onb-1", group: "g-feature", parentGoalId: "goal-onb-hub", title: "온보딩 4레포 통합", state: "active", queueOrder: 1, childGoalIds: ["goal-onb-web", "goal-onb-api"], supersededGoalIds: [], completedAt: null, completedRevision: null, integrationNote: "shared 스키마 기준" },
-    { id: "li-onb-2", group: "g-feature", parentGoalId: "goal-onb-hub", title: "출시 전 E2E와 문서", state: "queued", queueOrder: 2, childGoalIds: [], supersededGoalIds: [], completedAt: null, completedRevision: null, integrationNote: "1번 완료 후 배정" },
+    { id: "li-onb-1", group: "g-feature", parentGoalId: "goal-onb-hub", title: "온보딩 4레포 통합", state: "complete", queueOrder: 1, childGoalIds: ["goal-onb-web", "goal-onb-api"], supersededGoalIds: [], completedAt: "16:20", completedRevision: 3, integrationNote: "shared 스키마 기준" },
     { id: "li-web-1", group: "g-feature", sessionId: "s-onb-web", goalId: "goal-onb-web", title: "목업 B안 적용", state: "complete", queueOrder: 1 },
-    { id: "li-api-1", group: "g-feature", sessionId: "s-onb-api", goalId: "goal-onb-api", title: "단계 저장 API", state: "active", queueOrder: 1 },
+    { id: "li-api-1", group: "g-feature", sessionId: "s-onb-api", goalId: "goal-onb-api", title: "단계 저장 API", state: "complete", queueOrder: 1, completedAt: "16:12", completedRevision: 2 },
     { id: "li-perf-1", group: "g-loop", parentGoalId: "goal-perf-hub", title: "성능 Loop 3개", state: "active", queueOrder: 1, childGoalIds: ["goal-perf-query", "goal-perf-cache", "goal-perf-index"], supersededGoalIds: [], completedAt: null, completedRevision: null, integrationNote: "p95 250ms 기준" },
     { id: "li-perf-2", group: "g-loop", parentGoalId: "goal-perf-hub", title: "통합 결과 검증", state: "queued", queueOrder: 2, childGoalIds: [], supersededGoalIds: [], completedAt: null, completedRevision: null, integrationNote: "모든 Loop 승인 후" },
     { id: "li-query-1", group: "g-loop", sessionId: "s-perf-query", goalId: "goal-perf-query", title: "느린 쿼리 제거", state: "active", queueOrder: 1 },
@@ -100,35 +61,33 @@ window.MOCK = {
   ],
 
   audits: [
-    { id: "aud-onb-hub", goalId: "goal-onb-hub", sessionId: "audit-onb-hub", verdict: "rejected", criteriaResults: [{ criterion: "4개 레포 구현이 모두 승인됨", result: "fail", evidence: "worker 메일 템플릿 미승인" }, { criterion: "통합 기록과 API 계약이 남음", result: "pass", evidence: "shared 1.2.0 · POST /onboarding/steps" }, { criterion: "원래 목표가 하위 결과에 매핑됨", result: "pass", evidence: "목업 B안 · API 계약 링크" }], evidenceSummary: "하위 승인 3/4, 통합 기록 있음", report: "worker 승인 후 재감사", model: "openai/gpt-5", commitHash: "7f3a1c2", worktreeState: "clean", revision: 2, createdAt: "15:58" },
-    { id: "aud-onb-web-r1", goalId: "goal-onb-web", sessionId: "audit-onb-web-1", verdict: "rejected", criteriaResults: [{ criterion: "위저드 3단계가 저장됨", result: "pass", evidence: "playwright 9 passed" }, { criterion: "선택한 목업 B안이 적용됨", result: "fail", evidence: "2단계 레이아웃이 A안" }], evidenceSummary: "B안 선택 후 2단계 미반영", report: "2단계 레이아웃 수정 필요", model: "openai/gpt-5", commitHash: "9c1e004", worktreeState: "clean", revision: 2, createdAt: "09:40" },
-    { id: "aud-onb-web", goalId: "goal-onb-web", sessionId: "audit-onb-web-2", verdict: "approved", criteriaResults: [{ criterion: "위저드 3단계가 저장됨", result: "pass", evidence: "playwright 9 passed" }, { criterion: "선택한 목업 B안이 적용됨", result: "pass", evidence: "2단계 B안 스크린샷 일치" }], evidenceSummary: "2개 조건 모두 통과", report: "승인 — 다음 List 항목 없음", model: "openai/gpt-5", commitHash: "d20c9a1", worktreeState: "clean", revision: 3, createdAt: "09:48" },
-    { id: "aud-perf-cache", goalId: "goal-perf-cache", sessionId: "audit-perf-cache", verdict: "rejected", criteriaResults: [{ criterion: "히트율 75% 이상", result: "pass", evidence: "78% (measure:cache)" }, { criterion: "TTL·키 변경 근거", result: "fail", evidence: "catalog TTL 변경 기록 없음" }], evidenceSummary: "수치 달성, 근거 누락", report: "TTL 변경 근거를 남기고 재감사", model: "openai/gpt-5", commitHash: "c81b77e", worktreeState: "clean", revision: 2, createdAt: "11:56" },
-    { id: "aud-perf-index", goalId: "goal-perf-index", sessionId: "audit-perf-index", verdict: "approved", criteriaResults: [{ criterion: "복합 인덱스 2개 추가", result: "pass", evidence: "migration 0042" }, { criterion: "EXPLAIN 결과 첨부", result: "pass", evidence: "explain-index.txt" }], evidenceSummary: "2개 조건 모두 통과", report: "승인 — 다음 List 항목 대기", model: "openai/gpt-5", commitHash: "4ab90fd", worktreeState: "clean", revision: 2, createdAt: "11:44" },
-    { id: "aud-fix-sec", goalId: "goal-fix-sec", sessionId: "audit-fix-sec", verdict: "impossible", criteriaResults: [{ criterion: "재현 테스트가 실패함", result: "unknown", evidence: "격리 픽스처에서 재현 불가" }, { criterion: "쿠키 재사용 차단", result: "pass", evidence: "cookie reuse blocked" }], evidenceSummary: "재현 환경을 만들 수 없음", report: "불가능 — 재배정 또는 범위 수정 필요", model: "openai/gpt-5", commitHash: "aa0192c", worktreeState: "clean", revision: 2, createdAt: "15:42" },
-    { id: "aud-bill-web", goalId: "goal-bill-web", sessionId: "audit-bill-web", verdict: "error", criteriaResults: [{ criterion: "월간·연간 토글", result: "unknown", evidence: "감사 중 워크트리 변경" }], evidenceSummary: "감사 중 커밋 해시가 바뀜", report: "error — 재감사 필요", model: "openai/gpt-5", commitHash: "mismatch", worktreeState: "dirty", revision: 1, createdAt: "10:53" }
+    { id: "aud-onb-group", goalId: "goal-onb-hub", scope: "group", state: "skipped", skipReason: "모든 세션 Audit이 승인되어 통합 감사를 생략했습니다.", skippedBy: "audit-agent", skippedAt: "16:20", createdAt: "16:20", report: "세션별 승인 2/2 — 통합 감사 불필요" },
+    { id: "aud-onb-api", goalId: "goal-onb-api", scope: "session", verdict: "approved", criteriaResults: [{ criterion: "company_id + step_id 업서트", result: "pass", evidence: "onboarding upsert 통합 테스트 6 passed" }, { criterion: "완료 이벤트 발행", result: "pass", evidence: "step.completed 이벤트 로그" }], evidenceSummary: "2개 조건 모두 통과", report: "승인 — 세션 작업 범위 통과", model: "openai/gpt-5", commitHash: "b41d7e2", worktreeState: "clean", revision: 2, createdAt: "16:12" },
+    { id: "aud-onb-web-r1", goalId: "goal-onb-web", scope: "session", verdict: "rejected", criteriaResults: [{ criterion: "위저드 3단계가 저장됨", result: "pass", evidence: "playwright 9 passed" }, { criterion: "선택한 목업 B안이 적용됨", result: "fail", evidence: "2단계 레이아웃이 A안" }], evidenceSummary: "B안 선택 후 2단계 미반영", report: "2단계 레이아웃 수정 필요", model: "openai/gpt-5", commitHash: "9c1e004", worktreeState: "clean", revision: 2, createdAt: "09:40" },
+    { id: "aud-onb-web", goalId: "goal-onb-web", scope: "session", verdict: "approved", criteriaResults: [{ criterion: "위저드 3단계가 저장됨", result: "pass", evidence: "playwright 9 passed" }, { criterion: "선택한 목업 B안이 적용됨", result: "pass", evidence: "2단계 B안 스크린샷 일치" }], evidenceSummary: "2개 조건 모두 통과", report: "승인 — 다음 List 항목 없음", model: "openai/gpt-5", commitHash: "d20c9a1", worktreeState: "clean", revision: 3, createdAt: "09:48" },
+    { id: "aud-perf-cache", goalId: "goal-perf-cache", scope: "session", verdict: "rejected", criteriaResults: [{ criterion: "히트율 75% 이상", result: "pass", evidence: "78% (measure:cache)" }, { criterion: "TTL·키 변경 근거", result: "fail", evidence: "catalog TTL 변경 기록 없음" }], evidenceSummary: "수치 달성, 근거 누락", report: "TTL 변경 근거를 남기고 재감사", model: "openai/gpt-5", commitHash: "c81b77e", worktreeState: "clean", revision: 2, createdAt: "11:56" },
+    { id: "aud-perf-index", goalId: "goal-perf-index", scope: "session", verdict: "approved", criteriaResults: [{ criterion: "복합 인덱스 2개 추가", result: "pass", evidence: "migration 0042" }, { criterion: "EXPLAIN 결과 첨부", result: "pass", evidence: "explain-index.txt" }], evidenceSummary: "2개 조건 모두 통과", report: "승인 — 다음 List 항목 대기", model: "openai/gpt-5", commitHash: "4ab90fd", worktreeState: "clean", revision: 2, createdAt: "11:44" },
+    { id: "aud-fix-sec", goalId: "goal-fix-sec", scope: "session", verdict: "impossible", criteriaResults: [{ criterion: "재현 테스트가 실패함", result: "unknown", evidence: "격리 픽스처에서 재현 불가" }, { criterion: "쿠키 재사용 차단", result: "pass", evidence: "cookie reuse blocked" }], evidenceSummary: "재현 환경을 만들 수 없음", report: "불가능 — 재배정 또는 범위 수정 필요", model: "openai/gpt-5", commitHash: "aa0192c", worktreeState: "clean", revision: 2, createdAt: "15:42" },
+    { id: "aud-bill-web", goalId: "goal-bill-web", scope: "session", verdict: "error", criteriaResults: [{ criterion: "월간·연간 토글", result: "unknown", evidence: "감사 중 워크트리 변경" }], evidenceSummary: "감사 중 커밋 해시가 바뀜", report: "error — 재감사 필요", model: "openai/gpt-5", commitHash: "mismatch", worktreeState: "dirty", revision: 1, createdAt: "10:53" }
   ],
 
-  auditRuns: [
-    { id: "audit-run-onb", group: "g-feature", goalId: "goal-onb-hub", targetSessionId: "s-onb-hub", state: "running", started: "16:01", last: "16:03", verdict: null },
-    { id: "audit-run-bill", group: "g-billing", goalId: "goal-bill-web", targetSessionId: "s-bill-web", state: "error", started: "10:52", last: "10:53", verdict: "error" }
-  ],
 
   todos: [
     { id: "todo-g1", scope: "group", groupId: "g-feature", title: "공통 단계 스키마 확정", status: "done", createdBy: "s-onb-hub", updatedAt: "09:20" },
-    { id: "todo-g2", scope: "group", groupId: "g-feature", title: "API 계약 중계", status: "doing", createdBy: "s-onb-hub", updatedAt: "09:46" },
-    { id: "todo-g3", scope: "group", groupId: "g-feature", title: "출시 전 E2E", status: "todo", createdBy: "s-onb-hub", updatedAt: "09:58" },
+    { id: "todo-g2", scope: "group", groupId: "g-feature", title: "API 계약 중계", status: "done", createdBy: "s-onb-hub", updatedAt: "09:46" },
+    { id: "todo-g3", scope: "group", groupId: "g-feature", title: "출시 전 E2E", status: "done", createdBy: "s-onb-hub", updatedAt: "09:58" },
     { id: "todo-g4", scope: "group", groupId: "g-loop", title: "p95 250ms 기준 확정", status: "done", createdBy: "s-perf-hub", updatedAt: "11:04" },
     { id: "todo-g5", scope: "group", groupId: "g-loop", title: "Loop 결과 통합", status: "doing", createdBy: "s-perf-hub", updatedAt: "11:58" },
     { id: "todo-s1", scope: "session", groupId: "g-feature", sessionId: "s-onb-web", title: "B안 2단계 레이아웃", status: "done", createdBy: "s-onb-web", updatedAt: "09:42" },
-    { id: "todo-s2", scope: "session", groupId: "g-feature", sessionId: "s-onb-web", title: "모바일 목업 확인", status: "doing", createdBy: "s-onb-web", updatedAt: "09:51" },
+    { id: "todo-s2", scope: "session", groupId: "g-feature", sessionId: "s-onb-web", title: "모바일 목업 확인", status: "done", createdBy: "s-onb-web", updatedAt: "09:51" },
     { id: "todo-s3", scope: "session", groupId: "g-manual", sessionId: "s-sec-audit", title: "A01 재현 테스트", status: "doing", createdBy: "s-sec-audit", updatedAt: "13:33" },
     { id: "todo-s4", scope: "session", groupId: "g-loop", sessionId: "s-perf-query", title: "3회차 EXPLAIN", status: "todo", createdBy: "s-perf-query", updatedAt: "11:52" }
   ],
 
   questions: [
     { id: "q-sec", group: "g-manual", sessionId: "s-sec-audit", status: "pending", createdAt: "13:48", answer: null, answeredAt: null, questions: [{ header: "자격 증명", question: "스테이징 DB 자격 증명을 사용할까요?", multiSelect: false, options: [{ label: "스테이징 사용 (권장)", description: "실제 스키마와 권한을 검사합니다." }, { label: "로컬 픽스처", description: "자격 증명 없이 격리된 픽스처로 검사합니다." }, { label: "건너뛰기", description: "A01을 미검사로 남깁니다." }] }] },
-    { id: "q-onb", group: "g-feature", sessionId: "s-onb-api", status: "pending", createdAt: "09:46", answer: null, answeredAt: null, questions: [{ header: "API 계약", question: "단계 저장 API의 재시도 정책은 무엇으로 할까요?", multiSelect: false, options: [{ label: "멱등 3회 (권장)", description: "company_id + step_id로 중복을 무시합니다." }, { label: "재시도 없음", description: "클라이언트가 직접 재시도합니다." }] }] },
+    { id: "q-onb", group: "g-feature", sessionId: "s-onb-api", status: "answered", createdAt: "09:46", answer: "멱등 3회 (권장)", answeredAt: "09:47", questions: [{ header: "API 계약", question: "단계 저장 API의 재시도 정책은 무엇으로 할까요?", multiSelect: false, options: [{ label: "멱등 3회 (권장)", description: "company_id + step_id로 중복을 무시합니다." }, { label: "재시도 없음", description: "클라이언트가 직접 재시도합니다." }] }] },
+    { id: "q-perf", group: "g-loop", sessionId: "s-perf-query", status: "pending", createdAt: "11:53", answer: null, answeredAt: null, questions: [{ header: "Loop 종료", question: "p95 목표를 250ms로 유지할까요?", multiSelect: false, options: [{ label: "250ms 유지 (권장)", description: "현재 측정값과 기준을 유지합니다." }, { label: "300ms로 완화", description: "범위를 넓혀 다음 회차를 진행합니다." }] }] },
     { id: "q-fix", group: "g-fix", sessionId: "s-fix-sec", status: "answered", createdAt: "15:10", answer: "격리 픽스처 사용", answeredAt: "15:12", questions: [{ header: "재현 환경", question: "세션 고정을 어디에서 재현할까요?", multiSelect: false, options: [{ label: "격리 픽스처", description: "운영 데이터 없이 재현합니다." }, { label: "스테이징", description: "실제 쿠키 흐름을 확인합니다." }] }] }
   ],
 
@@ -198,13 +157,13 @@ window.MOCK = {
   ],
 
   sessions: [
-    { id: "s-onb-hub", title: "온보딩 4레포 통합 관리", wt: null, group: "g-feature", model: "anthropic/claude-sonnet-4.5", state: "running", started: "09:02", last: "09:58", tokens: 18400, parent: null },
-    { id: "s-onb-web", title: "온보딩 위저드 UI", wt: "wt-onb-web", group: "g-feature", model: "anthropic/claude-sonnet-4.5", state: "running", started: "09:10", last: "09:55", tokens: 32100, parent: "s-onb-hub" },
-    { id: "s-onb-api", title: "온보딩 API · 단계 저장", wt: "wt-onb-api", group: "g-feature", model: "anthropic/claude-sonnet-4.5", state: "running", started: "09:12", last: "09:57", tokens: 28700, parent: "s-onb-hub" },
+    { id: "s-onb-hub", title: "온보딩 4레포 통합 관리", wt: null, group: "g-feature", model: "anthropic/claude-sonnet-4.5", state: "done", started: "09:02", last: "09:58", tokens: 18400, parent: null },
+    { id: "s-onb-web", title: "온보딩 위저드 UI", wt: "wt-onb-web", group: "g-feature", model: "anthropic/claude-sonnet-4.5", state: "done", started: "09:10", last: "09:55", tokens: 32100, parent: "s-onb-hub" },
+    { id: "s-onb-api", title: "온보딩 API · 단계 저장", wt: "wt-onb-api", group: "g-feature", model: "anthropic/claude-sonnet-4.5", state: "done", started: "09:12", last: "09:57", tokens: 28700, parent: "s-onb-hub" },
     { id: "s-onb-shared", title: "온보딩 공통 스키마", wt: "wt-onb-shared", group: "g-feature", model: "openai/gpt-5", state: "done", started: "09:15", last: "09:48", tokens: 9600, parent: "s-onb-hub" },
-    { id: "s-onb-worker", title: "온보딩 메일 워커", wt: "wt-onb-worker", group: "g-feature", model: "openai/gpt-5", state: "idle", started: "09:30", last: "09:44", tokens: 5200, parent: "s-onb-api" },
+    { id: "s-onb-worker", title: "온보딩 메일 워커", wt: "wt-onb-worker", group: "g-feature", model: "openai/gpt-5", state: "done", started: "09:30", last: "09:44", tokens: 5200, parent: "s-onb-api" },
     { id: "s-onb-qa", title: "온보딩 E2E 시나리오", wt: "wt-onb-web", group: "g-feature", model: "google/gemini-2.5-pro", state: "done", started: "09:40", last: "09:52", tokens: 7400, parent: "s-onb-web" },
-    { id: "s-onb-docs", title: "온보딩 가이드", wt: "wt-onb-shared", group: "g-feature", model: "google/gemini-2.5-pro", state: "idle", started: "09:50", last: "09:58", tokens: 2600, parent: "s-onb-shared" },
+    { id: "s-onb-docs", title: "온보딩 가이드", wt: "wt-onb-shared", group: "g-feature", model: "google/gemini-2.5-pro", state: "done", started: "09:50", last: "09:58", tokens: 2600, parent: "s-onb-shared" },
 
     { id: "s-bill-hub", title: "구독 결제 3레포 통합", wt: null, group: "g-billing", model: "anthropic/claude-sonnet-4.5", state: "running", started: "10:02", last: "10:58", tokens: 15600, parent: null },
     { id: "s-bill-web", title: "결제 화면 · 플랜 선택", wt: "wt-bill-web", group: "g-billing", model: "anthropic/claude-sonnet-4.5", state: "running", started: "10:10", last: "10:56", tokens: 27400, parent: "s-bill-hub" },

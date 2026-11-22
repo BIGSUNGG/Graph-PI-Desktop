@@ -61,14 +61,25 @@ if (badSlots) errs.push('slot containers without 4 slots: ' + badSlots);
 await shot('planning-feature-worktrees.png');
 await shot('planning-sidebar.png', page.locator('.sidebar'));
 await session('s-onb-api');
-await shot('planning-feature-question.png', page.locator('.sup-question'));
+await tab('audit');
+await shot('planning-session-audit-complete.png', page.locator('.sup-panel'));
+await contains('.sup-panel', '세션 Audit', 'session audit scope');
+await contains('.sup-panel', '승인', 'session audit approved');
 await shot('planning-readonly.png', page.locator('#inspector'));
 await group('g-feature');
 await session('s-onb-hub');
 await tab('audit');
-await shot('planning-audit-inprogress.png', page.locator('.sup-panel'));
-await contains('.sup-panel', 'Audit 세션', 'audit in-progress');
-await contains('.sup-panel', '읽기 전용', 'audit read-only');
+await shot('planning-group-audit-gate.png', page.locator('.audit-gate'));
+await shot('planning-group-audit-skip.png', page.locator('.audit-card.skipped'));
+await contains('.audit-gate', '시작 가능 · 2/2', 'group audit gate ready');
+await contains('.audit-card.skipped', '통합 감사 생략', 'group audit skipped');
+await contains('.audit-card.skipped', 'audit-agent', 'group audit skip actor');
+const gateStyle = await page.locator('.audit-gate.ready').evaluate(el => {
+  const cs = getComputedStyle(el);
+  return { bg: cs.backgroundColor, border: cs.borderTopColor };
+});
+if (gateStyle.bg === 'rgba(0, 0, 0, 0)') errs.push('group audit gate ready has no background');
+if (await page.locator('.sup-panel').innerText().then(t => t.includes('Audit 세션'))) errs.push('standalone audit session still shown');
 await session('s-onb-web');
 await tab('audit');
 await shot('planning-session-audit.png', page.locator('.sup-panel'));
@@ -88,7 +99,7 @@ await contains('.todo-panel', '그룹', 'todo group');
 await contains('.todo-panel', '세션', 'todo session');
 if (await page.locator('.todo-panel button').count()) errs.push('todo panel is not read-only');
 
-// 3. loop preset / integration / fan-out / states
+// 3. loop preset / integration / fan-out / audit
 await group('g-loop');
 await shot('planning-loop-worktrees.png');
 await session('s-perf-hub');
@@ -97,6 +108,12 @@ await shot('planning-hub-goal.png', page.locator('.sup'));
 await shot('planning-hub-autonomy.png', page.locator('.sup'));
 await contains('.sup', '허브 활동', 'hub actions');
 await contains('.sup', '확인 없음', 'hub confirmation-free action');
+await tab('audit');
+await shot('planning-group-audit-wait.png', page.locator('.audit-gate'));
+await contains('.audit-gate', '대기 · 1/3', 'group audit gate wait');
+const waitStyle = await page.locator('.audit-gate.wait').evaluate(el => getComputedStyle(el).backgroundColor);
+if (waitStyle === 'rgba(0, 0, 0, 0)') errs.push('group audit gate wait has no background');
+await tab('goal');
 await shot('planning-hub-aggregate.png', page.locator('.sup'));
 await shot('planning-loop-integration.png', page.locator('.sup-panel'));
 await tab('list');
@@ -111,6 +128,8 @@ await tab('goal');
 await shot('planning-session-goal.png', page.locator('.sup-panel'));
 await go('chat');
 await shot('planning-agent-chat.png', page.locator('#chat-log'));
+await session('s-perf-query');
+await shot('planning-question-pending.png', page.locator('.sup-question'));
 await session('s-perf-cache');
 await tab('loop');
 await shot('planning-loop-states.png', page.locator('.sup-panel'));
@@ -214,16 +233,6 @@ await shot('planning-run-purpose.png');
 await shot('planning-orch.png');
 await go('history');
 await shot('planning-history.png');
-await go('states');
-const stateCards = await page.locator('.state-card').count();
-if (stateCards !== 36) errs.push('state message cards !== 36: ' + stateCards);
-for (const m of ['이 프리셋은 첫 프롬프트가 필요합니다.', 'Audit 세션은 읽기 전용입니다.', 'Loop 상한에 도달했습니다. 범위를 조정하거나 완료를 주장하세요.', '감사 중 워크트리가 변경되었습니다. 다시 감사합니다.', '아카이브를 불러오지 못했습니다.', '세션이 종료되어 질문이 취소되었습니다.', '받는 세션을 재개하지 못했습니다. 메시지를 보관했습니다.', '이 브랜치의 워크트리가 없습니다. 브랜치와 워크트리를 만들까요?', 'TODO를 불러오지 못했습니다.', 'Pi 하네스 패키지가 없어 Goal·List·Loop·Audit·TODO·에이전트 대화·질문을 사용할 수 없습니다.']) {
-  if (!(await page.locator('.state-card').filter({ hasText: m }).count())) errs.push('state card missing: ' + m);
-}
-const vp = page.viewportSize();
-await page.setViewportSize({ width: 1440, height: 1220 });
-await shot('planning-state-messages.png', page.locator('.states'));
-await page.setViewportSize(vp);
 await go('board');
 await group('g-feature');
 const tabs = await page.locator('.sup-tab').count();
@@ -243,8 +252,8 @@ await shot('planning-audit-error.png', page.locator('.sup-panel'));
 await contains('.sup-panel', '오류', 'audit error');
 
 await reload();
-await group('g-feature');
-await session('s-onb-api');
+await group('g-loop');
+await session('s-perf-query');
 await shot('planning-question-persist.png', page.locator('.sup-question'));
 if (await page.locator('.sup-question').count() < 1) errs.push('question not persisted after reload');
 
@@ -263,7 +272,7 @@ await reload();
 // 7. coverage + screenshots
 const md = fs.readFileSync(coveragePath, 'utf8');
 const rows = md.split('\n').filter(l => /^\|\s*\d+\s*\|/.test(l));
-if (rows.length < 49) errs.push('COVERAGE rows < 49: ' + rows.length);
+if (rows.length < 44) errs.push('COVERAGE rows < 44: ' + rows.length);
 for (const r of rows) {
   if (!/`planning-[a-z-]+\.png`/.test(r)) errs.push('COVERAGE row missing screenshot: ' + r.slice(0, 60));
   if (!/(SPEC-hub-orchestration|SPEC-graph-pi-ade|같은 문서)/.test(r)) errs.push('COVERAGE row missing SPEC ref: ' + r.slice(0, 60));
@@ -273,6 +282,6 @@ for (const f of refs) {
   const p = path.join(ev, f);
   if (!fs.existsSync(p) || fs.statSync(p).size === 0) errs.push('missing screenshot ' + f);
 }
-console.log(JSON.stringify({ rows: rows.length, screenshots: refs.length, tabs, slots, messages: stateCards, errors: errs }, null, 2));
+console.log(JSON.stringify({ rows: rows.length, screenshots: refs.length, tabs, slots, errors: errs }, null, 2));
 await browser.close();
 if (errs.length) process.exit(1);
