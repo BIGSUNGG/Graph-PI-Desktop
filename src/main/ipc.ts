@@ -206,7 +206,19 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
    * 수용기준 18: 허브가 남긴 command 레코드를 실행한다.
    * 확인 대화상자가 없으므로 판정(planCommand)이 거부 사유를 남기고, 실행 실패도 기록으로 남긴다.
    */
+  // 펌프와 스냅샷 핸들러가 동시에 돌 수 있다. 같은 요청을 두 번 실행하지 않도록 그룹별로 잠근다.
+  const runningCommands = new Set<string>();
   const deliverCommands = async (groupId: string): Promise<void> => {
+    if (runningCommands.has(groupId)) return;
+    runningCommands.add(groupId);
+    try {
+      await executePendingCommands(groupId);
+    } finally {
+      runningCommands.delete(groupId);
+    }
+  };
+
+  const executePendingCommands = async (groupId: string): Promise<void> => {
     const snapshot = await harness.readSnapshot(groupId);
     const pending = snapshot.commands.filter((record) => record.status === 'pending');
     if (pending.length === 0) return;
@@ -242,7 +254,11 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
         },
       },
     );
-    if (executed > 0) push({ type: 'harness', snapshot: await harness.readSnapshot(groupId) });
+    if (executed > 0) {
+      push({ type: 'harness', snapshot: await harness.readSnapshot(groupId) });
+      // 이름 변경은 그룹 파일 별칭이라, 상태를 다시 밀지 않으면 렌더러가 옛 이름을 계속 그린다.
+      push({ type: 'status', status: await statusOf() });
+    }
   };
 
   const statusOf = async (): Promise<AppStatus> => {
@@ -310,7 +326,7 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
     await ensureHub(groupId, result.sessions);
     // 세션 목록이 갱신되면 대기 메시지를 바로 전달한다(수용기준 24). 실패는 상태 레코드로 남는다.
     void deliverMessages(groupId).catch(() => undefined);
-    void deliverCommands(groupId).catch(() => undefined);
+    void deliverCommands(groupId).catch((error: unknown) => { console.error('[deliverCommands]', error); });
   };
 
   const recordLaunch = async (
@@ -334,6 +350,18 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
   };
 
   // ── 앱 ────────────────────────────────────────────────────────
+  /**
+   * 허브는 렌더러와 무관하게 CLI 로 요청을 남긴다. 화면이 스냅샷을 다시 읽지 않는 동안에도
+   * 요청(18)과 메시지(24)가 처리되도록 주기적으로 한 번씩 돌린다.
+   */
+  const pump = setInterval((): void => {
+    const groupId = settings.get().lastGroupId;
+    if (groupId === null || groupId === '') return;
+    void deliverCommands(groupId).catch((error: unknown) => { console.error('[deliverCommands]', error); });
+    void deliverMessages(groupId).catch(() => undefined);
+  }, 3_000);
+  pump.unref();
+
   handle('app:status', () => statusOf());
   handle('app:settings:get', () => settings.get());
   handle('app:settings:set', async (patch: Partial<Settings>) => {
@@ -389,7 +417,7 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
     const snapshot = await harness.readSnapshot(groupId);
     // 화면이 스냅샷을 받은 뒤 대기 메시지를 전달한다(수용기준 24). 응답을 막지 않으려고 기다리지 않는다.
     void deliverMessages(groupId).catch(() => undefined);
-    void deliverCommands(groupId).catch(() => undefined);
+    void deliverCommands(groupId).catch((error: unknown) => { console.error('[deliverCommands]', error); });
     return snapshot;
   });
   handle('harness:answer', async (request: AnswerQuestionRequest): Promise<MutationResult> => {
