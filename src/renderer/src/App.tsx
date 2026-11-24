@@ -1,12 +1,17 @@
 /**
- * 앱 셸. 목업 골격(mock/index.html:599-697)과 같은 순서: 타이틀바 → 사이드바 → 메인 → 보드/인스펙터.
- * 채팅·오케스트레이션·히스토리·인스펙터 본문은 다른 작업자가 채운다(각 view 파일).
+ * 앱 셸. 목업 골격(mock/index.html:599-697)과 같은 순서:
+ * 레일 상단 헤더(`.titlebar`) → `.workspace`(좌측 레일 + main) → 보드(그래프 + 오른쪽 인스펙터).
+ *
+ * - 화면 전환은 목업처럼 좌측 레일 내비로 옮겼다(Sidebar 안 `ViewSwitch`).
+ * - 인스펙터는 목업처럼 보드 그리드의 오른쪽 고정 폭 열이다(`.board` 2열, mock.css:145).
+ *   예전 하단 리사이즈 패널과 `settings.inspectorHeight` 는 더 이상 쓰지 않는다(계약 필드는 유지).
+ * 채팅·오케스트레이션·히스토리 본문은 각 view 파일이 맡는다.
  */
-import { useEffect, useRef, useState, type ReactElement } from 'react';
+import type { ReactElement } from 'react';
 import type { ViewId } from '../../shared/contract/index.ts';
 import { AppProvider } from './state/app-store.tsx';
-import { useApp, useDispatch } from './state/hooks.ts';
-import { AppBanner, TopBar } from './shell/TopBar.tsx';
+import { useApp } from './state/hooks.ts';
+import { AppBanner, RailHeader } from './shell/RailHeader.tsx';
 import { Sidebar } from './shell/Sidebar.tsx';
 import { GraphCanvas } from './board/GraphCanvas.tsx';
 import { DialogHost, openDialog } from './dialogs/DialogHost.tsx';
@@ -33,22 +38,46 @@ export default function App(): ReactElement {
 function Shell(): ReactElement {
   const { settings } = useApp();
   const meta = VIEW_META[settings.view];
-  // 다이얼로그는 DialogHost 하나만 열고 닫는다. 사이드바·툴바는 이벤트만 던진다.
+  // 다이얼로그는 DialogHost 하나만 열고 닫는다. 레일·상단 액션은 이벤트만 던진다.
   const onCreateGroup = (): void => openDialog('group');
 
   return (
     <div className="app">
-      <TopBar />
+      <RailHeader />
       <div className="workspace">
         <Sidebar onCreateGroup={onCreateGroup} />
         <main className="main">
           <AppBanner />
+          {/* 목업 `header.topbar`(mock/index.html:633-636): 제목 + 설명 + 오른쪽 액션. */}
           <header className="topbar">
             <div>
               <h1>{meta.title}</h1>
               <p className="sub">{meta.sub}</p>
             </div>
-            <div className="actions" />
+            <div className="actions">
+              {settings.view === 'board' ? (
+                <>
+                  <button
+                    className="btn"
+                    type="button"
+                    onClick={() => {
+                      openDialog('worktree');
+                    }}
+                  >
+                    워크트리
+                  </button>
+                  <button
+                    className="btn primary"
+                    type="button"
+                    onClick={() => {
+                      openDialog('session');
+                    }}
+                  >
+                    새 세션
+                  </button>
+                </>
+              ) : null}
+            </div>
           </header>
           <div className="views">
             {settings.view === 'board' ? (
@@ -79,38 +108,8 @@ function Shell(): ReactElement {
   );
 }
 
-/** 목업은 보드 아래가 아니라 오른쪽에 인스펙터를 두지만, 이 앱은 높이 조절 하단 패널이다. */
+/** 목업 보드: 배지 범례 → `.board`(그래프 + 오른쪽 인스펙터) 2열(mock/index.html:633-641). */
 function BoardView(): ReactElement {
-  const { settings } = useApp();
-  const actions = useDispatch();
-  // 드래그 중에는 로컬 값으로만 그리고, 손을 떼는 순간에만 설정(디스크)에 커밋한다.
-  const [dragHeight, setDragHeight] = useState<number | null>(null);
-  const start = useRef<{ y: number; h: number } | null>(null);
-  const height = dragHeight ?? settings.inspectorHeight;
-
-  useEffect(() => {
-    if (dragHeight === null) return;
-    const onMove = (event: PointerEvent): void => {
-      const base = start.current;
-      if (base === null) return;
-      const next = base.h + (base.y - event.clientY);
-      setDragHeight(Math.min(560, Math.max(140, next)));
-    };
-    const onUp = (): void => {
-      start.current = null;
-      setDragHeight((current) => {
-        if (current !== null) actions.setInspectorHeight(current);
-        return null;
-      });
-    };
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
-    return () => {
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-    };
-  }, [dragHeight, actions]);
-
   return (
     <>
       <div className="slot-legend">
@@ -129,23 +128,11 @@ function BoardView(): ReactElement {
         </span>
         <span className="pri">강조: 감사 문제 &gt; 차단·정지 &gt; 질문 &gt; 진행 &gt; 완료</span>
       </div>
-      <div className="board" style={{ gridTemplateColumns: 'minmax(0, 1fr)' }}>
+      <div className="board">
         <div className="graph-wrap">
           <GraphCanvas />
         </div>
-        <div
-          className="insp-resize"
-          role="separator"
-          aria-label="인스펙터 높이 조절"
-          title="끌어서 높이 조절"
-          onPointerDown={(event) => {
-            start.current = { y: event.clientY, h: height };
-            setDragHeight(height);
-          }}
-        />
-        <aside className="inspector" style={{ height, maxHeight: 'none' }}>
-          <InspectorView height={height} />
-        </aside>
+        <InspectorView />
       </div>
     </>
   );

@@ -1,6 +1,9 @@
 /**
- * 하단 인스펙터. 목업(mock/index.html:1540-1805)의 4탭 구조를 그대로 옮기고,
+ * 오른쪽 인스펙터 패널. 목업(mock/index.html:1540-1805)의 4탭 구조를 그대로 옮기고,
  * 탭 본문은 inspector/* 컴포넌트에 맡긴다. 이 파일은 "무엇을 어떤 스코프로 보여줄지"만 정한다.
+ *
+ * 배치: 목업처럼 보드 그리드의 오른쪽 열(`.board` 2열, mock.css:145)이다. 상단에 탭(`.sup-tabs`),
+ * 선택이 없으면 목업 문구(`.empty`)만 보여준다.
  *
  * 수용기준 33: 그룹(허브) 선택 = 허브 4탭 + 하위 세션 집계(세션 수·문제 세션 수·합산 토큰).
  *               세션 선택 = 그 세션 4탭만.
@@ -38,7 +41,7 @@ import { SlotBadges } from '../state/slot-badges.tsx';
 const TAB_LABEL: Record<InspectorTab, string> = { goal: 'Goal', list: 'List', loop: 'Loop', audit: 'Audit' };
 const TAB_ORDER: readonly InspectorTab[] = ['goal', 'list', 'loop', 'audit'];
 
-export function InspectorView({ height }: { height: number }): ReactElement {
+export function InspectorView(): ReactElement {
   const { settings, harness, selection } = useApp();
   const actions = useDispatch();
   const group = useSelectedGroup();
@@ -83,45 +86,63 @@ export function InspectorView({ height }: { height: number }): ReactElement {
       latestAudit.verdict === 'impossible' ||
       latestAudit.verdict === 'error');
 
+  // 목업 인스펙터는 세션/워크트리 선택이 없으면 안내 문구만 그린다(mock/index.html:1789).
+  // 탭은 e2e 계약(e2e/flows.spec.ts:85 `.insp-tabs` 가시성) 때문에 항상 그리고,
+  // 선택할 대상이 없을 때만 목업 문구로 비운다.
+  const empty = group === null && selectedSessionId === null;
+  const title = isHub ? (group === null ? '선택 없음' : group.name) : (session?.title ?? '세션');
+  const counts: Record<InspectorTab, number> = {
+    goal: goal === null ? 0 : 1,
+    list: items.length,
+    loop: loops.length,
+    audit: audits.length,
+  };
+
   return (
-    <section className="inspector" style={{ height }} aria-label="인스펙터" data-inspector-scope={isHub ? 'group' : 'session'}>
+    <aside className="inspector" aria-label="인스펙터" data-inspector-scope={isHub ? 'group' : 'session'}>
       <div className="insp-head">
-        <div className="insp-tabs" role="tablist" aria-label="인스펙터 탭">
-          {TAB_ORDER.map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              role="tab"
-              aria-selected={settings.inspectorTab === tab}
-              className={settings.inspectorTab === tab ? 'insp-tab on' : 'insp-tab'}
-              onClick={() => {
-                actions.setInspectorTab(tab);
-              }}
-            >
-              {TAB_LABEL[tab]}
-            </button>
-          ))}
-        </div>
-        <div className="insp-meta">
-          {aggregate === null ? (
-            session === null ? (
-              <span>{group === null ? '그룹 없음' : '그룹 스코프'}</span>
-            ) : (
-              <span title={session.filePath ?? undefined}>
-                {session.title} · {session.model ?? '모델 미상'} · {formatTokens(session.usage)}
-              </span>
-            )
+        <h2>{title}</h2>
+        <span className="pill">{isHub ? '허브' : '세션'}</span>
+        {slots.length === 0 ? null : <SlotBadges slots={slots} kinds={slotKinds} />}
+      </div>
+      <p className="sub">
+        {aggregate === null ? (
+          session === null ? (
+            <span>{group === null ? '그룹 없음' : '그룹 스코프'}</span>
           ) : (
-            <span data-group-aggregate="true">
-              세션 {aggregate.sessionCount} · 문제 {aggregate.problemCount} · 합산{' '}
-              {formatTokenTotal(aggregate.tokens)}
+            <span title={session.filePath ?? undefined}>
+              {session.title} · {session.model ?? '모델 미상'} · {formatTokens(session.usage)}
             </span>
-          )}
-          {slots.length === 0 ? null : <SlotBadges slots={slots} kinds={slotKinds} />}
-        </div>
+          )
+        ) : (
+          <span data-group-aggregate="true">
+            세션 {aggregate.sessionCount} · 문제 {aggregate.problemCount} · 합산{' '}
+            {formatTokenTotal(aggregate.tokens)}
+          </span>
+        )}
+      </p>
+      <div className="sup-tabs insp-tabs" role="tablist" aria-label="인스펙터 탭">
+        {TAB_ORDER.map((tab) => (
+          <button
+            key={tab}
+            type="button"
+            role="tab"
+            aria-selected={settings.inspectorTab === tab}
+            className={settings.inspectorTab === tab ? 'sup-tab is-active' : 'sup-tab'}
+            onClick={() => {
+              actions.setInspectorTab(tab);
+            }}
+          >
+            {TAB_LABEL[tab]}
+            <span className="cnt">{counts[tab]}</span>
+          </button>
+        ))}
       </div>
 
-      <div className="insp-body">
+      {empty ? (
+        <p className="empty">노드를 선택하면 세션 상세가 보입니다.</p>
+      ) : (
+        <div className="sup-panel insp-body">
         {scopedSessionId === null ? null : (
           <QuestionCards sessionId={scopedSessionId} variant="panel" />
         )}
@@ -156,8 +177,9 @@ export function InspectorView({ height }: { height: number }): ReactElement {
           <AuditTab harness={harness} audits={audits} scope={auditScope} gate={gate} />
         ) : null}
         <TodoBlock harness={harness} sessionId={selectedSessionId} groupWide={isHub} />
-      </div>
-    </section>
+        </div>
+      )}
+    </aside>
   );
 }
 

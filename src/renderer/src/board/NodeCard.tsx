@@ -9,7 +9,14 @@
  */
 import type { ReactElement } from 'react';
 import type { HarnessSnapshot, PiSession, SessionState } from '../../../shared/contract/index.ts';
-import type { BoardHubNode, BoardNode, BoardSessionNode, BoardWorktreeNode, SlotKind } from './layout.ts';
+import type {
+  BoardGroupNode,
+  BoardHubNode,
+  BoardNode,
+  BoardSessionNode,
+  BoardWorktreeNode,
+  SlotKind,
+} from './layout.ts';
 import { BOARD_METRICS, clipText, clockOf, shortModel, tokenK } from './layout.ts';
 import {
   SLOT_COLORS,
@@ -138,9 +145,45 @@ function attentionTitle(session: PiSession, attention: CardAttention): string {
 
 export function NodeCard(props: { node: BoardNode }): ReactElement {
   const node = props.node;
+  if (node.kind === 'group') return <GroupBox node={node} />;
   if (node.kind === 'hub') return <HubCard node={node} />;
   if (node.kind === 'worktree') return <WorktreeCard node={node} />;
   return <SessionCard node={node} />;
+}
+
+/**
+ * 그룹 경계 박스. 목업 렌더(mock/_evidence/mock-board.png)의 점선 박스 + 그룹 제목 줄을 옮겼다.
+ * 점선·글자 색은 클래스(`.board-group-*`)가 정하고 값은 mock.css 끝에만 추가했다.
+ * 클릭 대상이 아니므로 `.node` 를 붙이지 않는다(보드 위임 선택과 섞이지 않게).
+ */
+function GroupBox(props: { node: BoardGroupNode }): ReactElement {
+  const node = props.node;
+  return (
+    <g className="board-group" data-group-box="true">
+      <title>
+        {node.title} · 세션 {node.sessionCount} · 워크트리 {node.worktreeCount}
+      </title>
+      <rect
+        className="board-group-box"
+        x={node.x}
+        y={node.y}
+        width={node.width}
+        height={node.height}
+        rx={12}
+      />
+      <text className="board-group-title" x={node.x + 13} y={node.y + 20}>
+        {node.title}
+      </text>
+      <text
+        className="board-group-meta"
+        x={node.x + node.width - 13}
+        y={node.y + 20}
+        textAnchor="end"
+      >
+        {node.sessionCount} 세션 · 워크트리 {node.worktreeCount}
+      </text>
+    </g>
+  );
 }
 
 function HubCard(props: { node: BoardHubNode }): ReactElement {
@@ -272,6 +315,15 @@ function SessionCard(props: { node: BoardSessionNode }): ReactElement {
       data-external={external ? 'true' : 'false'}
     >
       <title>{attentionTitle(session, attention)}</title>
+      {/* 목업 렌더처럼 각 세션 줄을 밝은 테두리 카드로 감싼다(mock.css 끝 `.board-session-card`). */}
+      <rect
+        className="board-session-card"
+        x={node.columnX + 6}
+        y={node.y - 9}
+        width={node.columnWidth - 12}
+        height={34}
+        rx={7}
+      />
       {session.state === 'running' ? (
         <circle
           className="node-ring"

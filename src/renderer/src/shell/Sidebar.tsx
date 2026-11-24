@@ -28,6 +28,7 @@ import {
   type SlotState,
 } from '../state/selectors.ts';
 import { SlotBadges } from '../state/slot-badges.tsx';
+import { ViewSwitch } from './ViewSwitch.tsx';
 
 /** 워크트리 점 색은 소속 세션 상태 집계에서 나온다(mock/index.html:1065-1067). */
 function worktreeDot(rows: SessionTreeRow[]): string {
@@ -156,6 +157,9 @@ export function Sidebar(props: { onCreateGroup: () => void }): ReactElement {
           <i>K</i>
         </span>
       </button>
+
+      {/* 목업 순서: 검색 → 내비 4개(개수 배지) → 워크스페이스 트리 → 하단(mock/index.html:607-618). */}
+      <ViewSwitch />
 
       <div className="side-sec">
         <div className="side-head">

@@ -56,8 +56,10 @@ export function GraphCanvas(): ReactElement {
       aria-label="세션 그래프"
       onClick={handleClick}
       style={{
-        width: `${layout.width}px`,
-        minWidth: '100%',
+        // 목업은 보드 폭에 맞춰 viewBox 를 축소해 전체를 보여준다(mock `applyView`).
+        // CSS `width:100%` 를 살리고, 보드가 짧을 때는 원래 폭을 넘지 않게 막는다.
+        width: '100%',
+        maxWidth: `${layout.width}px`,
         height: 'auto',
         maxHeight: 'none',
       }}
@@ -77,6 +79,7 @@ export function GraphCanvas(): ReactElement {
 }
 
 function keyOf(node: BoardNode): string {
+  if (node.kind === 'group') return 'group-box';
   if (node.kind === 'hub') return `hub-${node.session.id}`;
   if (node.kind === 'worktree') return `wt-${node.worktree.id}`;
   return `s-${node.session.id}`;

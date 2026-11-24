@@ -47,6 +47,19 @@ export type BoardWorktreeNode = {
   sessionCount: number;
 };
 
+/** 그룹 경계 박스. 목업 렌더(mock/_evidence/mock-board.png)의 점선 박스 + 그룹 제목을 옮긴 것이다. */
+export type BoardGroupNode = {
+  kind: 'group';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  /** 그룹 이름(실데이터). 목업의 `온보딩 4웨이브 통합 진행` 자리. */
+  title: string;
+  sessionCount: number;
+  worktreeCount: number;
+};
+
 /** 세션 노드의 `x`·`y` 는 원 중심(목업 :1320-1322). */
 export type BoardSessionNode = {
   kind: 'session';
@@ -59,7 +72,7 @@ export type BoardSessionNode = {
   depth: number;
 };
 
-export type BoardNode = BoardHubNode | BoardWorktreeNode | BoardSessionNode;
+export type BoardNode = BoardGroupNode | BoardHubNode | BoardWorktreeNode | BoardSessionNode;
 
 /** 목업이 그리는 5종 선. 색·점선은 EdgeLayer 가 종류별로 고른다. */
 export type BoardEdgeKind = 'group-worktree' | 'worktree-parent' | 'parent-session' | 'audit' | 'cross';
@@ -311,6 +324,23 @@ export function layoutBoard(input: LayoutInput): BoardLayout {
   }
 
   const nodes: BoardNode[] = [];
+  // 그룹 경계 박스는 맨 앞에 두어 카드 뒤에 그려지게 한다. 제목 높이(30px)가 위로 확보될 때만 그린다.
+  const boxLeft = Math.min(...all.map((column) => column.x)) - 8;
+  const boxRight = Math.max(...all.map((column) => column.x + column.width)) + 8;
+  const boxTop = Math.min(...all.map((column) => column.y)) - 30;
+  const boxBottom = Math.max(...all.map((column) => column.y + column.height)) + 8;
+  if (boxTop >= 4) {
+    nodes.push({
+      kind: 'group',
+      x: boxLeft,
+      y: boxTop,
+      width: boxRight - boxLeft,
+      height: boxBottom - boxTop,
+      title: activeGroup.name,
+      sessionCount: groupSessions.length,
+      worktreeCount: worktrees.length,
+    });
+  }
   if (hub !== null) {
     nodes.push({
       kind: 'hub',
@@ -357,8 +387,9 @@ export function layoutBoard(input: LayoutInput): BoardLayout {
     nodes,
     edges,
     markers,
-    width: totalWidth,
-    height: Math.max(maxBottom, bottomExtra) + BOARD_METRICS.pad,
+    // 그룹 박스가 컬럼 밖으로 나가도 잘리지 않게 폭·높이를 박스까지 포함한다.
+    width: Math.max(totalWidth, boxRight + BOARD_METRICS.pad),
+    height: Math.max(Math.max(maxBottom, bottomExtra) + BOARD_METRICS.pad, boxBottom + BOARD_METRICS.pad),
   };
 }
 
