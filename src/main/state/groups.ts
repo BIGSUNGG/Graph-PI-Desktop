@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { mkdir, rename, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import type { Group } from '../../shared/contract/app.ts';
+import type { Group, PresetKind } from '../../shared/contract/app.ts';
 import { dataDir } from '../paths.ts';
 
 /** 그룹 정의는 앱 로컬 JSON 에만 저장한다(SQLite 는 검색 인덱스 전용, A12). */
@@ -30,7 +30,16 @@ const EMPTY: StoreFile = { version: 1, groups: [] };
 export type GroupStore = {
   list(): GroupRecord[];
   get(groupId: string): GroupRecord | null;
-  create(input: { name: string; note: string; parentRepo: string; hubCwd: string }): Promise<GroupRecord>;
+  create(input: {
+    name: string;
+    note: string;
+    parentRepo: string;
+    hubCwd: string;
+    /** 그룹 생성 다이얼로그의 프리셋. 없으면 'manual'(구버전 호출자). */
+    preset?: PresetKind;
+    /** 프리셋 지시가 들어간 첫 프롬프트. 없으면 빈 문자열. */
+    firstPrompt?: string;
+  }): Promise<GroupRecord>;
   remove(groupId: string): Promise<void>;
   linkWorktree(groupId: string, worktreeId: string, path: string): Promise<void>;
   unlinkWorktree(worktreeId: string): Promise<void>;
@@ -86,6 +95,8 @@ export function createGroupStore(filePath: string = join(dataDir(), 'groups.json
         note: input.note,
         hubSessionId: null,
         parentRepo: input.parentRepo,
+        preset: input.preset ?? 'manual',
+        firstPrompt: input.firstPrompt ?? '',
         createdAt: new Date().toISOString(),
         worktreeIds: [],
         worktreePaths: {},
@@ -194,6 +205,8 @@ function withDefaults(group: GroupRecord): GroupRecord {
     hubTerminalId: group.hubTerminalId ?? null,
     hubSessionId: group.hubSessionId ?? null,
     hubCwd: group.hubCwd ?? '',
+    preset: group.preset ?? 'manual',
+    firstPrompt: group.firstPrompt ?? '',
     worktreeNames: group.worktreeNames ?? {},
     sessionNames: group.sessionNames ?? {},
   };

@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import type {
@@ -14,6 +14,7 @@ import type {
   HistorySearchResult,
   IndexProgress,
   MutationResult,
+  PresetKind,
   PushEvent,
   RefCandidate,
   RemoveWorktreeRequest,
@@ -28,10 +29,12 @@ import type { PiSession } from '../shared/contract/pi.ts';
 import type { OrcaLaunchReceipt, OrcaSnapshot } from '../shared/contract/orca.ts';
 import { tokenizeRefs } from '../shared/refs/tokenize.ts';
 import { orcaJson } from './orca/cli.ts';
+import { hubInitialPrompt } from './preset.ts';
 
-/** 허브를 새로 띄울 때 쓰는 프롬프트·모델. 그룹 관리 세션의 기본값이다. */
-const HUB_PROMPT = '이 세션은 그룹 관리 허브다. 그룹 폴더에서 워크트리·세션을 관리한다.';
+/** 허브를 새로 띄울 때 쓰는 모델. 프롬프트는 그룹의 프리셋·첫 요청으로 만든다(preset.ts). */
 const HUB_MODEL = 'opencode-go/deepseek-v4.1-flash';
+/** group.preset 이 비어 있는 구버전 레코드의 기본 프리셋. */
+const HUB_FALLBACK_PRESET: PresetKind = 'manual';
 import { groupsDir } from './paths.ts';
 import { orcaBin } from './orca/cli.ts';
 import { planHub, samePath } from './pi/hub.ts';
@@ -40,7 +43,7 @@ import { planDelivery } from './pi/messages.ts';
 import { buildCandidates } from './refs/candidates.ts';
 import { createRef, refTarget } from './refs/create.ts';
 import { resolveTokens, promptWithRefs } from './refs/resolve.ts';
-import type { GroupStore } from './state/groups.ts';
+import type { GroupRecord, GroupStore } from './state/groups.ts';
 import type { PiService } from './pi/index.ts';
 import type { OrcaService } from './orca/index.ts';
 import type { IndexService } from './db/index.ts';
@@ -292,6 +295,20 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
   /** 그룹별 허브 재생성 시도 시각. planHub 의 재시도 간격에 쓴다. */
   const hubAttempts = new Map<string, string>();
 
+  /**
+   * 허브 세션에 넘길 초기 프롬프트(SPEC H3). 프리셋 지시 + 첫 요청을 시스템 지시로 합친다.
+   * 하네스 CLI 는 앱과 같은 체크아웃에 있으므로 app.getAppPath() 기준 상대 경로를 쓴다.
+   */
+  const hubPromptFor = (group: GroupRecord): string =>
+    hubInitialPrompt({
+      groupId: group.id,
+      groupName: group.name,
+      groupCwd: group.hubCwd,
+      cliPath: join(app.getAppPath(), 'packages/harness/src/cli.ts'),
+      preset: group.preset ?? HUB_FALLBACK_PRESET,
+      firstPrompt: group.firstPrompt ?? '',
+    });
+
   /** 수용기준 15: 허브 세션이 사라지면 그룹 폴더에서 새 허브를 띄우거나 기존 세션을 채택한다. */
   const ensureHub = async (groupId: string, active: PiSession[]): Promise<void> => {
     const group = groups.get(groupId);
@@ -311,7 +328,7 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
     }
     if (plan.action !== 'launch') return;
     hubAttempts.set(groupId, new Date().toISOString());
-    const receipt = await orca.launchPi({ cwd: group.hubCwd, prompt: HUB_PROMPT, model: HUB_MODEL });
+    const receipt = await orca.launchPi({ cwd: group.hubCwd, prompt: hubPromptFor(group), model: HUB_MODEL });
     if (!receipt.ok || receipt.result.terminalId === null) return;
     await groups.setHubTerminal(groupId, receipt.result.terminalId);
     await groups.setHubSession(groupId, null);
@@ -452,8 +469,11 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
       note: request.note,
       parentRepo: request.parentRepo,
       hubCwd,
+      preset: request.preset,
+      firstPrompt: request.firstPrompt,
     });
-    const launch = await orca.launchPi({ cwd: hubCwd, prompt: request.firstPrompt, model: request.model });
+    // 첫 허브도 재생성 허브와 같은 초기 컨텍스트(프리셋 지시 + CLI 안내)를 받는다(SPEC H3).
+    const launch = await orca.launchPi({ cwd: hubCwd, prompt: hubPromptFor(group), model: request.model });
     if (launch.ok) {
       await recordLaunch(
         group.id,

@@ -16,6 +16,10 @@ export type Group = {
   hubSessionId: string | null;
   /** 그룹 생성 시 고른 상위 저장소. */
   parentRepo: string;
+  /** 그룹 생성 다이얼로그에서 고른 프리셋. 구버전 레코드는 'manual' 로 읽는다. */
+  preset: PresetKind;
+  /** 프리셋 지시가 들어간 첫 프롬프트. 비어 있으면 Manual 로 보고 사용자 입력을 기다린다. */
+  firstPrompt: string;
 };
 
 /** 목업 `MOCK.worktrees`(:127-159) 의 런타임 필드. loop 는 Loop 탭이 하네스 상태에서 채운다. */
