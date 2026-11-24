@@ -8,5 +8,6 @@ docs/.obsidian/
 .pi-glla
 /node_modules/
 /dist/
+/out/
 /test-results/
 /mock/_evidence/

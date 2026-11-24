@@ -1,0 +1,1017 @@
+{
+  "version": 1,
+  "rows": [
+    {
+      "id": "1",
+      "group": "graph",
+      "package": "P0",
+      "source": "G1",
+      "requirement": "앱 실행 시 보드·대화·오케스트레이션·히스토리 4개 화면 탭이 보인다",
+      "proof": "e2e",
+      "evidence": [
+        "src/renderer/src/App.tsx",
+        "src/renderer/src/shell/ViewSwitch.tsx",
+        "e2e/app.spec.ts",
+        "e2e/flows.spec.ts"
+      ],
+      "status": "done",
+      "note": "4탭 렌더·전환은 e2e/app.spec.ts·flows.spec.ts 로 실측",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "2",
+      "group": "graph",
+      "package": "P1",
+      "source": "G3",
+      "requirement": "Orca 미실행에서도 히스토리·채팅 열람, 제어 버튼 비활성, 상단 배너",
+      "proof": "e2e",
+      "evidence": [
+        "src/main/ipc.ts",
+        "src/renderer/src/shell/TopBar.tsx",
+        "src/renderer/src/dialogs/SessionDialog.tsx",
+        "src/renderer/src/views/HistoryView.tsx"
+      ],
+      "status": "partial",
+      "note": "orca-off 배너·세션 시작 비활성 구현, Orca 오프 E2E 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "3",
+      "group": "graph",
+      "package": "P1",
+      "source": "G11",
+      "requirement": "Orca CLI 실패 시 배너가 뜨고 마지막 성공 값이 유지된다",
+      "proof": "unit",
+      "evidence": [
+        "src/main/orca/poller.ts",
+        "src/main/orca/cli.ts",
+        "scripts/smoke-orca.mjs"
+      ],
+      "status": "partial",
+      "note": "poller mergeOnFailure·stale·배너 구현, poller 단위 테스트 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "4",
+      "group": "hub",
+      "package": "P7",
+      "source": "H20",
+      "requirement": "하네스 없음/버전 불일치 시 안내하고 감독 기능을 비활성화한다",
+      "proof": "e2e",
+      "evidence": [
+        "src/main/harness/bridge.ts",
+        "src/renderer/src/views/InspectorView.tsx",
+        "src/renderer/src/inspector/GoalTab.tsx",
+        "src/renderer/src/inspector/TodoBlock.tsx"
+      ],
+      "status": "partial",
+      "note": "missing/version 배너·4탭 비활성 안내 구현, 픽스처·E2E 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "5",
+      "group": "graph",
+      "package": "P2",
+      "source": "G2",
+      "requirement": "실행 중 세션이 노드로 보이고 세션 파일 성장분이 열람에 반영된다",
+      "proof": "e2e",
+      "evidence": [
+        "src/main/pi/watcher.ts",
+        "src/main/pi/session-file.ts",
+        "src/renderer/src/board/GraphCanvas.tsx"
+      ],
+      "status": "partial",
+      "note": "scan·성장 감지 있으나 watcher 콜백이 푸시에 미연결(자동 반영 없음)",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "6",
+      "group": "graph",
+      "package": "P8",
+      "source": "G4",
+      "requirement": "노드 선택 시 모델·시작 시각·마지막 활동·토큰이 보인다",
+      "proof": "e2e",
+      "evidence": [
+        "src/renderer/src/views/InspectorView.tsx",
+        "src/renderer/src/board/NodeCard.tsx"
+      ],
+      "status": "partial",
+      "note": "카드/사이드바/목록은 모델·토큰·마지막활동 표시, 인스펙터 헤더는 모델·토큰만",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "7",
+      "group": "graph",
+      "package": "P9",
+      "source": "G5, G16",
+      "requirement": "세션선 4종·자식 화살촉·머지선·계층선 없음 + 4곳 계보 트리",
+      "proof": "e2e",
+      "evidence": [
+        "src/renderer/src/board/EdgeLayer.tsx",
+        "src/renderer/src/board/layout.ts",
+        "src/renderer/src/shell/Sidebar.tsx"
+      ],
+      "status": "partial",
+      "note": "보드 선 5종·계보 구현, 채팅 목록은 평면·인스펙터 계보 트리 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "8",
+      "group": "graph",
+      "package": "P10",
+      "source": "G15",
+      "requirement": "그룹 선택 시 그 그룹만 렌더하고 다른 그룹 왕복 후에도 선택이 유지된다",
+      "proof": "e2e",
+      "evidence": [
+        "src/renderer/src/shell/Sidebar.tsx",
+        "src/renderer/src/state/hooks.ts",
+        "src/main/state/store.ts"
+      ],
+      "status": "partial",
+      "note": "그룹 필터·lastGroupId 저장 구현, 왕복 유지 E2E 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "9",
+      "group": "graph",
+      "package": "P10",
+      "source": "G16",
+      "requirement": "워크트리 선택 시 계보 항상 펼침, 세션 선택 시 상세·인라인 채팅 표시",
+      "proof": "e2e",
+      "evidence": [
+        "src/renderer/src/shell/Sidebar.tsx",
+        "src/renderer/src/views/InspectorView.tsx"
+      ],
+      "status": "partial",
+      "note": "워크트리 항상 펼침, 보드/인스펙터 인라인 채팅 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "10",
+      "group": "graph",
+      "package": "P9",
+      "source": "G17",
+      "requirement": "허브 전폭 카드가 최상단, 루트·하위 워크트리 카드가 계층 순서",
+      "proof": "e2e",
+      "evidence": [
+        "src/renderer/src/board/layout.ts",
+        "src/renderer/src/board/NodeCard.tsx",
+        "src/renderer/src/board/GraphCanvas.tsx"
+      ],
+      "status": "partial",
+      "note": "허브 전폭·루트 컬럼 계층 배치 구현, 계층 순서 E2E 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "11",
+      "group": "graph",
+      "package": "P2",
+      "source": "G14",
+      "requirement": "Orca 에 없는 경로 세션은 `외부` 라벨로 남고 제어가 비활성이다",
+      "proof": "e2e",
+      "evidence": [
+        "src/renderer/src/state/selectors.ts",
+        "src/renderer/src/board/NodeCard.tsx",
+        "src/renderer/src/shell/Sidebar.tsx",
+        "src/renderer/src/chat/SessionList.tsx",
+        "e2e/external.spec.ts"
+      ],
+      "status": "done",
+      "note": "isExternalSession 이 그룹 폴더 안·워크트리 밖 세션을 외부로 판정하고 카드·사이드바·세션목록에 외부 배지를, 컴포저에 전송 차단 문구를 표시한다. e2e/external.spec.ts 통과.",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "12",
+      "group": "graph",
+      "package": "P9",
+      "source": "G13",
+      "requirement": "동시 20세션 재그리기에서 끊김이 눈에 띄지 않는다",
+      "proof": "e2e",
+      "evidence": [
+        "e2e/perf.spec.ts"
+      ],
+      "status": "done",
+      "note": "세션 20개에서 첫 보드 그리기 285ms, 화면 왕복 재그리기 115ms(예산 3000/1200ms)로 e2e/perf.spec.ts 통과.",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "13",
+      "group": "hub",
+      "package": "P8",
+      "source": "H43",
+      "requirement": "보드·사이드바에 Goal·Loop·Audit·List 4슬롯 배지가 항상 보이고 문제 우선순위로 강조된다",
+      "proof": "e2e",
+      "evidence": [
+        "src/renderer/src/state/hooks.ts",
+        "src/renderer/src/shell/Sidebar.tsx",
+        "src/renderer/src/board/NodeCard.tsx"
+      ],
+      "status": "partial",
+      "note": "4슬롯 배지·강조 링 구현, 단위·E2E 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "14",
+      "group": "graph",
+      "package": "P11",
+      "source": "G6",
+      "requirement": "새 세션 시작 시 Orca PTY 세션이 생기고 보드에 나타난다",
+      "proof": "cli",
+      "evidence": [
+        "src/main/orca/agents.ts",
+        "src/main/ipc.ts",
+        "scripts/smoke-orca.mjs"
+      ],
+      "status": "partial",
+      "note": "launch→노드 경로 있으나 sessionId 미반환·90초 휴리스틱, 스모크는 pi -p 직접",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "15",
+      "group": "graph",
+      "package": "P11",
+      "source": "G19",
+      "requirement": "허브 제거 시 새 허브가 최상단 카드로 생기고 워크트리 열에 중복되지 않는다",
+      "proof": "unit",
+      "evidence": [
+        "src/main/pi/hub.ts",
+        "src/main/pi/hub.test.ts",
+        "src/main/ipc.ts",
+        "src/renderer/src/board/layout.ts"
+      ],
+      "status": "done",
+      "note": "허브 세션이 사라지면 planHub 이 그룹 폴더 세션을 채택하거나 새 허브를 띄우고(ipc ensureHub), layout 이 허브를 워크트리 열에서 제외해 최상단 카드로만 그린다. hub.test.ts 7건 통과.",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "16",
+      "group": "hub",
+      "package": "P11",
+      "source": "G18, H2",
+      "requirement": "그룹 생성 시 허브 1개·워크트리 0개가 생기고 프리셋 지시가 허브 컨텍스트로 전달된다",
+      "proof": "cli",
+      "evidence": [
+        "src/main/ipc.ts",
+        "src/renderer/src/dialogs/GroupCreateDialog.tsx",
+        "scripts/smoke-orca.mjs"
+      ],
+      "status": "partial",
+      "note": "허브만 launch(워크트리 미생성), preset 지시 텍스트가 전달되지 않음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "17",
+      "group": "hub",
+      "package": "P11",
+      "source": "H1",
+      "requirement": "Feature·Loop 는 첫 프롬프트가 필수이고 Manual 은 비워도 생성된다",
+      "proof": "e2e",
+      "evidence": [
+        "src/renderer/src/dialogs/GroupCreateDialog.tsx",
+        "src/shared/contract/index.ts"
+      ],
+      "status": "partial",
+      "note": "required 플래그로 Feature·Loop 제출 검증, 버튼 비활성 아님·E2E 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "18",
+      "group": "hub",
+      "package": "P11",
+      "source": "H21",
+      "requirement": "허브가 요청한 워크트리·세션 삭제와 이름 변경이 확인 없이 실행되고 보드에 반영된다",
+      "proof": "unit",
+      "evidence": [
+        "src/main/harness/commands.ts",
+        "src/main/harness/commands.test.ts",
+        "src/main/ipc.ts",
+        "src/shared/contract/harness.ts"
+      ],
+      "status": "partial",
+      "note": "허브가 남긴 command 레코드를 확인 없이 실행하고 결과를 같은 id 로 append 한다(워크트리 삭제·세션 터미널 종료·이름 별칭). commands.test.ts 7건 통과. 실제 허브 세션에서 요청→보드 반영까지는 아직 관찰하지 않았다.",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "19",
+      "group": "graph",
+      "package": "P11",
+      "source": "G10",
+      "requirement": "워크트리 삭제는 확인 대화상자 뒤에만 실행되고 확인 후 Orca 목록에서 사라진다",
+      "proof": "e2e",
+      "evidence": [
+        "src/renderer/src/dialogs/WorktreeDialog.tsx",
+        "src/main/orca/worktrees.ts",
+        "src/main/ipc.ts"
+      ],
+      "status": "partial",
+      "note": "worktree:remove IPC 만 있고 확인 대화상자·E2E 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "20",
+      "group": "graph",
+      "package": "P12",
+      "source": "G7",
+      "requirement": "채팅 전송이 PTY 로 전달되고 세션 파일 user 메시지로 반영된다",
+      "proof": "cli",
+      "evidence": [
+        "src/renderer/src/chat/Composer.tsx",
+        "src/main/ipc.ts",
+        "src/main/orca/terminals.ts",
+        "scripts/smoke-orca.mjs"
+      ],
+      "status": "partial",
+      "note": "terminal send --enter 구현, user 메시지 반영 테스트 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "21",
+      "group": "graph",
+      "package": "P2",
+      "source": "G12",
+      "requirement": "모르는 레코드 타입이 섞여도 열람되고 경고 1건만 표시된다",
+      "proof": "e2e",
+      "evidence": [
+        "src/main/pi/session-file.ts",
+        "src/renderer/src/chat/MessageStream.tsx"
+      ],
+      "status": "partial",
+      "note": "unknown-record-type 경고 1건 표시, 미지 타입 픽스처·E2E 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "22",
+      "group": "hub",
+      "package": "P5",
+      "source": "H12",
+      "requirement": "질문이 오면 인스펙터 카드·채팅 인라인에 동시에 보이고 보드·사이드바가 강조된다",
+      "proof": "e2e",
+      "evidence": [
+        "src/renderer/src/chat/QuestionCards.tsx",
+        "src/renderer/src/views/InspectorView.tsx",
+        "src/renderer/src/shell/Sidebar.tsx"
+      ],
+      "status": "partial",
+      "note": "인스펙터 카드·인라인 채팅·강조·? 표시 구현, E2E 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "23",
+      "group": "hub",
+      "package": "P5",
+      "source": "H13",
+      "requirement": "답변 전 대기·답변 후 진행, 앱 재시작 후에도 미답 질문과 강조가 유지된다",
+      "proof": "e2e",
+      "evidence": [
+        "src/renderer/src/chat/QuestionCards.tsx",
+        "src/main/ipc.ts",
+        "src/main/harness/bridge.ts"
+      ],
+      "status": "partial",
+      "note": "answered 레코드 append 로 재시작 유지, 답변 후 재개·유지 검증 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "24",
+      "group": "hub",
+      "package": "P5",
+      "source": "H14",
+      "requirement": "에이전트 메시지가 양쪽 채팅에 보이고 수신 세션이 비활성이면 자동 재개 후 전달된다",
+      "proof": "unit",
+      "evidence": [
+        "src/main/pi/messages.ts",
+        "src/main/pi/messages.test.ts",
+        "src/main/ipc.ts",
+        "src/renderer/src/chat/MessageStream.tsx"
+      ],
+      "status": "partial",
+      "note": "수신 세션이 비활성이면 planDelivery 가 resume 계획을 세우고 ipc 가 launchPi 로 재개한 뒤 전달하며, 메시지는 보낸/받은 두 세션 채팅에 모두 그려진다. messages.test.ts 6건 통과. 실제 pi 재개 실행은 미관찰.",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "25",
+      "group": "hub",
+      "package": "P5",
+      "source": "H15",
+      "requirement": "자동 재개 실패 시 메시지가 보관되고 발신 세션에 실패가 표시된다",
+      "proof": "unit",
+      "evidence": [
+        "src/main/pi/messages.ts",
+        "src/main/pi/messages.test.ts",
+        "src/main/ipc.ts",
+        "src/renderer/src/chat/MessageStream.tsx"
+      ],
+      "status": "partial",
+      "note": "재개·전달 실패를 status failed + failureReason 으로 남겨 보낸 세션 채팅에 .msg-error 로 표시한다. 실패 케이스는 단위 테스트로만 확인했다.",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "26",
+      "group": "hub",
+      "package": "P5",
+      "source": "H5",
+      "requirement": "목업 선택 질문을 받은 세션이 `질문 대기`로 강조되고 답이 전달되어 재개된다",
+      "proof": "e2e",
+      "evidence": [
+        "src/renderer/src/shell/Sidebar.tsx",
+        "src/renderer/src/chat/QuestionCards.tsx",
+        "src/main/ipc.ts"
+      ],
+      "status": "partial",
+      "note": "질문 대기 강조·답 기록 있으나 답변 후 PTY 재개 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "27",
+      "group": "hub",
+      "package": "P13",
+      "source": "H16",
+      "requirement": "`@backend` 입력 시 후보가 뜨고 워크트리가 없으면 확인 팝업 후 브랜치·워크트리를 만든다",
+      "proof": "e2e",
+      "evidence": [
+        "src/main/refs/candidates.ts",
+        "src/renderer/src/chat/Composer.tsx",
+        "src/main/ipc.ts"
+      ],
+      "status": "partial",
+      "note": "후보 표시·refs:create 구현, 확인 팝업·renderer 호출 경로 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "28",
+      "group": "hub",
+      "package": "P13",
+      "source": "H17",
+      "requirement": "워크트리 참조 뒤 `/` 파일·폴더 자동완성이 뜨고 없는 파일·폴더는 생성되지 않는다",
+      "proof": "unit",
+      "evidence": [
+        "src/main/refs/candidates.ts",
+        "src/shared/refs/tokenize.ts",
+        "src/shared/refs/tokenize.test.ts"
+      ],
+      "status": "partial",
+      "note": "워크트리 최상위 후보만, '/' 하위 자동완성 없음(생성 금지는 테스트됨)",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "29",
+      "group": "hub",
+      "package": "P13",
+      "source": "H18",
+      "requirement": "해석 못한 태그가 있으면 전송이 막히고 고친 뒤에만 전송된다",
+      "proof": "unit",
+      "evidence": [
+        "src/shared/refs/tokenize.ts",
+        "src/shared/refs/tokenize.test.ts",
+        "src/renderer/src/chat/Composer.tsx",
+        "src/main/ipc.ts"
+      ],
+      "status": "done",
+      "note": "미해석 전송 차단 + 전송 시 재검증 + 단위테스트",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "30",
+      "group": "hub",
+      "package": "P12",
+      "source": "H19",
+      "requirement": "@참조 대상의 레포·브랜치·워크트리·경로 정보가 세션 프롬프트에 전달된다",
+      "proof": "unit",
+      "evidence": [
+        "src/main/refs/resolve.ts",
+        "src/main/refs/resolve.test.ts",
+        "src/main/ipc.ts"
+      ],
+      "status": "done",
+      "note": "pi:send 가 promptWithRefs 로 레포·브랜치·워크트리 id·절대 경로 블록을 프롬프트에 붙인다(해석 실패 시 원문 유지). resolve.test.ts 7건 통과.",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "31",
+      "group": "graph",
+      "package": "P14",
+      "source": "G8, H45",
+      "requirement": "Run·Task·Worker·Gate 조회 전용이고 Run 의 goal 은 `목적`으로 표기된다",
+      "proof": "cli",
+      "evidence": [
+        "src/main/orca/orchestration.ts",
+        "src/renderer/src/views/OrchestrationView.tsx",
+        "scripts/smoke-orca.mjs"
+      ],
+      "status": "partial",
+      "note": "조회 4종·'목적' 라벨 완비, 화면 표기 검증 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "32",
+      "group": "graph",
+      "package": "P3",
+      "source": "G9",
+      "requirement": "30일 이전 세션도 본문 내용으로 검색해 결과가 나온다",
+      "proof": "e2e",
+      "evidence": [
+        "src/main/db/index.ts",
+        "src/main/db/schema.ts",
+        "src/renderer/src/views/HistoryView.tsx"
+      ],
+      "status": "partial",
+      "note": "FTS5 검색 동작, in_window 필터·단위/E2E 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "33",
+      "group": "hub",
+      "package": "P8",
+      "source": "H44",
+      "requirement": "그룹 인스펙터는 허브 4탭과 하위 세션 집계, 세션 인스펙터는 그 세션 4탭을 보여준다",
+      "proof": "e2e",
+      "evidence": [
+        "src/renderer/src/views/InspectorView.tsx",
+        "src/renderer/src/inspector/GoalTab.tsx",
+        "e2e/flows.spec.ts"
+      ],
+      "status": "partial",
+      "note": "허브 4탭·집계·스코프 전환 구현, E2E 는 탭 전환만",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "34",
+      "group": "hub",
+      "package": "P8",
+      "source": "H9",
+      "requirement": "TODO 3상태 변경이 인스펙터에 읽기 전용으로 표시된다",
+      "proof": "unit",
+      "evidence": [
+        "packages/harness/src/cli.ts",
+        "src/renderer/src/inspector/TodoBlock.tsx"
+      ],
+      "status": "partial",
+      "note": "TODO 3상태 표시 구현, 검증 테스트 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "35",
+      "group": "hub",
+      "package": "P8",
+      "source": "H10",
+      "requirement": "TODO 에 추가·수정·완료·삭제 버튼이 없고 앱에서 상태를 바꿀 수 없다",
+      "proof": "e2e",
+      "evidence": [
+        "src/renderer/src/inspector/TodoBlock.tsx"
+      ],
+      "status": "partial",
+      "note": "TODO 읽기 전용 UI·쓰기 IPC 부재 확인, 부재 고정 테스트 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "36",
+      "group": "hub",
+      "package": "P8",
+      "source": "H11",
+      "requirement": "세션 TODO 는 그 세션과 허브에서, 그룹 TODO 는 그룹 전 세션에서 보인다",
+      "proof": "unit",
+      "evidence": [
+        "src/renderer/src/inspector/TodoBlock.tsx",
+        "src/renderer/src/views/InspectorView.tsx",
+        "packages/harness/src/cli.ts"
+      ],
+      "status": "partial",
+      "note": "groupWide 로 전 세션 TODO 표시, 스코프 규칙 테스트 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "37",
+      "group": "hub",
+      "package": "P4",
+      "source": "H22",
+      "requirement": "Goal 은 완료 조건 1개 이상이어야 하고 조건 변경 시 revision 이 올라 이전 승인이 무효가 된다",
+      "proof": "unit",
+      "evidence": [
+        "src/shared/contract/harness.ts",
+        "packages/harness/src/cli.ts",
+        "packages/harness/src/store.test.ts"
+      ],
+      "status": "done",
+      "note": "완료조건 1개 강제 + revision 상승 시 이전 승인 무효(정책·CLI·테스트)",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "38",
+      "group": "hub",
+      "package": "P4",
+      "source": "H25",
+      "requirement": "Goal 은 Audit 승인으로만 complete 가 되고 미승인 Goal 은 다음 List 항목을 활성화하지 않는다",
+      "proof": "unit",
+      "evidence": [
+        "packages/harness/src/cli.ts",
+        "src/shared/contract/harness.ts",
+        "src/renderer/src/inspector/GoalTab.tsx"
+      ],
+      "status": "partial",
+      "note": "미승인 complete 거부 구현·테스트, 다음 항목 활성화 자체가 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "39",
+      "group": "hub",
+      "package": "P4",
+      "source": "H23",
+      "requirement": "허브 List 항목의 하위 Goal 이 0개면 완료되지 않고 차단으로 표시된다",
+      "proof": "unit",
+      "evidence": [
+        "src/renderer/src/inspector/ListTab.tsx",
+        "src/shared/contract/harness.ts",
+        "packages/harness/src/cli.ts"
+      ],
+      "status": "partial",
+      "note": "itemGate 차단 판정·테스트 있으나 ListTab 은 frozen 일 때만 차단 표시",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "40",
+      "group": "hub",
+      "package": "P4",
+      "source": "H24",
+      "requirement": "childGoalIds 는 배정 완료 시 고정되고 superseded Goal 은 유효 집합에서 빠지며 완료 후 revision 변경이 완료를 되돌리지 않는다",
+      "proof": "unit",
+      "evidence": [
+        "src/renderer/src/inspector/ListTab.tsx",
+        "packages/harness/src/cli.ts",
+        "src/shared/contract/harness.ts"
+      ],
+      "status": "done",
+      "note": "고정·superseded 제외·완료 후 비되돌림 구현+테스트",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "41",
+      "group": "hub",
+      "package": "P4",
+      "source": "H35",
+      "requirement": "항목이 여러 하위 Goal 로 fan-out 되고 유효 하위 Goal 전원 승인 후 다음 항목이 배정된다(미대체 aborted 는 차단)",
+      "proof": "unit",
+      "evidence": [
+        "packages/harness/src/cli.ts",
+        "src/renderer/src/inspector/ListTab.tsx",
+        "src/renderer/src/inspector/AuditTab.tsx"
+      ],
+      "status": "partial",
+      "note": "fan-out 판정·차단·테스트 있으나 배정 실행 경로(nextAssignableItem 호출부 0)",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "42",
+      "group": "hub",
+      "package": "P4",
+      "source": "H34",
+      "requirement": "세션 List 는 승인 후 다음 항목을 자동 활성화하고 aborted 가 나오면 자동 진행을 멈춘다",
+      "proof": "unit",
+      "evidence": [
+        "packages/harness/src/cli.ts",
+        "src/renderer/src/inspector/ListTab.tsx"
+      ],
+      "status": "partial",
+      "note": "aborted 정지 판정·테스트, 자동 활성화 트리거 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "43",
+      "group": "hub",
+      "package": "P4",
+      "source": "H36",
+      "requirement": "하위 Goal 에 부모 허브 항목 ID 가 남고 허브 Audit 탭에 하위 verdict 와 통합 판정이 표시된다",
+      "proof": "unit",
+      "evidence": [
+        "src/shared/contract/harness.ts",
+        "src/renderer/src/inspector/AuditTab.tsx",
+        "packages/harness/src/cli.ts"
+      ],
+      "status": "partial",
+      "note": "parentListItemId·gate 행·통합 판정 구현, auditGate 파생 테스트 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "44",
+      "group": "hub",
+      "package": "P4",
+      "source": "H40",
+      "requirement": "허브 Goal Audit 거부 시 보완 항목이 생기고 불가능은 그룹 차단으로 표시된다",
+      "proof": "unit",
+      "evidence": [
+        "packages/harness/src/cli.ts",
+        "src/renderer/src/inspector/AuditTab.tsx",
+        "src/shared/contract/harness.ts"
+      ],
+      "status": "partial",
+      "note": "impossible 차단 문구 있으나 거부 시 보완 항목 생성 없음, 그룹 차단 아님",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "45",
+      "group": "hub",
+      "package": "P8",
+      "source": "H41",
+      "requirement": "paused Goal 은 사용자·감사 오류·질문·Loop 상한·의존성·대기 사유를 표시한다",
+      "proof": "unit",
+      "evidence": [
+        "src/renderer/src/inspector/GoalTab.tsx",
+        "src/shared/contract/harness.ts",
+        "packages/harness/src/cli.ts"
+      ],
+      "status": "partial",
+      "note": "사유 8종 표시 완비(agent 는 문자열 그대로), 검증 테스트 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "46",
+      "group": "hub",
+      "package": "P6",
+      "source": "H26",
+      "requirement": "자식 없는 세션 Goal 은 세션 Audit 이 되고 그 세션 Audit 탭에만 표시되며 독립 Audit 카드가 없다",
+      "proof": "unit",
+      "evidence": [
+        "src/renderer/src/inspector/AuditTab.tsx",
+        "src/renderer/src/views/InspectorView.tsx",
+        "src/main/pi/lineage.ts",
+        "packages/harness/src/cli.ts"
+      ],
+      "status": "partial",
+      "note": "규칙 함수 테스트됨, 탭 한정 표시·독립 Audit 카드 없음은 코드로만",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "47",
+      "group": "hub",
+      "package": "P6",
+      "source": "H27",
+      "requirement": "자식 있는 세션 Goal 은 직계 자식 settled 후 상위 세션 Audit 을 시작하고 생략 시 complete·사유를 남긴다",
+      "proof": "unit",
+      "evidence": [
+        "src/renderer/src/inspector/AuditTab.tsx",
+        "src/shared/contract/harness.ts",
+        "packages/harness/src/cli.ts"
+      ],
+      "status": "partial",
+      "note": "자식 settled 전 시작 차단 구현·테스트, skipped 기록 경로 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "48",
+      "group": "hub",
+      "package": "P6",
+      "source": "H28",
+      "requirement": "그룹 Audit 은 그룹 Goal 이 만든 세션의 직계 하위 Goal settled 후에만 시작하고 생략 시 사유가 남는다",
+      "proof": "unit",
+      "evidence": [
+        "src/renderer/src/inspector/AuditTab.tsx",
+        "packages/harness/src/cli.ts"
+      ],
+      "status": "partial",
+      "note": "그룹 Audit 시작 조건 구현·테스트, 생략 사유 기록 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "49",
+      "group": "hub",
+      "package": "P6",
+      "source": "H29",
+      "requirement": "그룹 Goal 이 만든 세션에 하위 Goal 이 없으면 그룹 Audit 을 실행하지 않는다",
+      "proof": "unit",
+      "evidence": [
+        "packages/harness/src/cli.ts",
+        "src/renderer/src/inspector/AuditTab.tsx"
+      ],
+      "status": "done",
+      "note": "대상 0 판정이 정책·CLI·화면·테스트로 닫힘",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "50",
+      "group": "hub",
+      "package": "P6",
+      "source": "H30",
+      "requirement": "Audit 은 읽기 전용이고 쓰기 거부·테스트 실행 허용·워크트리 변동 시 error 로 끝난다",
+      "proof": "unit",
+      "evidence": [
+        "packages/harness/src/cli.ts",
+        "src/shared/contract/harness.ts"
+      ],
+      "status": "partial",
+      "note": "판정 술어만 있고 감사 세션 런타임·worktreeState 채움 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "51",
+      "group": "hub",
+      "package": "P6",
+      "source": "H31",
+      "requirement": "auditing 중 소유 세션의 새 작업이 거부되고 Audit 은 시작 시 커밋 해시를 고정한다",
+      "proof": "unit",
+      "evidence": [
+        "src/shared/contract/harness.ts",
+        "packages/harness/src/cli.ts"
+      ],
+      "status": "partial",
+      "note": "커밋 해시 고정 있으나 Goal→auditing 전이 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "52",
+      "group": "hub",
+      "package": "P6",
+      "source": "H32",
+      "requirement": "Audit 거부 시 active 로 돌아가 실패 조건이 표시되고 상한이 남은 Loop 는 계속된다",
+      "proof": "unit",
+      "evidence": [
+        "packages/harness/src/cli.ts",
+        "src/renderer/src/inspector/GoalTab.tsx"
+      ],
+      "status": "partial",
+      "note": "실패·계속 표시 있으나 거부 시 Goal active 복귀 전이 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "53",
+      "group": "hub",
+      "package": "P6",
+      "source": "H33",
+      "requirement": "Audit 불가능은 aborted, 감사 오류는 paused 로 표시된다",
+      "proof": "unit",
+      "evidence": [
+        "packages/harness/src/cli.ts",
+        "src/shared/contract/harness.ts"
+      ],
+      "status": "partial",
+      "note": "verdict→Goal 상태 전이 코드 없음(문구만)",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "54",
+      "group": "hub",
+      "package": "P4",
+      "source": "H42",
+      "requirement": "완료·중단 Goal 과 Audit 이력이 아카이브에 남고 세션 삭제 후에도 조회된다",
+      "proof": "unit",
+      "evidence": [
+        "src/shared/contract/harness.ts",
+        "packages/harness/src/cli.ts",
+        "src/renderer/src/inspector/ListTab.tsx"
+      ],
+      "status": "partial",
+      "note": "archiveGoal 은 archivedAt 만, 아카이브 조회·보존 규칙 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "55",
+      "group": "hub",
+      "package": "P4",
+      "source": "H39",
+      "requirement": "Loop 없는 Goal 은 작업·증거 갱신 없이 다시 완료를 주장할 수 없다",
+      "proof": "unit",
+      "evidence": [
+        "packages/harness/src/policy/goal-policy.ts",
+        "packages/harness/src/policy/policy.test.ts"
+      ],
+      "status": "done",
+      "note": "같은 개정에서 이미 승인된 감사가 있는 Goal 의 재완료 주장을 no-new-evidence 로 막는다(goal-policy.ts:137-145, 정책 테스트 포함).",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "56",
+      "group": "hub",
+      "package": "P6",
+      "source": "H37",
+      "requirement": "Loop 는 측정값·회차·상한·종료 이유를 표시하고 측정값이 없으면 Audit 승인이 종료 조건이 된다",
+      "proof": "unit",
+      "evidence": [
+        "src/renderer/src/inspector/LoopTab.tsx",
+        "packages/harness/src/cli.ts",
+        "src/shared/contract/harness.ts"
+      ],
+      "status": "partial",
+      "note": "측정값·회차·상한 표시+loopOutcome 테스트, 런타임 미연결",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "57",
+      "group": "hub",
+      "package": "P6",
+      "source": "H38",
+      "requirement": "목표 도달 시 paused(audit)→승인 후 done, 상한 도달 시 stopped + Goal paused(loop_bounds)",
+      "proof": "unit",
+      "evidence": [
+        "packages/harness/src/cli.ts",
+        "src/renderer/src/inspector/LoopTab.tsx",
+        "src/renderer/src/inspector/GoalTab.tsx"
+      ],
+      "status": "partial",
+      "note": "onLoopOutcome 매핑 테스트, CLI/앱이 Goal 전이를 하지 않음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "58",
+      "group": "hub",
+      "package": "P15",
+      "source": "H3",
+      "requirement": "Feature 그룹에서 허브가 명세 질문을 보내고 답변 전에는 해당 워크트리를 만들지 않는다",
+      "proof": "manual",
+      "evidence": [
+        "packages/harness/src/cli.ts",
+        "src/main/orca/agents.ts"
+      ],
+      "status": "todo",
+      "note": "허브 명세 질문·워크트리 보류 흐름 없음(실 모델 시나리오 미실행)",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "59",
+      "group": "hub",
+      "package": "P15",
+      "source": "H4",
+      "requirement": "명세 답변 후 백엔드·프론트 워크트리와 세션이 생기고 프론트 목업 질문이 앱에 표시된다",
+      "proof": "manual",
+      "evidence": [
+        "src/main/orca/worktrees.ts",
+        "src/main/orca/agents.ts"
+      ],
+      "status": "todo",
+      "note": "명세 후 백엔드·프론트 자동 생성 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "60",
+      "group": "hub",
+      "package": "P15",
+      "source": "H6",
+      "requirement": "API 중계 메시지가 양쪽 채팅에 `에이전트` 라벨로 남는다",
+      "proof": "manual",
+      "evidence": [
+        "packages/harness/src/cli.ts",
+        "src/renderer/src/chat/MessageStream.tsx"
+      ],
+      "status": "todo",
+      "note": "중계 메시지 '에이전트' 라벨 표시 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "61",
+      "group": "hub",
+      "package": "P15",
+      "source": "H7",
+      "requirement": "Loop 그룹에서 6개 워크트리·세션이 생기고 loop 종료 후 허브 통합 기록이 남는다",
+      "proof": "manual",
+      "evidence": [
+        "src/main/orca/worktrees.ts",
+        "packages/harness/src/cli.ts"
+      ],
+      "status": "todo",
+      "note": "Loop 그룹 6세트 생성·허브 통합 기록 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "62",
+      "group": "hub",
+      "package": "P15",
+      "source": "H8",
+      "requirement": "Manual 그룹은 프리셋 지시 없이 허브가 구조를 정하고 첫 프롬프트가 없으면 입력을 기다린다",
+      "proof": "manual",
+      "evidence": [
+        "src/renderer/src/dialogs/GroupCreateDialog.tsx",
+        "src/main/ipc.ts"
+      ],
+      "status": "partial",
+      "note": "Manual 프리셋 생성·지시 미전달, 허브 구조 자율 결정 미관찰",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "63",
+      "group": "hub",
+      "package": "P15",
+      "source": "H46",
+      "requirement": "하위 Goal 세션 Audit → 자식 있는 세션 상위 Audit → 그룹 Audit/생략 순서로 진행된다",
+      "proof": "manual",
+      "evidence": [
+        "src/renderer/src/inspector/AuditTab.tsx",
+        "packages/harness/src/cli.ts"
+      ],
+      "status": "partial",
+      "note": "시작 조건 판정만 있고 순서 구동 실행기·시나리오 없음",
+      "auditedAt": "2026-11-24"
+    },
+    {
+      "id": "64",
+      "group": "hub",
+      "package": "P15",
+      "source": "H47",
+      "requirement": "Loop 그룹의 6개 하위 Goal 이 생기고 유효 하위 Goal 승인 후 다음 항목이 배정된다",
+      "proof": "manual",
+      "evidence": [
+        "packages/harness/src/cli.ts",
+        "src/renderer/src/inspector/ListTab.tsx"
+      ],
+      "status": "todo",
+      "note": "승인 후 다음 항목 배정 실행·6 Goal 시나리오 없음",
+      "auditedAt": "2026-11-24"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "name": "graph-pi-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Pi 세션·하네스를 로컬에서 조망하는 Electron 데스크톱 앱",
+  "main": "out/main/index.js",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "start": "electron-vite preview",
+    "typecheck": "tsc -p tsconfig.node.json --noEmit && tsc -p tsconfig.web.json --noEmit && tsc -p packages/harness/tsconfig.json --noEmit",
+    "test": "node --test --test-reporter=spec \"src/**/*.test.ts\" \"packages/harness/src/**/*.test.ts\"",
+    "e2e": "playwright test",
+    "smoke:orca": "node scripts/smoke-orca.mjs",
+    "smoke:integration": "node scripts/smoke-integration.mjs",
+    "check:acceptance": "node scripts/check-acceptance.mjs"
+  },
+  "dependencies": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/node": "26.6.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "electron": "45.4.1",
+    "electron-vite": "6.0.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.8"
+  }
+}

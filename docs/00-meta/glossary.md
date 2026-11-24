@@ -1,7 +1,7 @@
 ---
 type: meta
 status: active
-updated: 2026-11-22
+updated: 2026-11-24
 tags: []
 ---
 
@@ -38,7 +38,8 @@ tags: []
 | 하위 세션 | 허브가 그룹 안의 워크트리에 만든 세션. 허브와 에이전트 메시지·에이전트 질문으로 협업한다. | [[SPEC-hub-orchestration]] |
 | 세션 계보 | 부모 세션에서 파생된 자식 세션의 관계. 화면별 표현은 [[SPEC-graph-pi-ade]] §2.3·§2.5·§3.1을 따른다. | [[SPEC-graph-pi-ade]] |
 | 프리셋 | 그룹 생성 시 허브의 초기 작업 구조를 정하는 선택. Feature·Loop·Manual 세 가지이며 그룹 데이터에 저장하지 않는다. | [[SPEC-hub-orchestration]] |
-| Pi 하네스 패키지 | Goal·List·Loop·Audit·TODO·에이전트 대화·에이전트 질문 도구를 Pi 세션에 제공하는 이 저장소의 워크스페이스 패키지. | [[SPEC-hub-orchestration]] |
+| Pi 하네스 패키지 | `packages/harness`(`@graph-pi/harness`) — Goal·List·Loop·Audit·TODO·질문·에이전트 대화 상태를 JSONL 로 남기고 CLI 로만 쓰는 저장소 MIT 라이선스 패키지. 앱은 이 JSONL 을 읽기 전용으로 표시한다. | [[ADR-0007-electron-mock-parity-app]], [[SPEC-hub-orchestration]] |
+| 상태 레코드 | 하네스가 `<dataDir>/groups/<groupId>/state.jsonl` 에 append-only 로 남기는 한 줄. Goal·List·Loop·Audit·TODO·질문·메시지가 레코드 단위로 쌓이고, 앱은 이를 재생해 화면을 그린다. | [[ADR-0007-electron-mock-parity-app]] |
 | 업스트림 Pi 런타임 | Pi 에이전트를 실행하는 상위 하네스 런타임(CLI·에이전트 루프). 이 저장소가 만드는 'Pi 하네스 패키지'와 구분하며, [[ADR-0004-orca-removal-then-pi-runtime-fork]] 3단계의 포크 대상이다. | [[ADR-0004-orca-removal-then-pi-runtime-fork]] |
 | Goal | 완료 조건을 가진 결과 단위. 작업 세션마다 활성 Goal 하나와 대기 Goal 큐를 가지며, 허브는 최상위 Goal 하나와 List를 가진다. `active`·`auditing`·`complete`·`paused`·`aborted` 상태를 쓴다. | [[SPEC-hub-orchestration]] |
 | List | 세션별 Goal 큐. 세션 List 항목은 Goal이고, 허브 List 항목은 Goal이 아니라 허브 Goal이 소유하는 오케스트레이션 작업 묶음이다. | [[SPEC-hub-orchestration]] |
@@ -48,6 +49,7 @@ tags: []
 | 세션 Audit | 자식 Goal이 없는 세션 Goal 완료 주장 시 그 세션에서 작업한 내용만 검사하는 Audit. | [[SPEC-hub-orchestration]] |
 | 상위 세션 Audit | 자식 Goal이 있는 비허브 세션의 Goal을 검사하는 Audit. 직계 자식 Goal의 Audit이 모두 승인·생략된 뒤 자기 작업과 자식 결과의 통합을 검사하며, 감사 에이전트가 생략할 수 있다. 생략하면 상위 Goal은 완료된다. | [[SPEC-hub-orchestration]] |
 | 그룹 Audit | 그룹 Goal이 만든 세션에서 진행된 직계 하위 Goal의 Audit이 모두 승인·생략된 뒤 허브 Goal의 통합 결과를 검사하는 상위 세션 Audit. 해당 하위 Goal이 없으면 실행하지 않으며, 감사 에이전트가 생략할 수 있다. 생략하면 그룹 Goal은 완료된다. | [[SPEC-hub-orchestration]] |
+| 게이트 | 상위 세션·그룹 Audit을 시작할 수 있는지 직계 자식 Goal의 승인·생략 수로 판정하는 조건. 앱은 `시작 가능 · 2/2 세션 승인` 처럼 표시한다. | [[SPEC-hub-orchestration]] |
 | 완료 조건 | Goal이 완료됐다고 판정하는 데 필요한 조건. 하나 이상이어야 하며, Audit이 조건별 증거와 통과/실패를 기록한다. | [[SPEC-hub-orchestration]] |
 | 유효 하위 Goal | 허브 항목의 `childGoalIds` 중 재시도로 대체되지 않은 Goal. `supersededByGoalId`가 있는 Goal은 빠진다. | [[SPEC-hub-orchestration]] |
 | 보완 항목 | 허브 Goal Audit이 거부됐을 때 추가하는 오케스트레이션 항목. | [[SPEC-hub-orchestration]] |
