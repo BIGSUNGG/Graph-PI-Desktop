@@ -1375,8 +1375,9 @@
         return;
       }
       if (pp.col === cp.col) {
-        var lane = cp.col.x + 7 + cp.depth * 2;
-        sessSvg.push(sessionEdge("M" + (pp.x - 6) + " " + pp.y + " L" + lane + " " + pp.y
+        // 부모 depth마다 레인을 분리하고, 부모 노드(r=5)의 하단-왼쪽에서 출발한다.
+        var lane = pp.col.x + 7 + pp.depth * 6;
+        sessSvg.push(sessionEdge("M" + (pp.x - 3) + " " + (pp.y + 5) + " L" + lane + " " + (pp.y + 5)
           + " L" + lane + " " + cp.y + " L" + (cp.x - 6) + " " + cp.y, active));
       } else {
         var laneY = colBottom + 14;

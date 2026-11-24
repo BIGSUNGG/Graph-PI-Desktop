@@ -78,6 +78,25 @@ if (await page.locator('#graph path.sess-edge.is-hub').count() < 1) errs.push('b
 if (await page.locator('#graph path.sess-edge.is-cross').count() < 1) errs.push('board cross-worktree session edge missing');
 if (await page.locator('#graph path.sess-edge:not([marker-end])').count()) errs.push('session edge without direction');
 if (await page.locator('#graph path[stroke="#525252"]').count()) errs.push('worktree hierarchy edge still drawn');
+const overlappingEdges = await page.evaluate(() => {
+  const points = d => [...d.matchAll(/[ML]\s*(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)/g)].map(m => [+m[1], +m[2]]);
+  const edges = [...document.querySelectorAll('#graph path.sess-edge:not(.is-hub):not(.is-cross)')]
+    .map(p => points(p.getAttribute('d')));
+  const segments = [];
+  for (const e of edges) {
+    for (let i = 1; i < e.length; i++) {
+      const a = e[i - 1], b = e[i];
+      if (a[1] === b[1] && a[0] !== b[0]) {
+        segments.push({ parent: e[0].join(','), axis: 'h', at: a[1], from: Math.min(a[0], b[0]), to: Math.max(a[0], b[0]) });
+      } else if (a[0] === b[0] && a[1] !== b[1]) {
+        segments.push({ parent: e[0].join(','), axis: 'v', at: a[0], from: Math.min(a[1], b[1]), to: Math.max(a[1], b[1]) });
+      }
+    }
+  }
+  return segments.some((a, i) => segments.some((b, j) =>
+    i < j && a.parent !== b.parent && a.axis === b.axis && a.at === b.at && a.from < b.to && b.from < a.to));
+});
+if (overlappingEdges) errs.push('same-column session edges overlap');
 if (await page.locator('#graph g[data-session="s-onb-audit"]').count() < 1) errs.push('board audit session node missing');
 await session('s-onb-api');
 await tab('audit');
