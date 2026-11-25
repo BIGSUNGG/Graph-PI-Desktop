@@ -28,6 +28,9 @@ npm install          # 루트에서 1회. npm workspaces(packages/*) 를 함께 
 | `npm test` | `node --test` 단위 테스트 | fail 0 |
 | `npx playwright test` | 실제 Electron 부팅·뷰 전환·다이얼로그 | 전부 통과 |
 | `node scripts/smoke-orca.mjs` | 실제 `orca` CLI 계약(`ok`/`result`) | PASS (Orca 앱이 떠 있어야 함) |
+| `npm run smoke:integration` | 임시 레포 → 워크트리 → 실제 Pi 세션 → 세션 노드 필드 | PASS (steps failed=0) |
+| `npm run smoke:chat` | 실제 PTY 세션 + `sendPrompt` 문장이 세션 파일에 남는지 | PASS (steps failed=0) |
+| `npm run scenario:audit-chain` | Goal→Audit→승인/거부→다음 항목 배정 CLI 체인 | PASS (체크 전부 PASS) |
 
 `npm run dev` 는 개발 실행, `npm start` 는 빌드된 앱 실행이다.
 

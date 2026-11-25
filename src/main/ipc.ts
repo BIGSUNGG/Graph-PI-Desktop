@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
+import { execFile } from 'node:child_process';
 import { mkdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import type {
@@ -29,6 +30,7 @@ import type { PiSession } from '../shared/contract/pi.ts';
 import type { OrcaLaunchReceipt, OrcaSnapshot } from '../shared/contract/orca.ts';
 import { tokenizeRefs } from '../shared/refs/tokenize.ts';
 import { orcaJson } from './orca/cli.ts';
+import { runPendingAudits } from './harness/audit-run.ts';
 import { hubInitialPrompt } from './preset.ts';
 
 /** 허브를 새로 띄울 때 쓰는 모델. 프롬프트는 그룹의 프리셋·첫 요청으로 만든다(preset.ts). */
@@ -68,6 +70,14 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
   const { groups, settings, orca, pi, index, harness } = deps;
   const sessions = new Map<string, SessionRef>();
   let bannerDismissed = false;
+  /** git 명령은 짧게 끊는다 — 감사 시작이 멈추면 pump 전체가 밀린다. */
+  const execFileGit = (args: readonly string[], cwd: string): Promise<{ stdout: string }> =>
+    new Promise((resolve, reject) => {
+      execFile('git', [...args], { cwd, timeout: 15_000 }, (error, stdout) => {
+        if (error === null) resolve({ stdout });
+        else reject(error instanceof Error ? error : new Error(String(error)));
+      });
+    });
   const unsubscribers: Array<() => void> = [];
 
   const push = (event: PushEvent): void => {
@@ -371,11 +381,48 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
    * 허브는 렌더러와 무관하게 CLI 로 요청을 남긴다. 화면이 스냅샷을 다시 읽지 않는 동안에도
    * 요청(18)과 메시지(24)가 처리되도록 주기적으로 한 번씩 돌린다.
    */
+  /**
+   * 감사 세션은 앱이 띄운다(SPEC-hub-orchestration 10.4, 수용기준 46-53). 허브가 Goal 을 `auditing` 으로
+   * 바꾸면 커밋을 고정하고 감사 프롬프트로 세션을 시작해 `audit` 기록(state='running')을 남긴다.
+   * 판정은 감사 세션이 CLI 로 기록하고, 시작 실패는 Goal 을 paused(audit_error)로 남겨 다음 주기에 재시도한다.
+   */
+  const deliverAudits = async (groupId: string): Promise<void> => {
+    const group = groups.get(groupId);
+    if (group === null || group.hubCwd === '') return;
+    const started = await runPendingAudits(
+      groupId,
+      await harness.readSnapshot(groupId),
+      { repoPath: group.hubCwd, model: HUB_MODEL },
+      {
+        headCommit: async (repoPath) => {
+          try {
+            const { stdout } = await execFileGit(['rev-parse', 'HEAD'], repoPath);
+            const commit = stdout.trim();
+            return commit === '' ? null : commit;
+          } catch {
+            return null;
+          }
+        },
+        // 감사 세션 id 는 세션 파일이 생긴 뒤 채워진다. 여기서는 세션을 띄우는 것까지만 책임진다.
+        launch: async ({ cwd, prompt, model }) => {
+          const result = await orca.launchPi({ cwd, prompt, model });
+          if (!result.ok) return { ok: false, error: result.error };
+          return { ok: true, sessionId: null };
+        },
+        append: async (target, record) => { await harness.append(target, record); },
+        now: () => new Date().toISOString(),
+      },
+    );
+    if (started.length === 0) return;
+    push({ type: 'harness', snapshot: await harness.readSnapshot(groupId) });
+  };
+
   const pump = setInterval((): void => {
     const groupId = settings.get().lastGroupId;
     if (groupId === null || groupId === '') return;
     void deliverCommands(groupId).catch((error: unknown) => { console.error('[deliverCommands]', error); });
     void deliverMessages(groupId).catch(() => undefined);
+    void deliverAudits(groupId).catch((error: unknown) => { console.error('[deliverAudits]', error); });
   }, 3_000);
   pump.unref();
 

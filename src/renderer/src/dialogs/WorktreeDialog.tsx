@@ -2,11 +2,15 @@
  * 워크트리 추가 다이얼로그. 목업 `worktreeDialog` 의 "새 워크트리" 탭(mock/index.html:2537-2639)을 옮겼다.
  * 저장소·이름·브랜치·베이스·부모 워크트리·모델 → `worktree:create`.
  * 목업의 "기존 불러오기" 탭은 계약에 해당 IPC 가 없어 넣지 않는다.
+ * 대신 목업 인스펙터의 `삭제`(mock/index.html:1778, 2663-2690)를 이 다이얼로그에 모아,
+ * 워크트리 삭제는 항상 확인 다이얼로그(`worktree-delete`)를 거치게 한다.
  */
 import { useState, type ReactElement } from 'react';
 import type { GraphPiApi, IpcChannel, IpcRequest, IpcResult } from '../../../shared/contract/index.ts';
 import { MODELS } from '../../../shared/contract/index.ts';
 import { useApp, useSelectedGroup, useVisibleWorktrees } from '../state/hooks.ts';
+// 순환 import 처럼 보이지만, 이 함수는 클릭 시점에만 쓰인다(모듈 평가 중에는 접근하지 않는다).
+import { openWorktreeDeleteDialog } from './DialogHost.tsx';
 
 /** `window.api` 는 preload 없이 렌더되는 단위 환경에서 undefined 일 수 있다. */
 function readApi(): GraphPiApi | null {
@@ -32,7 +36,7 @@ async function invoke<K extends IpcChannel>(
 }
 
 export function WorktreeDialog(props: { onClose: () => void }): ReactElement {
-  const { orca } = useApp();
+  const { orca, selection } = useApp();
   const group = useSelectedGroup();
   const worktrees = useVisibleWorktrees();
   const [repo, setRepo] = useState<string>(orca.projects[0]?.id ?? '');
@@ -182,11 +186,43 @@ export function WorktreeDialog(props: { onClose: () => void }): ReactElement {
           </div>
 
           {error === null ? null : (
-            <label className="field err">
+            <div className="field err">
               <span className="err-txt">{error}</span>
-            </label>
+            </div>
           )}
         </div>
+
+        <div className="card-h">기존 워크트리 삭제</div>
+        {worktrees.length === 0 ? (
+          <p className="muted">워크트리 없음</p>
+        ) : (
+          <div className="dlg-list">
+            {worktrees.map((worktree) => {
+              const isSelected =
+                selection.kind === 'worktree' && selection.worktreeId === worktree.id;
+              return (
+                <div className="dlg-row" key={worktree.id}>
+                  <span className="grow">
+                    {worktree.name} · {worktree.branch}
+                  </span>
+                  {isSelected ? <span className="pill">선택</span> : null}
+                  <button
+                    className="btn danger"
+                    type="button"
+                    disabled={busy}
+                    title={`${worktree.name} 삭제 (확인 필요)`}
+                    onClick={() => {
+                      // 확인 다이얼로그가 열리고, 실제 삭제는 그 창의 `삭제` 클릭 뒤에만 실행된다.
+                      openWorktreeDeleteDialog(worktree.id);
+                    }}
+                  >
+                    삭제
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="dlg-actions">

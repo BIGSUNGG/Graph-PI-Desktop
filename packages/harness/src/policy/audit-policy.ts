@@ -8,6 +8,7 @@ import type {
   AuditRecord,
   AuditVerdict,
   GoalRecord,
+  ListItemRecord,
 } from '../../../../src/shared/contract/harness.ts';
 
 /** 같은 Goal 의 Audit 이력에서 가장 최근(seq 최대) 기록을 고른다 — 판정은 최신 것만 유효하다. */
@@ -170,4 +171,61 @@ export function applyAuditVerdict(
       // 감사 자체가 실패한 경우는 재시도 여지가 있어 중단 대신 오류 사유로 멈춘다(§53).
       return { ...base, status: 'paused', pauseReason: 'audit_error' };
   }
+}
+
+/**
+ * 보완 항목 생성 입력. `id` 는 호출부가 그룹 안에서 고유하게 만들고,
+ * `queueOrder` 는 대기열 정수 순서다.
+ */
+export type ComplementItemInput = {
+  /** 새 List 항목 id. */
+  id: string;
+  /**
+   * 대기열 정수 순서. 생략하면 원 항목 바로 다음(`item.queueOrder + 1`)이다.
+   * 뒤 항목을 밀어야 하면 호출부가 밀린 값을 넘긴다.
+   */
+  queueOrder?: number;
+};
+
+/**
+ * Audit 거부 시 보완 항목을 만든다(§10.4, acceptance 611행).
+ * 원 항목은 건드리지 않고 대기(`queued`) 상태의 새 레코드를 돌려준다 — 저장은 호출부가 한다.
+ * `queueOrder` 는 정수만 쓴다(소수 순서는 정렬·표시를 흔든다).
+ */
+export function complementItemFor(
+  item: ListItemRecord,
+  reason: string,
+  at: string,
+  input: ComplementItemInput,
+): ListItemRecord {
+  const requested = input.queueOrder ?? item.queueOrder + 1;
+  // 계약의 queueOrder 는 정수다 — 비정수·소수가 들어오면 원 항목 다음 값으로 되돌린다.
+  const queueOrder = Number.isInteger(requested) ? requested : item.queueOrder + 1;
+
+  return {
+    ...item,
+    id: input.id,
+    at,
+    // 보완 항목은 새 작업 단위다 — 거부된 Goal 연결(goalId)을 물려받지 않는다.
+    goalId: null,
+    parentGoalId: item.parentGoalId,
+    title: `보완: ${item.title}`,
+    state: 'queued',
+    queueOrder,
+    // 새 항목이므로 하위 Goal 배정·진행 기록은 비운다.
+    childGoalIds: [],
+    supersededGoalIds: [],
+    childGoalsFrozen: false,
+    childGoalsFrozenAt: null,
+    integrationNote: reason,
+    createdAt: at,
+    activatedAt: null,
+    completedAt: null,
+    completedRevision: null,
+  };
+}
+
+/** Audit 거부일 때만 보완 항목이 필요하다 — 승인·불가능·오류는 보완 대상이 아니다(§10.4). */
+export function needsComplement(audit: { verdict: AuditVerdict | null }): boolean {
+  return audit.verdict === 'rejected';
 }

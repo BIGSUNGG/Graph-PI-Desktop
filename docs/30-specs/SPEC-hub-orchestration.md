@@ -569,52 +569,52 @@ Audit 세션은 읽기 전용 도구만 받는다. 감사 세션이 파일을 �
 
 완료 조건은 두 종류다. `[보장]`은 앱·하네스가 코드로 보장하는 조건이고, `[시나리오]`는 허브(LLM)가 프리셋 지시를 따르는지 목업·실행으로 확인하는 조건이다. `[시나리오]`는 결정적 보장이 아니며, 실패하면 프리셋 지시를 보강한다.
 
-- [ ] [보장] Feature·Loop 그룹 생성 화면에서 첫 프롬프트가 비어 있으면 생성 버튼이 비활성이고, Manual은 비워도 생성된다.
-- [ ] [보장] 그룹을 만들면 허브 세션 1개와 워크트리 0개가 생기고, 프리셋 지시가 허브 초기 컨텍스트로 전달된다.
+- [x] [보장] Feature·Loop 그룹 생성 화면에서 첫 프롬프트가 비어 있으면 생성 버튼이 비활성이고, Manual은 비워도 생성된다. — 근거: src/renderer/src/dialogs/GroupCreateDialog.tsx(promptMissing → 생성 비활성), [[2026-11-25]]
+- [x] [보장] 그룹을 만들면 허브 세션 1개와 워크트리 0개가 생기고, 프리셋 지시가 허브 초기 컨텍스트로 전달된다. — 근거: src/main/ipc.ts(group:create → ensureHub), src/main/pi/hub.test.ts, [[2026-11-25]]
 - [x] [시나리오] Feature 그룹에서 허브가 사용자에게 명세 질문을 보내고, 답변 전에는 그 작업의 워크트리를 만들지 않는다. — 근거: 2026-11-25 관찰 실행 `graph-pi-scenario-BjSUko`(질문 4건·워크트리 0개), `scripts/scenario-hub.mjs`, [[2026-11-25]]
 - [x] [시나리오] 명세 답변 후 백엔드·프론트엔드 워크트리와 세션이 생기고, 프론트엔드 세션의 목업 선택 질문이 앱에 표시된다. — 근거: 같은 실행 2단계(워크트리 3개·목업 후보 3개·`ask-mock-select` 질문), [[2026-11-25]]
-- [ ] [보장] 목업 선택 질문을 받은 세션이 `질문 대기`로 강조되고, 사용자가 시안을 고르면 답이 그 세션에 전달되어 재개된다.
+- [x] [보장] 목업 선택 질문을 받은 세션이 `질문 대기`로 강조되고, 사용자가 시안을 고르면 답이 그 세션에 전달되어 재개된다. — 근거: src/renderer/src/chat/QuestionCards.tsx, src/renderer/src/state/selectors.test.ts, e2e/live.spec.ts, [[2026-11-25]]
 - [x] [시나리오] 프론트엔드가 API를 요청하면 허브를 통해 백엔드 API 정보가 전달되고, 그 메시지가 프론트엔드와 허브 채팅에 `에이전트` 라벨로 남는다. — 근거: 관찰 실행 `graph-pi-scenario-DmNw22`(서로 다른 `toSessionId` 2건, JWT 계약 본문), 라벨 렌더는 `src/renderer/src/chat/MessageStream.tsx`, [[2026-11-25]]
 - [x] [시나리오] Loop 그룹에서 프론트엔드·백엔드 × perf·security·architecture 워크트리와 세션이 생기고, 각 loop 종료 후 허브의 통합 기록이 남는다. — 근거: 관찰 실행 `graph-pi-loop-SO4K5q`(loop 12건·신규 워크트리 7개·audit 6건), `scripts/scenario-loop.mjs`, [[2026-11-25]]
-- [ ] [시나리오] Manual 그룹은 프리셋 지시 없이 허브가 구조를 정하고, 첫 프롬프트가 없으면 입력을 기다린다.
+- [x] [시나리오] Manual 그룹은 프리셋 지시 없이 허브가 구조를 정하고, 첫 프롬프트가 없으면 입력을 기다린다. — 근거: src/main/preset.ts(MANUAL_WAIT_LINE·manual 지시), src/main/preset.test.ts(첫 프롬프트 없으면 대기), [[2026-11-25]]
 - [x] [보장] 하네스 TODO 도구로 그룹 TODO와 세션 TODO를 만들고 상태를 `할 일`·`진행 중`·`완료`로 바꾸면 인스펙터에 읽기 전용으로 표시된다. — 근거: e2e/inspector.spec.ts(CLI 로 심은 TODO 3상태), [[2026-11-25]]
 - [x] [보장] 인스펙터의 TODO에 추가·수정·완료·삭제 버튼이 없고, 앱에서 상태를 바꿀 수 없다.
 - [x] [보장] 세션 TODO는 그 세션과 허브에서만 보이고, 그룹 TODO는 그룹의 모든 세션에서 보인다. — 근거: e2e/inspector.spec.ts(스코프 전환), [[2026-11-25]]
 - [x] [보장] 에이전트 질문이 오면 인스펙터 카드와 채팅 인라인에 동시에 표시되고, 보드 카드·사이드바 세션 행이 강조된다. — 근거: e2e/live.spec.ts(상태 파일 변경만으로 카드 동시 갱신), src/main/ipc.ts sync, [[2026-11-25]]
 - [x] [보장] 답변 전까지 세션이 대기하고, 답변 후 이어서 진행한다. 앱을 다시 열어도 답하지 않은 질문과 강조가 유지된다. — 근거: e2e/live.spec.ts(재시작 후 미답 질문 유지), src/main/harness/bridge.ts last-wins, [[2026-11-25]]
-- [ ] [보장] 에이전트 메시지가 받은 세션과 보낸 세션 채팅 모두에 표시되고, 받는 세션이 비활성이면 자동 재개 후 전달된다.
-- [ ] [보장] 자동 재개에 실패하면 메시지가 보관되고 보낸 세션에 실패가 표시된다.
-- [ ] [보장] `@backend`를 입력하면 프로젝트·브런치·워크트리 후보가 뜨고, 워크트리가 없으면 확인 팝업 후 브랜치와 워크트리가 생성된다.
-- [ ] [보장] 워크트리 참조 뒤 `/`를 입력하면 그 워크트리의 파일·폴더 자동완성이 뜨고, 없는 파일·폴더는 생성되지 않는다.
-- [ ] [보장] 해석하지 못한 태그가 있으면 전송이 막히고, 태그를 고친 뒤에만 전송된다.
-- [ ] [보장] @참조를 포함한 메시지를 보내면 대상의 레포지토리·브랜치·워크트리·경로 정보가 세션 프롬프트에 전달된다.
-- [ ] [보장] 하네스 패키지가 없거나 버전이 맞지 않으면 앱이 안내하고 Goal·List·Loop·Audit·TODO·에이전트 대화·질문 기능을 비활성화한다.
-- [ ] [보장] 허브가 요청한 워크트리·세션 삭제와 이름 변경이 사용자 확인 없이 실행되고 보드에 반영된다.
-- [ ] [보장] Goal은 완료 조건이 하나 이상 있어야 만들어지고, 완료 조건이 바뀌면 revision이 올라가 이전 Audit 승인이 무효가 된다.
-- [ ] [보장] 허브 List 항목에 하위 Goal이 0개면 완료되지 않고 차단으로 표시된다.
-- [ ] [보장] 허브 항목의 `childGoalIds`는 배정 완료 시 고정되고, `supersededByGoalId`로 대체된 Goal은 유효 집합에서 빠지며, 완료 후 revision 변경은 완료를 되돌리지 않는다.
-- [ ] [보장] Goal은 Audit 승인으로만 `complete`가 되고, 승인 없는 Goal은 List 다음 항목을 활성화하지 않는다.
-- [ ] [보장] 자식 Goal이 없는 세션 Goal 완료를 주장하면 세션 Audit이 만들어지고, 그 세션의 Audit 탭에 표시된다. 보드·사이드바에는 독립 Audit 카드가 없고, 계보의 감사 세션은 `Audit` 배지가 붙은 자식 세션으로 표시된다.
-- [ ] [보장] 자식 Goal이 있는 세션 Goal은 직계 자식 Goal의 Audit이 모두 승인·생략된 뒤 상위 세션 Audit을 시작하고, 자기 작업과 자식 결과를 통합 검사한다. 감사 에이전트가 생략하면 상위 Goal은 complete가 되며 사유가 남는다.
-- [ ] [보장] 그룹 Audit은 그룹 Goal이 만든 세션에서 진행된 직계 하위 Goal의 최신 Audit이 모두 승인·생략된 뒤에만 시작할 수 있고, 감사 에이전트가 생략하면 그룹 Goal은 complete가 되며 생략 사유가 남는다.
-- [ ] [보장] 그룹 Goal이 만든 세션에서 진행된 하위 Goal이 없으면 그룹 Audit을 실행하지 않는다.
-- [ ] [보장] Audit은 읽기 전용이며 쓰기 도구 호출이 거부된다. 테스트·측정 명령은 실행할 수 있고, 감사 중 워크트리가 바뀌면 verdict 없이 `error`로 끝난다.
-- [ ] [보장] Goal이 `auditing`이면 소유 세션의 새 작업이 거부되고, Audit은 시작 시 커밋 해시를 고정한다.
-- [ ] [보장] Audit 거부 시 Goal이 `active`로 돌아가 실패 조건이 표시되고, 상한이 남은 Loop는 계속된다.
-- [ ] [보장] Audit 불가능은 Goal `aborted`, 감사 오류는 Goal `paused`로 표시된다.
-- [ ] [보장] 세션 List는 Audit 승인 후 다음 항목을 자동 활성화하고, `aborted`가 나오면 자동 진행을 멈춘다.
-- [ ] [보장] 허브 List 항목 하나가 여러 하위 Goal로 fan-out되고, 유효 하위 Goal이 모두 승인되어야 다음 항목이 배정된다. 대체되지 않은 `aborted`가 있으면 차단된다.
-- [ ] [보장] 하위 Goal에 부모 허브 항목 ID가 남고, 허브 Audit 탭에 하위 verdict와 그룹 통합 판정이 표시된다.
-- [ ] [보장] Loop는 측정값·회차·상한·종료 이유를 표시하고, 측정값이 없으면 Audit 승인을 종료 조건으로 쓴다.
-- [ ] [보장] Loop 측정 목표 도달 시 `paused`(`audit`)로 두고 Audit 승인 후 `done`이 되며, 상한 도달 시 `stopped`와 Goal `paused`(`loop_bounds`)로 표시된다.
-- [ ] [보장] Loop 없는 Goal은 Audit 거부 후 작업·증거 갱신 없이 다시 완료를 주장할 수 없다.
-- [ ] [보장] 허브 Goal Audit 거부 시 보완 항목이 생성되고, 허브 Goal 불가능은 그룹 차단으로 표시된다.
+- [x] [보장] 에이전트 메시지가 받은 세션과 보낸 세션 채팅 모두에 표시되고, 받는 세션이 비활성이면 자동 재개 후 전달된다. — 근거: src/main/pi/messages.ts, src/main/pi/messages.test.ts, src/renderer/src/chat/MessageStream.tsx, [[2026-11-25]]
+- [x] [보장] 자동 재개에 실패하면 메시지가 보관되고 보낸 세션에 실패가 표시된다. — 근거: src/main/pi/messages.test.ts(planDelivery fail), src/renderer/src/chat/MessageStream.tsx(.msg-error), [[2026-11-25]]
+- [x] [보장] `@backend`를 입력하면 프로젝트·브런치·워크트리 후보가 뜨고, 워크트리가 없으면 확인 팝업 후 브랜치와 워크트리가 생성된다. — 근거: src/renderer/src/chat/Composer.tsx(refs:create 확인 항목), src/main/ipc.ts(refs:create), [[2026-11-25]]
+- [x] [보장] 워크트리 참조 뒤 `/`를 입력하면 그 워크트리의 파일·폴더 자동완성이 뜨고, 없는 파일·폴더는 생성되지 않는다. — 근거: src/main/refs/candidates.test.ts(파일·폴더 후보), src/main/refs/candidates.ts, [[2026-11-25]]
+- [x] [보장] 해석하지 못한 태그가 있으면 전송이 막히고, 태그를 고친 뒤에만 전송된다. — 근거: src/main/refs/tokenize.test.ts, src/renderer/src/chat/Composer.tsx(unsendable), [[2026-11-25]]
+- [x] [보장] @참조를 포함한 메시지를 보내면 대상의 레포지토리·브랜치·워크트리·경로 정보가 세션 프롬프트에 전달된다. — 근거: src/main/ipc.ts(pi:send promptWithRefs), src/main/refs/resolve.test.ts, [[2026-11-25]]
+- [x] [보장] 하네스 패키지가 없거나 버전이 맞지 않으면 앱이 안내하고 Goal·List·Loop·Audit·TODO·에이전트 대화·질문 기능을 비활성화한다. — 근거: e2e/banner.spec.ts, src/renderer/src/views/InspectorView.tsx, [[2026-11-25]]
+- [x] [보장] 허브가 요청한 워크트리·세션 삭제와 이름 변경이 사용자 확인 없이 실행되고 보드에 반영된다. — 근거: e2e/commands.spec.ts, src/main/harness/commands.test.ts, src/main/ipc.ts(deliverCommands), [[2026-11-25]]
+- [x] [보장] Goal은 완료 조건이 하나 이상 있어야 만들어지고, 완료 조건이 바뀌면 revision이 올라가 이전 Audit 승인이 무효가 된다. — 근거: packages/harness/src/cli.ts(goal 생성 시 --check 필수), packages/harness/src/policy/goal-policy.ts(bumpGoalRevision), [[2026-11-25]]
+- [x] [보장] 허브 List 항목에 하위 Goal이 0개면 완료되지 않고 차단으로 표시된다. — 근거: packages/harness/src/policy/audit-gate.test.ts(itemGate), [[2026-11-25]]
+- [x] [보장] 허브 항목의 `childGoalIds`는 배정 완료 시 고정되고, `supersededByGoalId`로 대체된 Goal은 유효 집합에서 빠지며, 완료 후 revision 변경은 완료를 되돌리지 않는다. — 근거: packages/harness/src/policy/audit-gate.test.ts(freezeChildGoals), [[2026-11-25]]
+- [x] [보장] Goal은 Audit 승인으로만 `complete`가 되고, 승인 없는 Goal은 List 다음 항목을 활성화하지 않는다. — 근거: packages/harness/src/policy/goal-policy.ts, packages/harness/src/cli.ts(goal complete), [[2026-11-25]]
+- [x] [보장] 자식 Goal이 없는 세션 Goal 완료를 주장하면 세션 Audit이 만들어지고, 그 세션의 Audit 탭에 표시된다. 보드·사이드바에는 독립 Audit 카드가 없고, 계보의 감사 세션은 `Audit` 배지가 붙은 자식 세션으로 표시된다. — 근거: packages/harness/src/policy/audit-gate.test.ts(requiresSessionAudit), src/main/harness/audit-run.ts, [[2026-11-25]]
+- [x] [보장] 자식 Goal이 있는 세션 Goal은 직계 자식 Goal의 Audit이 모두 승인·생략된 뒤 상위 세션 Audit을 시작하고, 자기 작업과 자식 결과를 통합 검사한다. 감사 에이전트가 생략하면 상위 Goal은 complete가 되며 사유가 남는다. — 근거: packages/harness/src/policy/audit-gate.test.ts(부모 감사 게이트), [[2026-11-25]]
+- [x] [보장] 그룹 Audit은 그룹 Goal이 만든 세션에서 진행된 직계 하위 Goal의 최신 Audit이 모두 승인·생략된 뒤에만 시작할 수 있고, 감사 에이전트가 생략하면 그룹 Goal은 complete가 되며 생략 사유가 남는다. — 근거: packages/harness/src/policy/audit-gate.test.ts(그룹 감사 판정), [[2026-11-25]]
+- [x] [보장] 그룹 Goal이 만든 세션에서 진행된 하위 Goal이 없으면 그룹 Audit을 실행하지 않는다. — 근거: packages/harness/src/policy/audit-policy.ts(requiresGroupAudit), audit-gate.test.ts, [[2026-11-25]]
+- [x] [보장] Audit은 읽기 전용이며 쓰기 도구 호출이 거부된다. 테스트·측정 명령은 실행할 수 있고, 감사 중 워크트리가 바뀌면 verdict 없이 `error`로 끝난다. — 근거: packages/harness/src/policy/audit-policy.ts(auditWriteRefused), [[2026-11-25]]
+- [x] [보장] Goal이 `auditing`이면 소유 세션의 새 작업이 거부되고, Audit은 시작 시 커밋 해시를 고정한다. — 근거: packages/harness/src/policy/audit-policy.ts(auditWriteRefused·pinCommit), [[2026-11-25]]
+- [x] [보장] Audit 거부 시 Goal이 `active`로 돌아가 실패 조건이 표시되고, 상한이 남은 Loop는 계속된다. — 근거: packages/harness/src/policy/audit-policy.ts(applyAuditVerdict), [[2026-11-25]]
+- [x] [보장] Audit 불가능은 Goal `aborted`, 감사 오류는 Goal `paused`로 표시된다. — 근거: packages/harness/src/policy/audit-policy.ts(applyAuditVerdict), [[2026-11-25]]
+- [x] [보장] 세션 List는 Audit 승인 후 다음 항목을 자동 활성화하고, `aborted`가 나오면 자동 진행을 멈춘다. — 근거: packages/harness/src/policy/list-run.ts, packages/harness/src/policy/list-run.test.ts, `node packages/harness/src/cli.ts goal complete` 관찰(item-1 closed, item-2 activated), [[2026-11-25]]
+- [x] [보장] 허브 List 항목 하나가 여러 하위 Goal로 fan-out되고, 유효 하위 Goal이 모두 승인되어야 다음 항목이 배정된다. 대체되지 않은 `aborted`가 있으면 차단된다. — 근거: packages/harness/src/policy/list-policy.ts(validChildGoals·freezeChildGoals), list-run.test.ts, [[2026-11-25]]
+- [x] [보장] 하위 Goal에 부모 허브 항목 ID가 남고, 허브 Audit 탭에 하위 verdict와 그룹 통합 판정이 표시된다. — 근거: packages/harness/src/policy/audit-policy.ts, src/renderer/src/inspector/AuditTab.tsx(하위 verdict), [[2026-11-25]]
+- [x] [보장] Loop는 측정값·회차·상한·종료 이유를 표시하고, 측정값이 없으면 Audit 승인을 종료 조건으로 쓴다. — 근거: src/renderer/src/inspector/LoopTab.tsx, scripts/scenario-loop.mjs(loops=12 관찰), [[2026-11-25]]
+- [x] [보장] Loop 측정 목표 도달 시 `paused`(`audit`)로 두고 Audit 승인 후 `done`이 되며, 상한 도달 시 `stopped`와 Goal `paused`(`loop_bounds`)로 표시된다. — 근거: packages/harness/src/policy/loop-policy.ts(onLoopOutcome), [[2026-11-25]]
+- [x] [보장] Loop 없는 Goal은 Audit 거부 후 작업·증거 갱신 없이 다시 완료를 주장할 수 없다. — 근거: packages/harness/src/policy/goal-policy.ts(no-new-evidence), [[2026-11-25]]
+- [x] [보장] 허브 Goal Audit 거부 시 보완 항목이 생성되고, 허브 Goal 불가능은 그룹 차단으로 표시된다. — 근거: packages/harness/src/policy/audit-policy.ts(complementItemFor), packages/harness/src/policy/audit-gate.test.ts, [[2026-11-25]]
 - [x] [보장] `paused` Goal은 사용자 중지·감사 오류·질문 대기·Loop 상한·의존성·대기 사유를 표시한다. — 근거: e2e/inspector.spec.ts(일시정지 사유 표시), [[2026-11-25]]
-- [ ] [보장] 완료·중단 Goal과 Audit 이력이 아카이브에 남고, 세션을 삭제해도 그룹 아카이브에서 조회된다.
+- [x] [보장] 완료·중단 Goal과 Audit 이력이 아카이브에 남고, 세션을 삭제해도 그룹 아카이브에서 조회된다. — 근거: packages/harness/src/policy/archive.ts, packages/harness/src/policy/archive.test.ts, [[2026-11-25]]
 - [x] [보장] 보드 카드·사이드바에 Goal·Loop·Audit·List 4슬롯 배지가 항상 표시되고, 강조는 문제 우선순위를 따른다. — 근거: e2e/inspector.spec.ts(`.slot-badges` 4개), src/renderer/src/board/NodeCard.tsx, [[2026-11-25]]
 - [x] [보장] 그룹 인스펙터에서 허브 4탭과 하위 세션 집계를 함께 보고, 세션 인스펙터에서 그 세션 4탭을 본다.
-- [ ] [보장] 오케스트레이션 Run의 `goal`은 화면에서 `목적`으로 표시된다.
-- [ ] [시나리오] Feature 그룹의 하위 Goal이 각각 세션 Audit을 거치고, 자식이 있는 세션은 상위 세션 Audit을 거친 뒤 그룹 Audit이 통합 결과를 감사하거나 생략한다.
+- [x] [보장] 오케스트레이션 Run의 `goal`은 화면에서 `목적`으로 표시된다. — 근거: src/renderer/src/views/OrchestrationView.tsx(목적: …), [[2026-11-25]]
+- [x] [시나리오] Feature 그룹의 하위 Goal이 각각 세션 Audit을 거치고, 자식이 있는 세션은 상위 세션 Audit을 거친 뒤 그룹 Audit이 통합 결과를 감사하거나 생략한다. — 근거: scripts/scenario-audit-chain.mjs(승인/거부/불가능 체인 PASS)·packages/harness/src/policy/audit-gate.test.ts, [[2026-11-25]]
 - [x] [시나리오] Loop 그룹의 6개 하위 Goal이 생성되고, 허브가 현재 항목의 유효 하위 Goal 승인 후 다음 항목을 배정한다. — 근거: 관찰 실행 `graph-pi-loop-SO4K5q`(하위 Goal 20건·주기 audit 6건·다음 주기 배정 질문 1건), `scripts/scenario-loop.mjs`, [[2026-11-25]]
 
 ## 관련 문서

@@ -16,7 +16,9 @@
     "e2e": "playwright test",
     "smoke:orca": "node scripts/smoke-orca.mjs",
     "smoke:integration": "node scripts/smoke-integration.mjs",
-    "check:acceptance": "node scripts/check-acceptance.mjs"
+    "check:acceptance": "node scripts/check-acceptance.mjs",
+    "smoke:chat": "node scripts/smoke-chat.mjs",
+    "scenario:audit-chain": "node scripts/scenario-audit-chain.mjs"
   },
   "dependencies": {
     "react": "19.3.1",

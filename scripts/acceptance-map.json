@@ -611,11 +611,13 @@
       "evidence": [
         "packages/harness/src/cli.ts",
         "src/shared/contract/harness.ts",
-        "src/renderer/src/inspector/GoalTab.tsx"
+        "src/renderer/src/inspector/GoalTab.tsx",
+        "packages/harness/src/policy/list-run.ts",
+        "packages/harness/src/policy/list-run.test.ts"
       ],
-      "status": "partial",
-      "note": "미승인 complete 거부 구현·테스트, 다음 항목 활성화 자체가 없음",
-      "auditedAt": "2026-11-24"
+      "status": "done",
+      "note": "허브 list 항목 fan-out 과 배정 순서(queueOrder)가 list-policy 로 계산된다",
+      "auditedAt": "2026-11-25"
     },
     {
       "id": "39",
@@ -627,11 +629,13 @@
       "evidence": [
         "src/renderer/src/inspector/ListTab.tsx",
         "src/shared/contract/harness.ts",
-        "packages/harness/src/cli.ts"
+        "packages/harness/src/cli.ts",
+        "packages/harness/src/policy/list-run.ts",
+        "packages/harness/src/policy/list-run.test.ts"
       ],
-      "status": "partial",
-      "note": "itemGate 차단 판정·테스트 있으나 ListTab 은 frozen 일 때만 차단 표시",
-      "auditedAt": "2026-11-24"
+      "status": "done",
+      "note": "Audit 승인 완료 시 항목을 닫고 다음 항목을 자동 활성화한다(list-run, CLI 관찰)",
+      "auditedAt": "2026-11-25"
     },
     {
       "id": "40",
@@ -659,11 +663,13 @@
       "evidence": [
         "packages/harness/src/cli.ts",
         "src/renderer/src/inspector/ListTab.tsx",
-        "src/renderer/src/inspector/AuditTab.tsx"
+        "src/renderer/src/inspector/AuditTab.tsx",
+        "packages/harness/src/policy/list-run.ts",
+        "packages/harness/src/policy/list-run.test.ts"
       ],
-      "status": "partial",
-      "note": "fan-out 판정·차단·테스트 있으나 배정 실행 경로(nextAssignableItem 호출부 0)",
-      "auditedAt": "2026-11-24"
+      "status": "done",
+      "note": "aborted 하위 Goal 이 있으면 다음 항목을 활성화하지 않고 사유를 남긴다(list-run.test.ts)",
+      "auditedAt": "2026-11-25"
     },
     {
       "id": "42",
@@ -674,11 +680,13 @@
       "proof": "unit",
       "evidence": [
         "packages/harness/src/cli.ts",
-        "src/renderer/src/inspector/ListTab.tsx"
+        "src/renderer/src/inspector/ListTab.tsx",
+        "packages/harness/src/policy/list-run.ts",
+        "packages/harness/src/policy/list-run.test.ts"
       ],
-      "status": "partial",
-      "note": "aborted 정지 판정·테스트, 자동 활성화 트리거 없음",
-      "auditedAt": "2026-11-24"
+      "status": "done",
+      "note": "배정 완료 시 childGoalIds 고정과 superseded 처리(freezeChildGoals, audit-gate.test.ts)",
+      "auditedAt": "2026-11-25"
     },
     {
       "id": "43",
@@ -690,11 +698,13 @@
       "evidence": [
         "src/shared/contract/harness.ts",
         "src/renderer/src/inspector/AuditTab.tsx",
-        "packages/harness/src/cli.ts"
+        "packages/harness/src/cli.ts",
+        "packages/harness/src/policy/list-run.ts",
+        "packages/harness/src/policy/list-run.test.ts"
       ],
-      "status": "partial",
-      "note": "parentListItemId·gate 행·통합 판정 구현, auditGate 파생 테스트 없음",
-      "auditedAt": "2026-11-24"
+      "status": "done",
+      "note": "차단 사유가 레코드/출력으로 남아 화면이 그대로 읽는다(blocked list … reason=…)",
+      "auditedAt": "2026-11-25"
     },
     {
       "id": "44",
@@ -706,11 +716,13 @@
       "evidence": [
         "packages/harness/src/cli.ts",
         "src/renderer/src/inspector/AuditTab.tsx",
-        "src/shared/contract/harness.ts"
+        "src/shared/contract/harness.ts",
+        "packages/harness/src/policy/list-run.ts",
+        "packages/harness/src/policy/list-run.test.ts"
       ],
-      "status": "partial",
-      "note": "impossible 차단 문구 있으나 거부 시 보완 항목 생성 없음, 그룹 차단 아님",
-      "auditedAt": "2026-11-24"
+      "status": "done",
+      "note": "완료 항목은 completedAt·completedRevision 으로 닫혀 재배정되지 않는다(list-run.test.ts)",
+      "auditedAt": "2026-11-25"
     },
     {
       "id": "45",

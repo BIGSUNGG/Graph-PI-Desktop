@@ -4,6 +4,7 @@
  * - 감사 대상 선택(requiresSessionAudit·requiresGroupAudit)과 시작 가능 판정(auditMayStart)
  * - 자식 정산 판정(childGoalSettled)과 읽기 전용·커밋 고정(auditWriteRefused·pinCommit)
  * - verdict 전이(applyAuditVerdict)와 완료 근거(canCompleteGoal)
+ * - 거부 시 보완 항목 생성(complementItemFor·needsComplement) — acceptance 611행
  * - 허브 List 항목 차단·배정(itemGate·freezeChildGoals·nextAssignableItem)
  * 실행: `node --test packages/harness/src/policy/audit-gate.test.ts`
  */
@@ -27,6 +28,8 @@ import {
   auditMayStart,
   auditWriteRefused,
   childGoalSettled,
+  complementItemFor,
+  needsComplement,
   pinCommit,
   requiresGroupAudit,
   requiresSessionAudit,
@@ -486,4 +489,82 @@ test('하위 Goal 없이 얼린 항목은 차단으로 표시된다', () => {
   ]);
   assert.equal(replacedGate.status, 'blocked');
   assert.equal(replacedGate.reason, '하위 Goal 없음');
+});
+
+// (9) 보완 항목 — 거부된 허브 항목을 새 대기 항목으로 만든다
+test('Audit 거부 시 보완 항목은 새 대기 항목으로 만들어진다', () => {
+  const source = listItemFixture('item_1', {
+    goalId: 'goal_1',
+    parentGoalId: 'goal_hub',
+    title: '결제 플로우 구현',
+    state: 'active',
+    queueOrder: 3,
+    childGoalIds: ['goal_1'],
+    childGoalsFrozen: true,
+    childGoalsFrozenAt: AT,
+    activatedAt: AT,
+  });
+
+  const complement = complementItemFor(source, '테스트 근거 없음', LATER, { id: 'item_2' });
+
+  assert.notEqual(complement, source);
+  assert.equal(complement.id, 'item_2');
+  assert.equal(complement.type, 'list_item');
+  assert.equal(complement.groupId, source.groupId);
+  assert.equal(complement.title, '보완: 결제 플로우 구현');
+  assert.equal(complement.state, 'queued');
+  // 큐 순서는 정수이고 원 항목 바로 다음이다(소수 순서 금지).
+  assert.equal(complement.queueOrder, source.queueOrder + 1);
+  assert.ok(Number.isInteger(complement.queueOrder));
+  // 부모 허브 항목 연결은 유지하고, 끝난 Goal 연결은 물려받지 않는다.
+  assert.equal(complement.parentGoalId, 'goal_hub');
+  assert.equal(complement.goalId, null);
+  assert.equal(complement.integrationNote, '테스트 근거 없음');
+  // 새 항목이므로 하위 Goal 배정·진행 기록은 비어 있다.
+  assert.deepEqual(complement.childGoalIds, []);
+  assert.deepEqual(complement.supersededGoalIds, []);
+  assert.equal(complement.childGoalsFrozen, false);
+  assert.equal(complement.childGoalsFrozenAt, null);
+  assert.equal(complement.activatedAt, null);
+  assert.equal(complement.completedAt, null);
+  assert.equal(complement.completedRevision, null);
+  assert.equal(complement.at, LATER);
+  assert.equal(complement.createdAt, LATER);
+  // 원본은 바뀌지 않는다 — 순수 함수라 저장은 호출부가 한다.
+  assert.equal(source.title, '결제 플로우 구현');
+  assert.equal(source.state, 'active');
+  assert.equal(source.queueOrder, 3);
+  assert.deepEqual(source.childGoalIds, ['goal_1']);
+});
+
+// (9-b) 보완 항목 순서 — 호출부가 밀어낸 정수 순서를 쓰고 비정수는 받지 않는다
+test('보완 항목 순서는 호출부가 정하고 비정수는 원 항목 다음으로 되돌린다', () => {
+  const source = listItemFixture('item_1', { queueOrder: 2 });
+
+  // 뒤 항목을 밀어야 하면 호출부가 밀린 정수 순서를 넘긴다.
+  const shifted = complementItemFor(source, '보완 필요', AT, { id: 'item_2', queueOrder: 5 });
+  assert.equal(shifted.queueOrder, 5);
+
+  // 계약의 queueOrder 는 정수다 — 소수(2.5)는 원 항목 바로 다음으로 되돌린다.
+  const fractional = complementItemFor(source, '보완 필요', AT, { id: 'item_3', queueOrder: 2.5 });
+  assert.equal(fractional.queueOrder, 3);
+  assert.ok(Number.isInteger(fractional.queueOrder));
+
+  // 같은 사유라도 호출부가 다른 id 를 주면 별개 항목이다.
+  const another = complementItemFor(source, '보완 필요', AT, { id: 'item_4' });
+  assert.notEqual(another.id, fractional.id);
+  assert.notEqual(another, fractional);
+});
+
+// (9-c) 보완 필요 판정 — 거부 verdict 만 참이다
+test('needsComplement 는 거부 verdict 에서만 참이다', () => {
+  assert.equal(needsComplement(auditFixture('audit_1', 1, { verdict: 'rejected' })), true);
+  assert.equal(needsComplement(auditFixture('audit_2', 2, { verdict: 'approved' })), false);
+  assert.equal(needsComplement(auditFixture('audit_3', 3, { verdict: 'impossible' })), false);
+  assert.equal(needsComplement(auditFixture('audit_4', 4, { verdict: 'error' })), false);
+  // 아직 verdict 가 없는(진행 중·생략) Audit 은 보완 대상이 아니다.
+  assert.equal(
+    needsComplement(auditFixture('audit_5', 5, { verdict: null, state: 'running' })),
+    false,
+  );
 });

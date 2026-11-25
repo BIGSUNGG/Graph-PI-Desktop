@@ -44,6 +44,7 @@ import { finishAudit } from './state/audit.ts';
 import { auditMayStart, auditVerdict, applyAuditVerdict, pinCommit, requiresGroupAudit } from './policy/audit-policy.ts';
 import { bumpGoalRevision, canCompleteGoal } from './policy/goal-policy.ts';
 import { freezeChildGoals } from './policy/list-policy.ts';
+import { advanceAfterGoal } from './policy/list-run.ts';
 import { loopBoundReached, loopOutcome, onLoopOutcome } from './policy/loop-policy.ts';
 
 type Args = { command: string; flags: Map<string, string[]>; positionals: string[] };
@@ -393,6 +394,26 @@ async function goalComplete(ctx: Ctx): Promise<number> {
   process.stdout.write(
     `ok goal ${completed.record.id} seq=${seq} status=${completed.record.status} audit=${verdict.auditId}\n`,
   );
+
+  // List 항목이 있는 Goal 이면 항목을 닫고 다음 항목을 자동 배정한다(수용기준 38-44).
+  const at = new Date().toISOString();
+  const advance = advanceAfterGoal({
+    items: snapshot.listItems,
+    goals: snapshot.goals.map((candidate) =>
+      candidate.id === completed.record.id ? completed.record : candidate,
+    ),
+    goal: completed.record,
+    at,
+  });
+  for (const record of advance.records) {
+    const listSeq = await appendNext(ctx.store, ctx.groupId, record);
+    process.stdout.write(
+      `ok list ${record.id} seq=${listSeq} state=${record.state} closed=${record.completedAt === null ? 'no' : 'yes'}\n`,
+    );
+  }
+  if (advance.blocked !== null) {
+    process.stdout.write(`blocked list ${advance.blocked.itemId} reason=${advance.blocked.reason}\n`);
+  }
   return 0;
 }
 
@@ -646,6 +667,10 @@ async function run(argv: string[]): Promise<number> {
 
   const ctx: Ctx = { args, store, groupId, writer: one(args, 'writer') ?? 'cli' };
 
+  // 완료 조건 없는 Goal 은 감사가 판정할 근거가 없다(SPEC §10.1). 새 Goal 생성에서만 요구한다.
+  if (args.command === 'goal' && sub === null && (args.flags.get('check') ?? []).length === 0) {
+    return fail('완료 조건이 하나 이상 필요합니다. --check "<검증 항목>" 을 지정하세요');
+  }
   if (args.command === 'goal' && sub === 'complete') return await goalComplete(ctx);
   if (args.command === 'goal' && args.flags.has('revision-bump')) return await goalRevisionBump(ctx);
   if (args.command === 'list' && sub === 'freeze') return await listFreeze(ctx);
