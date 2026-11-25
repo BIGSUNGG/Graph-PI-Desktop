@@ -15,6 +15,7 @@ tags: []
 | --- | --- | --- |
 
 | [[40-guides/build-and-verify]] | active | 설치·타입체크·빌드·단위·E2E·Orca 스모크 명령과 알려진 함정(TS7·Vite8·lens·워커 셸 없음) |
+| [[40-guides/hub-scenario-check]] | active | `[시나리오]` 판정 행을 실제 모델 실행으로 관찰하는 절차(프롬프트 재사용·질문 답변·워크트리 id 차집합·필드 함정) |
 
 ## 작성 규칙
 

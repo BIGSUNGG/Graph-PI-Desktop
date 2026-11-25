@@ -89,7 +89,9 @@ export function InspectorView(): ReactElement {
   // 목업 인스펙터는 세션/워크트리 선택이 없으면 안내 문구만 그린다(mock/index.html:1789).
   // 탭은 e2e 계약(e2e/flows.spec.ts:85 `.insp-tabs` 가시성) 때문에 항상 그리고,
   // 선택할 대상이 없을 때만 목업 문구로 비운다.
-  const empty = group === null && selectedSessionId === null;
+  const empty = group === null && selectedSessionId === null
+  // 하네스 상태 파일이 없거나 버전이 다르면 4탭은 데이터가 아니라 안내만 그린다(수용기준 4).
+  const harnessMissing = harness !== null && harness.availability !== 'ok';
   const title = isHub ? (group === null ? '선택 없음' : group.name) : (session?.title ?? '세션');
   const counts: Record<InspectorTab, number> = {
     goal: goal === null ? 0 : 1,
@@ -129,6 +131,7 @@ export function InspectorView(): ReactElement {
             role="tab"
             aria-selected={settings.inspectorTab === tab}
             className={settings.inspectorTab === tab ? 'sup-tab is-active' : 'sup-tab'}
+            aria-disabled={harnessMissing}
             onClick={() => {
               actions.setInspectorTab(tab);
             }}
@@ -139,7 +142,9 @@ export function InspectorView(): ReactElement {
         ))}
       </div>
 
-      {empty ? (
+      {harnessMissing ? (
+        <p className="empty">하네스 상태가 없어 Goal·List·Loop·Audit 을 표시할 수 없습니다.</p>
+      ) : empty ? (
         <p className="empty">노드를 선택하면 세션 상세가 보입니다.</p>
       ) : (
         <div className="sup-panel insp-body">

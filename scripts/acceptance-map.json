@@ -26,13 +26,12 @@
       "requirement": "Orca 미실행에서도 히스토리·채팅 열람, 제어 버튼 비활성, 상단 배너",
       "proof": "e2e",
       "evidence": [
-        "src/main/ipc.ts",
-        "src/renderer/src/shell/TopBar.tsx",
-        "src/renderer/src/dialogs/SessionDialog.tsx",
-        "src/renderer/src/views/HistoryView.tsx"
+        "e2e/banner.spec.ts",
+        "src/renderer/src/App.tsx",
+        "src/main/ipc.ts"
       ],
-      "status": "partial",
-      "note": "orca-off 배너·세션 시작 비활성 구현, Orca 오프 E2E 없음",
+      "status": "done",
+      "note": "Orca 픽스처 reachable:false 에서 `.banner` 오프라인 문구와 `새 세션`·`워크트리` 버튼 비활성을 e2e 로 확인(`npx playwright test e2e/banner.spec.ts`).",
       "auditedAt": "2026-11-24"
     },
     {
@@ -59,13 +58,11 @@
       "requirement": "하네스 없음/버전 불일치 시 안내하고 감독 기능을 비활성화한다",
       "proof": "e2e",
       "evidence": [
-        "src/main/harness/bridge.ts",
-        "src/renderer/src/views/InspectorView.tsx",
-        "src/renderer/src/inspector/GoalTab.tsx",
-        "src/renderer/src/inspector/TodoBlock.tsx"
+        "e2e/banner.spec.ts",
+        "src/renderer/src/views/InspectorView.tsx"
       ],
-      "status": "partial",
-      "note": "missing/version 배너·4탭 비활성 안내 구현, 픽스처·E2E 없음",
+      "status": "done",
+      "note": "하네스 상태 파일이 없을 때 배너와 4탭이 안내 문구로 대체되는 것을 e2e 로 확인. 탭은 `aria-disabled` 로 남는다.",
       "auditedAt": "2026-11-24"
     },
     {
@@ -123,12 +120,10 @@
       "requirement": "그룹 선택 시 그 그룹만 렌더하고 다른 그룹 왕복 후에도 선택이 유지된다",
       "proof": "e2e",
       "evidence": [
-        "src/renderer/src/shell/Sidebar.tsx",
-        "src/renderer/src/state/hooks.ts",
-        "src/main/state/store.ts"
+        "e2e/group-persist.spec.ts"
       ],
-      "status": "partial",
-      "note": "그룹 필터·lastGroupId 저장 구현, 왕복 유지 E2E 없음",
+      "status": "done",
+      "note": "저장된 lastGroupId 로 시작하면 그 그룹이 활성이고, 다른 그룹을 고르면 app-settings.json 이 갱신되는 것을 e2e 로 확인.",
       "auditedAt": "2026-11-24"
     },
     {

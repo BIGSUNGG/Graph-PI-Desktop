@@ -36,8 +36,11 @@ export default function App(): ReactElement {
 }
 
 function Shell(): ReactElement {
-  const { settings } = useApp();
+  const { settings, status } = useApp();
   const meta = VIEW_META[settings.view];
+  // Orca 연결이 없으면 세션·워크트리 생성은 막는다(수용기준 2). 로딩 중(status null)에는 막지 않는다.
+  const canLaunch = status === null || status.orca === 'ok';
+  const launchHint = canLaunch ? undefined : 'Orca CLI 응답이 없어 실행할 수 없습니다';
   // 다이얼로그는 DialogHost 하나만 열고 닫는다. 레일·상단 액션은 이벤트만 던진다.
   const onCreateGroup = (): void => openDialog('group');
 
@@ -60,6 +63,8 @@ function Shell(): ReactElement {
                   <button
                     className="btn"
                     type="button"
+                    disabled={!canLaunch}
+                    title={launchHint}
                     onClick={() => {
                       openDialog('worktree');
                     }}
@@ -69,6 +74,8 @@ function Shell(): ReactElement {
                   <button
                     className="btn primary"
                     type="button"
+                    disabled={!canLaunch}
+                    title={launchHint}
                     onClick={() => {
                       openDialog('session');
                     }}
