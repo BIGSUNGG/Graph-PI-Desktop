@@ -75,11 +75,13 @@
       "evidence": [
         "src/main/pi/watcher.ts",
         "src/main/pi/session-file.ts",
-        "src/renderer/src/board/GraphCanvas.tsx"
+        "src/renderer/src/board/GraphCanvas.tsx",
+        "e2e/live.spec.ts",
+        "src/main/ipc.ts"
       ],
-      "status": "partial",
-      "note": "scan·성장 감지 있으나 watcher 콜백이 푸시에 미연결(자동 반영 없음)",
-      "auditedAt": "2026-11-24"
+      "status": "done",
+      "note": "세션·상태 파일 mtime 을 3초마다 비교해 push 하므로 새 세션·성장분이 자동 반영된다(e2e/live.spec.ts)",
+      "auditedAt": "2026-11-25"
     },
     {
       "id": "6",
@@ -90,11 +92,12 @@
       "proof": "e2e",
       "evidence": [
         "src/renderer/src/views/InspectorView.tsx",
-        "src/renderer/src/board/NodeCard.tsx"
+        "src/renderer/src/board/NodeCard.tsx",
+        "e2e/inspector.spec.ts"
       ],
-      "status": "partial",
-      "note": "카드/사이드바/목록은 모델·토큰·마지막활동 표시, 인스펙터 헤더는 모델·토큰만",
-      "auditedAt": "2026-11-24"
+      "status": "done",
+      "note": "노드 카드가 모델·시작 시각·토큰을 표기(e2e/inspector.spec.ts)",
+      "auditedAt": "2026-11-25"
     },
     {
       "id": "7",
@@ -199,11 +202,12 @@
       "evidence": [
         "src/renderer/src/state/hooks.ts",
         "src/renderer/src/shell/Sidebar.tsx",
-        "src/renderer/src/board/NodeCard.tsx"
+        "src/renderer/src/board/NodeCard.tsx",
+        "e2e/inspector.spec.ts"
       ],
-      "status": "partial",
-      "note": "4슬롯 배지·강조 링 구현, 단위·E2E 없음",
-      "auditedAt": "2026-11-24"
+      "status": "done",
+      "note": "보드 카드와 사이드바에 4슬롯 배지를 상시 표시(e2e/inspector.spec.ts, NodeCard SlotDots)",
+      "auditedAt": "2026-11-25"
     },
     {
       "id": "14",
@@ -344,11 +348,13 @@
       "evidence": [
         "src/renderer/src/chat/QuestionCards.tsx",
         "src/renderer/src/views/InspectorView.tsx",
-        "src/renderer/src/shell/Sidebar.tsx"
+        "src/renderer/src/shell/Sidebar.tsx",
+        "e2e/live.spec.ts",
+        "src/main/ipc.ts"
       ],
-      "status": "partial",
-      "note": "인스펙터 카드·인라인 채팅·강조·? 표시 구현, E2E 없음",
-      "auditedAt": "2026-11-24"
+      "status": "done",
+      "note": "질문 레코드가 상태 파일에 추가되면 인스펙터 카드와 채팅 인라인에 동시에 나타난다(e2e/live.spec.ts)",
+      "auditedAt": "2026-11-25"
     },
     {
       "id": "23",
@@ -360,11 +366,12 @@
       "evidence": [
         "src/renderer/src/chat/QuestionCards.tsx",
         "src/main/ipc.ts",
-        "src/main/harness/bridge.ts"
+        "src/main/harness/bridge.ts",
+        "e2e/live.spec.ts"
       ],
-      "status": "partial",
-      "note": "answered 레코드 append 로 재시작 유지, 답변 후 재개·유지 검증 없음",
-      "auditedAt": "2026-11-24"
+      "status": "done",
+      "note": "앱을 닫았다 다시 열어도 미답 질문이 남는다(e2e/live.spec.ts 재시작 단계)",
+      "auditedAt": "2026-11-25"
     },
     {
       "id": "24",
@@ -523,11 +530,12 @@
       "evidence": [
         "src/renderer/src/views/InspectorView.tsx",
         "src/renderer/src/inspector/GoalTab.tsx",
-        "e2e/flows.spec.ts"
+        "e2e/flows.spec.ts",
+        "e2e/inspector.spec.ts"
       ],
-      "status": "partial",
-      "note": "허브 4탭·집계·스코프 전환 구현, E2E 는 탭 전환만",
-      "auditedAt": "2026-11-24"
+      "status": "done",
+      "note": "그룹(허브) 스코프는 4탭+하위 세션 집계, 세션 스코프는 그 세션 4탭(e2e/inspector.spec.ts)",
+      "auditedAt": "2026-11-25"
     },
     {
       "id": "34",
@@ -538,11 +546,12 @@
       "proof": "unit",
       "evidence": [
         "packages/harness/src/cli.ts",
-        "src/renderer/src/inspector/TodoBlock.tsx"
+        "src/renderer/src/inspector/TodoBlock.tsx",
+        "e2e/inspector.spec.ts"
       ],
-      "status": "partial",
-      "note": "TODO 3상태 표시 구현, 검증 테스트 없음",
-      "auditedAt": "2026-11-24"
+      "status": "done",
+      "note": "CLI 로 만든 TODO 3상태가 인스펙터에 읽기 전용으로 표시(e2e/inspector.spec.ts)",
+      "auditedAt": "2026-11-25"
     },
     {
       "id": "35",
@@ -552,11 +561,12 @@
       "requirement": "TODO 에 추가·수정·완료·삭제 버튼이 없고 앱에서 상태를 바꿀 수 없다",
       "proof": "e2e",
       "evidence": [
-        "src/renderer/src/inspector/TodoBlock.tsx"
+        "src/renderer/src/inspector/TodoBlock.tsx",
+        "e2e/inspector.spec.ts"
       ],
-      "status": "partial",
-      "note": "TODO 읽기 전용 UI·쓰기 IPC 부재 확인, 부재 고정 테스트 없음",
-      "auditedAt": "2026-11-24"
+      "status": "done",
+      "note": "TODO 패널에 버튼·입력이 없음(e2e/inspector.spec.ts count 0)",
+      "auditedAt": "2026-11-25"
     },
     {
       "id": "36",
@@ -568,11 +578,12 @@
       "evidence": [
         "src/renderer/src/inspector/TodoBlock.tsx",
         "src/renderer/src/views/InspectorView.tsx",
-        "packages/harness/src/cli.ts"
+        "packages/harness/src/cli.ts",
+        "e2e/inspector.spec.ts"
       ],
-      "status": "partial",
-      "note": "groupWide 로 전 세션 TODO 표시, 스코프 규칙 테스트 없음",
-      "auditedAt": "2026-11-24"
+      "status": "done",
+      "note": "세션 스코프/그룹 스코프 TODO 를 분리해 표시(e2e/inspector.spec.ts)",
+      "auditedAt": "2026-11-25"
     },
     {
       "id": "37",
@@ -711,11 +722,12 @@
       "evidence": [
         "src/renderer/src/inspector/GoalTab.tsx",
         "src/shared/contract/harness.ts",
-        "packages/harness/src/cli.ts"
+        "packages/harness/src/cli.ts",
+        "e2e/inspector.spec.ts"
       ],
-      "status": "partial",
-      "note": "사유 8종 표시 완비(agent 는 문자열 그대로), 검증 테스트 없음",
-      "auditedAt": "2026-11-24"
+      "status": "done",
+      "note": "일시정지 사유가 Goal 탭에 보이고 pickGoal 이 문제 Goal 을 먼저 고른다(e2e/inspector.spec.ts, InspectorView)",
+      "auditedAt": "2026-11-25"
     },
     {
       "id": "46",

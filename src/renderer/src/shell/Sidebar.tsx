@@ -185,6 +185,11 @@ export function Sidebar(props: { onCreateGroup: () => void }): ReactElement {
                   className="grp-head"
                   type="button"
                   onClick={() => {
+                    // 세션을 보던 중에 활성 그룹 머리를 누르면 접기가 아니라 그룹(허브) 스코프로 돌아간다(수용기준 33).
+                    if (isActive && selection.kind !== 'group') {
+                      actions.select({ kind: 'group', groupId: group.id });
+                      return;
+                    }
                     if (isActive) {
                       setClosed((prev) => ({ ...prev, [group.id]: prev[group.id] !== true }));
                       return;

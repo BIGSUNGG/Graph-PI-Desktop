@@ -220,8 +220,12 @@ function pickGoal(input: {
     strict.length > 0 || !input.isHub
       ? strict
       : input.goals.filter((goal) => goal.parentListItemId === null);
-  const active = scoped.filter((goal) => goal.status === 'active' || goal.status === 'auditing');
-  const pool = active.length > 0 ? active : scoped;
+  // 감사 중이거나 사유가 있는 일시정지는 사용자가 먼저 봐야 하므로 활성 Goal 보다 앞에 둔다(수용기준 45).
+  const attention = scoped.filter(
+    (goal) => goal.status === 'auditing' || (goal.status === 'paused' && goal.pauseReason !== null),
+  );
+  const active = scoped.filter((goal) => goal.status === 'active');
+  const pool = attention.length > 0 ? attention : active.length > 0 ? active : scoped;
   return pool.reduce<GoalRecord | null>(
     (latest, goal) => (latest === null || goal.updatedAt > latest.updatedAt ? goal : latest),
     null,

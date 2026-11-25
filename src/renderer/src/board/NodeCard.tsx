@@ -81,7 +81,9 @@ function SlotDots(props: {
   const { slots, states } = props.attention;
   if (slots === null) return null;
   return (
-    <>
+    // 사이드바 HTML 배지와 같은 클래스·title 을 써서 4슬롯이 항상 같은 의미로 보이게 한다(수용기준 13).
+    <g className="slot-badges" data-slots={slots.length}>
+      <title>Goal · List · Loop · Audit</title>
       {slots.map((kind, index) => {
         const state = states[index];
         const level = state === undefined ? 'ok' : state.level;
@@ -98,7 +100,7 @@ function SlotDots(props: {
           />
         );
       })}
-    </>
+    </g>
   );
 }
 

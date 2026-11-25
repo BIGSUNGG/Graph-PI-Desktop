@@ -1,5 +1,5 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import type {
   AnswerQuestionRequest,
@@ -35,7 +35,7 @@ import { hubInitialPrompt } from './preset.ts';
 const HUB_MODEL = 'opencode-go/deepseek-v4.1-flash';
 /** group.preset 이 비어 있는 구버전 레코드의 기본 프리셋. */
 const HUB_FALLBACK_PRESET: PresetKind = 'manual';
-import { groupsDir } from './paths.ts';
+import { groupStateFile, groupsDir } from './paths.ts';
 import { orcaBin } from './orca/cli.ts';
 import { planHub, samePath } from './pi/hub.ts';
 import { runCommands } from './harness/commands.ts';
@@ -379,6 +379,35 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
   }, 3_000);
   pump.unref();
 
+  /** 파일이 없거나 읽을 수 없으면 -1(변경 없음과 구분하기 위해 0 은 실제 mtime 으로 쓴다). */
+  const mtimeOf = async (file: string): Promise<number> => {
+    try {
+      return (await stat(file)).mtimeMs;
+    } catch {
+      return -1;
+    }
+  };
+
+  /**
+   * 상태 파일과 세션 파일은 앱 밖(허브 CLI·pi 프로세스)에서 자란다. 화면이 스냅샷을 다시 읽지
+   * 않는 동안에도 질문 카드(수용기준 22·23)와 실행 중 세션 노드(5)가 따라오도록 주기적으로 비교한다.
+   */
+  const seenState = new Map<string, number>();
+  const sync = setInterval((): void => {
+    const groupId = settings.get().lastGroupId;
+    if (groupId === null || groupId === '') return;
+    void (async (): Promise<void> => {
+      const current = await mtimeOf(groupStateFile(groupId));
+      const previous = seenState.get(groupId) ?? Number.NaN;
+      if (current !== previous) {
+        seenState.set(groupId, current);
+        if (current >= 0) push({ type: 'harness', snapshot: await harness.readSnapshot(groupId) });
+      }
+      await rememberSessions(groupId);
+    })().catch(() => undefined);
+  }, 3_000);
+  sync.unref();
+
   handle('app:status', () => statusOf());
   handle('app:settings:get', () => settings.get());
   handle('app:settings:set', async (patch: Partial<Settings>) => {
@@ -524,6 +553,7 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
 
   // ── 구독 ──────────────────────────────────────────────────────
   unsubscribers.push(
+    () => clearInterval(sync),
     orca.onChange((snapshot: OrcaSnapshot) => push({ type: 'orca', snapshot })),
     index.onChange((progress: IndexProgress) => push({ type: 'index', progress })),
   );
