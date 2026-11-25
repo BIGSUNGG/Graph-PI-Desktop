@@ -45,6 +45,8 @@ function readText(rel) {
  * 단위·CLI 증거는 "실행할 수 있는 것"이어야 한다.
  * 하네스 CLI 는 문서화된 실행 진입점(`node packages/harness/src/cli.ts …`)이라 스크립트로 센다.
  */
+const E2E_FILE = /^e2e\/.+\.spec\.ts$/;
+
 function isTestOrScript(path) {
   if (TEST_FILE.test(path)) return true;
   if (path.startsWith('scripts/')) return true;
@@ -146,6 +148,9 @@ function run(text) {
       if (!existsSync(join(ROOT, path))) fail(`${path}: 근거 파일 없음 (id ${id})`);
     }
 
+    if (row.proof === 'e2e' && !evidence.some((path) => E2E_FILE.test(String(path)))) {
+      fail(`${MAP_FILE}: id ${id} — proof=e2e 인데 e2e 스펙 근거가 없음`);
+    }
     if ((row.proof === 'unit' || row.proof === 'cli') && !evidence.some((path) => isTestOrScript(String(path)))) {
       fail(`${MAP_FILE}: id ${id} — proof=${row.proof} 인데 테스트/스크립트 근거가 없음`);
     }

@@ -105,6 +105,7 @@
       "requirement": "세션선 4종·자식 화살촉·머지선·계층선 없음 + 4곳 계보 트리",
       "proof": "e2e",
       "evidence": [
+        "e2e/lineage.spec.ts",
         "src/renderer/src/state/selectors.ts",
         "src/renderer/src/state/selectors.test.ts",
         "src/renderer/src/chat/SessionList.tsx",
@@ -413,7 +414,7 @@
       "package": "P5",
       "source": "H5",
       "requirement": "목업 선택 질문을 받은 세션이 `질문 대기`로 강조되고 답이 전달되어 재개된다",
-      "proof": "e2e",
+      "proof": "cli",
       "evidence": [
         "scripts/smoke-resume.mjs",
         "src/main/harness/resume.ts",
@@ -431,6 +432,7 @@
       "requirement": "`@backend` 입력 시 후보가 뜨고 워크트리가 없으면 확인 팝업 후 브랜치·워크트리를 만든다",
       "proof": "e2e",
       "evidence": [
+        "e2e/refs.spec.ts",
         "src/main/refs/candidates.ts",
         "src/renderer/src/chat/Composer.tsx",
         "src/main/ipc.ts",
@@ -511,7 +513,7 @@
       "package": "P3",
       "source": "G9",
       "requirement": "30일 이전 세션도 본문 내용으로 검색해 결과가 나온다",
-      "proof": "e2e",
+      "proof": "unit",
       "evidence": [
         "src/main/db/index.test.ts",
         "src/main/db/index.ts"

@@ -6,7 +6,7 @@
  * 실행: npm run smoke:integration
  */
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, sep } from 'node:path'
 
@@ -55,11 +55,15 @@ let closedOk = false
 
 try {
   execFileSync('git', ['init', '-q', '-b', 'main', tmpRepo])
-  execFileSync('git', ['-C', tmpRepo, '-c', 'user.email=smoke@example.com', '-c', 'user.name=Smoke', 'commit', '-q', '--allow-empty', '-m', 'smoke: init'])
+  // 빈 커밋만 있는 레포는 Orca 가 프로젝트로 등록하지 않는다(실측). 파일 하나를 커밋해야 목록에 나타난다.
+  writeFileSync(join(tmpRepo, 'README.md'), 'smoke repo\n')
+  execFileSync('git', ['-C', tmpRepo, 'add', '-A'])
+  execFileSync('git', ['-C', tmpRepo, '-c', 'user.email=smoke@example.com', '-c', 'user.name=Smoke', 'commit', '-q', '-m', 'smoke: init'])
   step('temp-repo', true, tmpRepo)
 
   const project = await addProject(tmpRepo)
-  const matched = project.ok ? project.result.filter((p) => p.path.replace(/\\/g, '/') === tmpRepo.replace(/\\/g, '/')) : []
+  const target = norm(tmpRepo)
+  const matched = project.ok ? project.result.filter((p) => norm(p.path) === target) : []
   step('repo-add', project.ok && matched.length > 0, project.ok ? `projects=${project.result.length} matched=${matched.length}` : project.error)
   if (!project.ok || matched.length === 0) process.exitCode = 1
 

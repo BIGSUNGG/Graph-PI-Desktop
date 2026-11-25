@@ -25,10 +25,10 @@ npm install          # 루트에서 1회. npm workspaces(packages/*) 를 함께 
 | --- | --- | --- |
 | `npm run typecheck` | 메인(node)·렌더러(web)·하네스 3개 프로젝트 | 3개 모두 exit 0 |
 | `npm run build` | electron-vite 번들(main/preload/renderer) | exit 0, `out/` 산출 |
-| `npm test` | `node --test` 단위 테스트 | fail 0 |
+| `npm test` | `npm run typecheck`(계약 타입 검사) + `node --test` 단위 테스트 | fail 0 |
 | `npx playwright test` | 실제 Electron 부팅·뷰 전환·다이얼로그 | 전부 통과 |
-| `node scripts/smoke-orca.mjs` | 실제 `orca` CLI 계약(`ok`/`result`) | PASS (Orca 앱이 떠 있어야 함) |
-| `npm run smoke:integration` | 임시 레포 → 워크트리 → 실제 Pi 세션 → 세션 노드 필드 | PASS (steps failed=0) |
+| `npm run smoke:orca` | ① 실제 `orca` CLI 계약(`ok`/`result`) ② 임시 레포 → 워크트리 → 실제 Pi 세션 → 계약 계층이 모델·시작 시각·토큰을 읽고 잔여 워크트리 0 | ① PASS(실패 0건) ② PASS(steps failed=0, remaining=0) |
+| `npm run smoke:integration` | `smoke:orca` 의 ②단계만 따로 실행 | PASS (steps failed=0) |
 | `npm run smoke:chat` | 실제 PTY 세션 + `sendPrompt` 문장이 세션 파일에 남는지 | PASS (steps failed=0) |
 | `npm run scenario:audit-chain` | Goal→Audit→승인/거부→다음 항목 배정 CLI 체인 | PASS (체크 전부 PASS) |
 | `GRAPH_PI_ENABLE_GPU=1 npm run dev` | 기본은 소프트웨어 렌더링. GPU 가속은 이 변수로만 켠다(E2E 전체 실행에서 렌더러 크래시 재현) | 선택 |

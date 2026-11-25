@@ -21,6 +21,8 @@ tags: []
 | [[20-decisions/ADR-0006-electron-vite-single-app-with-contract]] | active | electron-vite 단일 앱. 데이터 접근은 main 어댑터, 렌더러는 preload 계약만. 원격은 계약 뒤 transport 교체 |
 | [[20-decisions/ADR-0007-electron-mock-parity-app]] | accepted | Electron 단일 앱(루트) + `packages/harness`. 계약·데이터 디렉터리 공유, 에이전트 쓰기는 CLI 하나 |
 | [[20-decisions/ADR-0008-mock-first-design]] | active | 디자인 기준은 `mock/index.html` 단일 소스. SPEC 과 충돌하면 목업을 따르고, 목업에 없는 UI 만 Orca 디자인 언어로 설계 |
+| [[20-decisions/ADR-0009-hub-command-channel]] | active | 허브의 보드 조작(삭제·이름 변경)을 하네스 command 레코드로 전달하고 앱이 실행 |
+| [[20-decisions/ADR-0010-board-background-gradient]] | active | 보드 배경은 CSS 그라디언트로 칠하고 `.graph-wrap` 에만 적용, 설정 토글로 켜고 끈다 |
 
 ## 작성 규칙
 
@@ -29,5 +31,3 @@ tags: []
 - 대안을 최소 1개 이상 표로 남긴다. 근거 없이 "결정했다"만 쓰지 않는다.
 
 상위: [[INDEX]]
-| [[ADR-0009-hub-command-channel]] | 허브의 보드 조작(삭제·이름 변경)을 하네스 command 레코드로 전달하고 앱이 실행 |
-| [[20-decisions/ADR-0010-board-background-gradient]] | 보드 배경은 CSS 그라디언트로 칠하고 `.graph-wrap` 에만 적용, 설정 토글로 켜고 끈다 |
