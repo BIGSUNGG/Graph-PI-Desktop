@@ -11,6 +11,10 @@ import { appSettingsFile, indexDbPath } from './paths.ts';
 
 const isDev = !app.isPackaged;
 
+// 이 앱은 텍스트·SVG 중심이라 GPU 가속 이득이 작고, Windows 에서 반복 실행 시 GPU 컨텍스트
+// 고갈로 렌더러가 죽는다(E2E 전체 실행에서 `Page crashed`). 기본은 소프트웨어 렌더링.
+if (process.env['GRAPH_PI_ENABLE_GPU'] !== '1') app.disableHardwareAcceleration();
+
 function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
     width: 1240,
@@ -30,6 +34,10 @@ function createWindow(): BrowserWindow {
   });
 
   win.once('ready-to-show', () => win.show());
+  // 렌더러가 죽으면 조용히 빈 화면이 된다. 원인을 로그로 남긴다.
+  win.webContents.on('render-process-gone', (_event, details) => {
+    console.error('[graph-pi] render-process-gone', details.reason, details.exitCode);
+  });
   // 외부 링크는 앱 안에서 열지 않는다.
   win.webContents.setWindowOpenHandler(({ url }) => {
     void shell.openExternal(url);

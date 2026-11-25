@@ -31,6 +31,7 @@ npm install          # 루트에서 1회. npm workspaces(packages/*) 를 함께 
 | `npm run smoke:integration` | 임시 레포 → 워크트리 → 실제 Pi 세션 → 세션 노드 필드 | PASS (steps failed=0) |
 | `npm run smoke:chat` | 실제 PTY 세션 + `sendPrompt` 문장이 세션 파일에 남는지 | PASS (steps failed=0) |
 | `npm run scenario:audit-chain` | Goal→Audit→승인/거부→다음 항목 배정 CLI 체인 | PASS (체크 전부 PASS) |
+| `GRAPH_PI_ENABLE_GPU=1 npm run dev` | 기본은 소프트웨어 렌더링. GPU 가속은 이 변수로만 켠다(E2E 전체 실행에서 렌더러 크래시 재현) | 선택 |
 
 `npm run dev` 는 개발 실행, `npm start` 는 빌드된 앱 실행이다.
 
