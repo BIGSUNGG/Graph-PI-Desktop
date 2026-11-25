@@ -48,34 +48,8 @@ const GOAL_STATUS_LABELS: Record<GoalStatus, string> = {
   aborted: '중단',
 };
 
-/** 대체(`supersededGoalIds`)되지 않은 유효 하위 Goal 만 남긴다(§10.2). */
-export function validChildGoals(
-  item: ListItemRecord,
-  goals: readonly GoalRecord[],
-): GoalRecord[] {
-  const superseded = new Set(item.supersededGoalIds);
-  const children: GoalRecord[] = [];
-  for (const id of item.childGoalIds) {
-    if (superseded.has(id)) continue;
-    const goal = goals.find((entry) => entry.id === id) ?? null;
-    if (goal !== null) children.push(goal);
-  }
-  return children;
-}
-
-/** 항목 표시 상태(파생, 저장하지 않음). */
-export function listDisplayState(
-  item: ListItemRecord,
-  goals: readonly GoalRecord[],
-): ListDisplayState {
-  if (item.completedAt !== null) return 'complete';
-  if (item.childGoalsFrozen) {
-    const children = validChildGoals(item, goals);
-    if (children.length === 0) return 'blocked';
-    if (children.some((goal) => goal.status === 'aborted')) return 'blocked';
-  }
-  return item.state;
-}
+// 순수 파생 함수는 JSX 모듈 밖에 둔다(렌더러 셀렉터 테스트가 node 에서 로드한다).
+import { listDisplayState, validChildGoals } from '../state/list-state.ts';
 
 /** 차단 사유. 계약에 `blockedBy` 필드가 없어 유효 하위 Goal 에서 파생한다. */
 function blockedReason(item: ListItemRecord, goals: readonly GoalRecord[]): string | null {

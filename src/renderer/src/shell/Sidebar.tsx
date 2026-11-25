@@ -52,6 +52,14 @@ export function Sidebar(props: { onCreateGroup: () => void }): ReactElement {
   const hub = sessions.find((session) => session.isHub) ?? null;
   /** 수용기준 11: 그룹 워크트리 경로 목록. 외부 세션 행은 `외부` 라벨을 단다. */
 
+  /** 어떤 워크트리에도 속하지 않는 세션(허브 제외). */
+  const looseOf = (list: readonly WorktreeView[]): PiSession[] => {
+    const placed = new Set(
+      list.flatMap((worktree) => sessionRows(sessions, worktree.path).map((row) => row.session.id)),
+    );
+    return sessions.filter((session) => !session.isHub && !placed.has(session.id));
+  };
+
   const renderWorktree = (worktree: WorktreeView): ReactElement => {
     const rows = sessionRows(sessions, worktree.path);
     const selected = selection.kind === 'worktree' && selection.worktreeId === worktree.id;
@@ -232,7 +240,21 @@ export function Sidebar(props: { onCreateGroup: () => void }): ReactElement {
                       {isActive ? '워크트리 없음' : '그룹을 선택하면 워크트리를 읽습니다'}
                     </div>
                   ) : (
-                    groupWorktrees.map(renderWorktree)
+                    <>
+                      {groupWorktrees.map(renderWorktree)}
+                      {looseOf(groupWorktrees).length === 0 ? null : (
+                        <div className="wt-item" key="loose">
+                          {/* 수용기준 11: 워크트리에 속하지 않는 세션도 목록에 남는다(외부 라벨). */}
+                          <div className="wt-row">
+                            <span className="d done" />
+                            <span className="wt-name">미분류</span>
+                          </div>
+                          <div className="wt-sess">
+                            {looseOf(groupWorktrees).map((session) => renderSession(session, '', null))}
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

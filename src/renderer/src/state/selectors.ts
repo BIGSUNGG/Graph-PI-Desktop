@@ -25,7 +25,7 @@ import type {
 } from '../../../shared/contract/index.ts';
 import type { AuditGateSummary, GateRow } from '../inspector/AuditTab.tsx';
 // 목록 차단 판정은 List 탭과 같은 규칙을 써야 한다(규칙을 두 곳에 두지 않는다).
-import { listDisplayState } from '../inspector/ListTab.tsx';
+import { listDisplayState } from './list-state.ts';
 
 export type SlotKind = 'goal' | 'list' | 'loop' | 'audit';
 
@@ -601,7 +601,9 @@ export function isExternalSession(
   for (const [id, path] of known) {
     // 워크트리 id 가 그대로 들어온 경우도 내부로 본다(계약은 cwd 지만 fixture 방어).
     if (pathKey(id) === target) return false;
-    if (pathKey(path) === target) return false;
+    const base = pathKey(path);
+    // 워크트리 하위 폴더에서 시작한 세션도 그 워크트리 안이다.
+    if (base === target || target.startsWith(`${base}/`)) return false;
   }
   return true;
 }

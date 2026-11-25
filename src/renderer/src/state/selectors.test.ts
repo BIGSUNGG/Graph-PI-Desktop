@@ -340,3 +340,35 @@ test('sessionSlots: Goal·List·Loop·Audit 네 슬롯이 각자의 레코드에
     'audit:issue:거부',
   ])
 })
+
+test('auditsForSession: 세션 Audit 탭은 그 세션 Goal 의 감사만 보여준다', needsModule, () => {
+  const { auditsForSession } = selectors()
+  const snapshot = harness({
+    goals: [goal('g-s1', { sessionId: 's1' }), goal('g-s2', { sessionId: 's2' })],
+    audits: [
+      audit('a-own', { goalId: 'g-s1', scope: 'session' }),
+      audit('a-other', { goalId: 'g-s2', scope: 'session' }),
+    ],
+  })
+
+  assert.deepEqual(
+    auditsForSession(snapshot, 's1').map((entry) => entry.id),
+    ['a-own'],
+  )
+})
+
+test('auditsForSession: 자식 Goal 이 있으면 세션 Audit 대신 상위 감사를 보여준다', needsModule, () => {
+  const { auditsForSession } = selectors()
+  const snapshot = harness({
+    goals: [goal('g-s1', { sessionId: 's1' }), goal('g-child', { parentGoalId: 'g-s1' })],
+    audits: [
+      audit('a-session', { goalId: 'g-s1', scope: 'session' }),
+      audit('a-parent', { goalId: 'g-s1', scope: 'parent' }),
+    ],
+  })
+
+  assert.deepEqual(
+    auditsForSession(snapshot, 's1').map((entry) => entry.id),
+    ['a-parent'],
+  )
+})

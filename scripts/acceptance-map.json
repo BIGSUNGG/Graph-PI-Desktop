@@ -167,14 +167,13 @@
       "requirement": "Orca 에 없는 경로 세션은 `외부` 라벨로 남고 제어가 비활성이다",
       "proof": "e2e",
       "evidence": [
+        "e2e/external.spec.ts",
         "src/renderer/src/state/selectors.ts",
-        "src/renderer/src/board/NodeCard.tsx",
         "src/renderer/src/shell/Sidebar.tsx",
-        "src/renderer/src/chat/SessionList.tsx",
-        "e2e/external.spec.ts"
+        "src/renderer/src/chat/Composer.tsx"
       ],
       "status": "done",
-      "note": "isExternalSession 이 그룹 폴더 안·워크트리 밖 세션을 외부로 판정하고 카드·사이드바·세션목록에 외부 배지를, 컴포저에 전송 차단 문구를 표시한다. e2e/external.spec.ts 통과.",
+      "note": "워크트리에 속하지 않는 세션도 사이드바 미분류 목록에 남고 외부 라벨이 붙으며, 그 세션의 전송은 막힌다. 워크트리 하위 폴더 세션은 내부로 본다.",
       "auditedAt": "2026-11-24"
     },
     {
@@ -249,12 +248,14 @@
       "requirement": "그룹 생성 시 허브 1개·워크트리 0개가 생기고 프리셋 지시가 허브 컨텍스트로 전달된다",
       "proof": "cli",
       "evidence": [
+        "src/main/preset.ts",
+        "src/main/preset.test.ts",
         "src/main/ipc.ts",
         "src/renderer/src/dialogs/GroupCreateDialog.tsx",
-        "scripts/smoke-orca.mjs"
+        "e2e/group-create.spec.ts"
       ],
-      "status": "partial",
-      "note": "허브만 launch(워크트리 미생성), preset 지시 텍스트가 전달되지 않음",
+      "status": "done",
+      "note": "GroupCreateDialog 가 preset·firstPrompt 를 함께 보내고 group:create 가 워크트리 없이 허브 1개를 만들며, 허브 프롬프트에 프리셋 지시가 들어간다(presetInstruction). Manual 은 지시 없이 대기 문구만 받는다.",
       "auditedAt": "2026-11-24"
     },
     {
@@ -744,13 +745,12 @@
       "requirement": "자식 없는 세션 Goal 은 세션 Audit 이 되고 그 세션 Audit 탭에만 표시되며 독립 Audit 카드가 없다",
       "proof": "unit",
       "evidence": [
+        "src/renderer/src/state/selectors.test.ts",
         "src/renderer/src/inspector/AuditTab.tsx",
-        "src/renderer/src/views/InspectorView.tsx",
-        "src/main/pi/lineage.ts",
-        "packages/harness/src/cli.ts"
+        "src/renderer/src/board/NodeCard.tsx"
       ],
-      "status": "partial",
-      "note": "규칙 함수 테스트됨, 탭 한정 표시·독립 Audit 카드 없음은 코드로만",
+      "status": "done",
+      "note": "세션 Audit 은 그 세션 Goal 의 감사만 보여주고(자식 Goal 이 있으면 상위 감사), 보드·사이드바에는 독립 Audit 카드가 없다(AUDIT 배지만).",
       "auditedAt": "2026-11-24"
     },
     {
