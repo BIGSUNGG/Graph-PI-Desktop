@@ -105,3 +105,22 @@ test('Loop 상한에 닿으면 Loop 와 Goal 이 함께 멈춘다', async () => 
   assert.equal(goal?.status, 'paused');
   assert.equal(goal?.pauseReason, 'loop_bounds');
 });
+
+test('중단한 Goal 은 아카이브에 남고 기록에서 계속 조회된다', async () => {
+  const data = mkdtempSync(join(tmpdir(), 'harness-archive-'));
+  const goalId = idOf(
+    run(data, ['goal', '--group', 'g1', '--writer', 'hub', '--objective', '보관 대상', '--check', '테스트']),
+    'goal',
+  );
+
+  const aborted = run(data, ['goal', 'abort', '--group', 'g1', '--writer', 'hub', '--id', goalId, '--reason', '범위 변경']);
+  assert.match(aborted, /status=aborted/);
+
+  const archive = run(data, ['archive', '--group', 'g1', '--writer', 'hub']);
+  assert.match(archive, new RegExp(`archived ${goalId} status=aborted`));
+  assert.match(archive, /ok archive count=1/);
+
+  // 세션 파일이 아니라 그룹 기록에 남으므로 세션이 없어도 조회된다.
+  const shown = await snapshot(data);
+  assert.equal(shown.goals.find((goal) => goal.id === goalId)?.archivedAt !== null, true);
+});

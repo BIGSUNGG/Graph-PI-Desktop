@@ -866,12 +866,12 @@
       "requirement": "완료·중단 Goal 과 Audit 이력이 아카이브에 남고 세션 삭제 후에도 조회된다",
       "proof": "unit",
       "evidence": [
-        "src/shared/contract/harness.ts",
         "packages/harness/src/cli.ts",
-        "src/renderer/src/inspector/ListTab.tsx"
+        "packages/harness/src/cli-audit.test.ts",
+        "src/renderer/src/inspector/GoalTab.tsx"
       ],
-      "status": "partial",
-      "note": "archiveGoal 은 archivedAt 만, 아카이브 조회·보존 규칙 없음",
+      "status": "done",
+      "note": "완료·중단 Goal 은 archivedAt 을 남기고 아카이브 명령으로 조회되며, Audit 이력은 그룹 기록(state.jsonl)에 있어 세션 파일을 지워도 남는다(CLI 테스트). 인스펙터 Goal 탭은 아카이브 시각을 표시한다.",
       "auditedAt": "2026-11-24"
     },
     {

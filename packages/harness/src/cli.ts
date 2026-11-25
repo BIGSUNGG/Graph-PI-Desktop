@@ -73,7 +73,7 @@ function commandAction(value: string): AgentCommandAction {
   return found;
 }
 
-const COMMANDS = ['goal', 'list', 'loop', 'todo', 'audit', 'ask', 'say', 'command', 'show'] as const;
+const COMMANDS = ['goal', 'list', 'loop', 'todo', 'audit', 'ask', 'say', 'command', 'show', 'archive'] as const;
 
 const AUDIT_GATES: readonly AuditGate[] = ['passed', 'pending', 'none'];
 
@@ -399,7 +399,11 @@ async function goalComplete(ctx: Ctx): Promise<number> {
   );
   if (!completed.ok) return fail(completed.error);
 
-  const seq = await appendNext(ctx.store, ctx.groupId, completed.record);
+  // 완료된 Goal 은 아카이브에 남긴다(수용기준 54). 상태·Audit 이력은 그대로 보존된다.
+  const seq = await appendNext(ctx.store, ctx.groupId, {
+    ...completed.record,
+    archivedAt: new Date().toISOString(),
+  });
   process.stdout.write(
     `ok goal ${completed.record.id} seq=${seq} status=${completed.record.status} audit=${verdict.auditId}\n`,
   );
@@ -423,6 +427,43 @@ async function goalComplete(ctx: Ctx): Promise<number> {
   if (advance.blocked !== null) {
     process.stdout.write(`blocked list ${advance.blocked.itemId} reason=${advance.blocked.reason}\n`);
   }
+  return 0;
+}
+
+/** `goal abort --id --reason` — Goal 을 중단하고 아카이브에 남긴다(수용기준 54). */
+async function goalAbort(ctx: Ctx): Promise<number> {
+  const id = goalIdFlag(ctx.args);
+  if (id === null) return fail('--id 또는 --goal-id 값이 필요합니다');
+
+  const snapshot = await ctx.store.snapshot(ctx.groupId);
+  const goal = snapshot.goals.find((candidate) => candidate.id === id);
+  if (goal === undefined) return fail(`Goal 을 찾을 수 없습니다: ${id}`);
+
+  const at = new Date().toISOString();
+  const seq = await appendNext(ctx.store, ctx.groupId, {
+    ...goal,
+    status: 'aborted' as const,
+    pauseReason: null,
+    archivedAt: at,
+    updatedAt: at,
+  });
+  process.stdout.write(
+    `ok goal ${goal.id} seq=${seq} status=aborted reason=${one(ctx.args, 'reason') ?? ''}\n`,
+  );
+  return 0;
+}
+
+/** `archive` — 아카이브에 남은 Goal 과 그 Audit 이력을 보여준다(수용기준 54). */
+async function archiveReport(ctx: Ctx): Promise<number> {
+  const snapshot = await ctx.store.snapshot(ctx.groupId);
+  const archived = snapshot.goals.filter((goal) => goal.archivedAt !== null);
+  for (const goal of archived) {
+    const audits = snapshot.audits.filter((audit) => audit.goalId === goal.id).length;
+    process.stdout.write(
+      `archived ${goal.id} status=${goal.status} archivedAt=${goal.archivedAt ?? ''} audits=${audits}\n`,
+    );
+  }
+  process.stdout.write(`ok archive count=${archived.length}\n`);
   return 0;
 }
 
@@ -723,6 +764,8 @@ async function run(argv: string[]): Promise<number> {
   if (args.command === 'goal' && sub === null && (args.flags.get('check') ?? []).length === 0) {
     return fail('완료 조건이 하나 이상 필요합니다. --check "<검증 항목>" 을 지정하세요');
   }
+  if (args.command === 'goal' && sub === 'abort') return await goalAbort(ctx);
+  if (args.command === 'archive') return await archiveReport(ctx);
   if (args.command === 'goal' && sub === 'complete') return await goalComplete(ctx);
   if (args.command === 'goal' && args.flags.has('revision-bump')) return await goalRevisionBump(ctx);
   if (args.command === 'list' && sub === 'freeze') return await listFreeze(ctx);

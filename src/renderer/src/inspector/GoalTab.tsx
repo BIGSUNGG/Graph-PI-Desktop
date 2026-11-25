@@ -176,6 +176,7 @@ export function GoalTab(props: GoalTabProps): ReactElement {
       <div className="g-meta">
         revision {goal.revision} · 감사 {goal.auditAttemptCount}회
         {goal.completedAt === null ? '' : ` · 완료 ${clockOf(goal.completedAt)}`}
+        {goal.archivedAt === null ? '' : ` · 아카이브 ${clockOf(goal.archivedAt)}`}
       </div>
       {goal.pauseReason === null ? null : (
         <div className="g-meta" data-pause-reason={goal.pauseReason}>
