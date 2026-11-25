@@ -993,12 +993,14 @@
       "requirement": "Manual 그룹은 프리셋 지시 없이 허브가 구조를 정하고 첫 프롬프트가 없으면 입력을 기다린다",
       "proof": "manual",
       "evidence": [
-        "src/renderer/src/dialogs/GroupCreateDialog.tsx",
-        "src/main/ipc.ts"
+        "scripts/scenario-manual.mjs",
+        "src/main/preset.ts",
+        "src/main/preset.test.ts",
+        "src/renderer/src/dialogs/GroupCreateDialog.tsx"
       ],
-      "status": "partial",
-      "note": "Manual 프리셋 문구·첫 프롬프트 대기 문장은 구현. 허브가 구조를 스스로 정하는 장면은 시나리오 관찰 필요.",
-      "auditedAt": "2026-11-24"
+      "status": "done",
+      "note": "실제 모델 실행 관찰(tag=mww9u7kj): Manual 프롬프트에 프리셋 단계 지시가 없고 첫 요청이 실렸으며, 허브가 스스로 구조를 정해 question 레코드를 남겼다.",
+      "auditedAt": "2026-11-26"
     },
     {
       "id": "63",
