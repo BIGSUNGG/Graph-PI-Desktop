@@ -410,12 +410,11 @@
       "requirement": "목업 선택 질문을 받은 세션이 `질문 대기`로 강조되고 답이 전달되어 재개된다",
       "proof": "e2e",
       "evidence": [
-        "src/renderer/src/shell/Sidebar.tsx",
-        "src/renderer/src/chat/QuestionCards.tsx",
-        "src/main/ipc.ts"
+        "src/main/ipc.ts",
+        "src/renderer/src/chat/QuestionCards.tsx"
       ],
       "status": "partial",
-      "note": "질문 대기 강조·답 기록 있으나 답변 후 PTY 재개 없음",
+      "note": "구현: 답변 기록 후 질문 세션을 재개한다(터미널 있으면 sendPrompt, 없으면 같은 cwd 로 launchPi). 관찰 증거(실 PTY)는 아직 없음.",
       "auditedAt": "2026-11-24"
     },
     {

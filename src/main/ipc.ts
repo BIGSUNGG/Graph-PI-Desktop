@@ -516,6 +516,8 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
   handle('harness:answer', async (request: AnswerQuestionRequest): Promise<MutationResult> => {
     const answered = await answerQuestion(request);
     if (answered === null) return fail('질문을 찾을 수 없습니다');
+    // 답변은 기록만 하고 끝나지 않는다 — 질문한 세션이 이어서 진행해야 한다(SPEC-hub §26).
+    await resumeAfterAnswer(answered.groupId, answered.question);
     push({ type: 'harness', snapshot: await harness.readSnapshot(answered.groupId) });
     return { ok: true, error: null };
   });
@@ -616,7 +618,7 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
 
   async function answerQuestion(
     request: AnswerQuestionRequest,
-  ): Promise<{ groupId: string } | null> {
+  ): Promise<{ groupId: string; question: QuestionRecord } | null> {
     for (const group of groups.list()) {
       const snapshot = await harness.readSnapshot(group.id);
       const question = snapshot.questions.find((item) => item.id === request.questionId);
@@ -629,9 +631,33 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
         answeredAt: new Date().toISOString(),
       };
       await harness.append(group.id, answered);
-      return { groupId: group.id };
+      return { groupId: group.id, question: answered };
     }
     return null;
+  }
+
+  /**
+   * 답이 기록되면 질문한 세션을 다시 움직인다(SPEC-hub §26). 살아 있는 터미널이 있으면 그리로
+   * 이어서 진행하라는 한 줄을 보내고, 아니면 같은 cwd 로 세션을 재개한다.
+   */
+  async function resumeAfterAnswer(groupId: string, question: QuestionRecord): Promise<void> {
+    if (question.sessionId === null) return;
+    const live = await pi.sessions(groupId, rootsOf(groupId));
+    const session = live.sessions.find((entry) => entry.id === question.sessionId) ?? null;
+    const prompt = '질문에 답변이 기록되었습니다. 기록된 답을 기준으로 계속 진행하세요.';
+
+    const terminalId = session === null ? null : terminalIdFor(groupId, session);
+    if (terminalId !== null) {
+      await orca.sendPrompt(terminalId, prompt);
+      return;
+    }
+
+    const cwd = session?.worktreeId ?? '';
+    if (cwd === '') return;
+    const launched = await orca.launchPi({ cwd, prompt, model: session?.model ?? null });
+    if (launched.ok && launched.result.terminalId !== null) {
+      await rememberTerminal(groupId, cwd, launched.result.terminalId);
+    }
   }
 
   return {
