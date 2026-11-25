@@ -433,11 +433,12 @@
       "evidence": [
         "src/main/refs/candidates.ts",
         "src/renderer/src/chat/Composer.tsx",
-        "src/main/ipc.ts"
+        "src/main/ipc.ts",
+        "src/main/refs/create.test.ts"
       ],
-      "status": "partial",
-      "note": "후보 표시·refs:create 구현, 확인 팝업·renderer 호출 경로 없음",
-      "auditedAt": "2026-11-24"
+      "status": "done",
+      "note": "후보 표시 + Composer 확인 항목이 refs:create 호출(클릭 전 생성 없음), 생성 후 그룹 연결·refresh 로 해석 가능",
+      "auditedAt": "2026-11-25"
     },
     {
       "id": "28",
@@ -448,12 +449,12 @@
       "proof": "unit",
       "evidence": [
         "src/main/refs/candidates.ts",
-        "src/shared/refs/tokenize.ts",
+        "src/main/refs/candidates.test.ts",
         "src/shared/refs/tokenize.test.ts"
       ],
-      "status": "partial",
-      "note": "워크트리 최상위 후보만, '/' 하위 자동완성 없음(생성 금지는 테스트됨)",
-      "auditedAt": "2026-11-24"
+      "status": "done",
+      "note": "'/' 뒤 파일·폴더 자동완성 구현(경로 이탈·모르는 head 는 빈 목록), 없는 파일·폴더 생성 금지 유지",
+      "auditedAt": "2026-11-25"
     },
     {
       "id": "29",

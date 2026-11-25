@@ -533,7 +533,16 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
   handle('refs:create', async ({ groupId, kind, handle: refHandle }) => {
     const group = groups.get(groupId);
     const target = refTarget(orca.get(), group?.worktreeIds ?? [], group?.parentRepo ?? '');
-    return createRef(orca, { kind, handle: refHandle, repo: target.repo, base: target.base });
+    const created = await createRef(orca, { kind, handle: refHandle, repo: target.repo, base: target.base });
+    // 만든 워크트리를 그룹에 붙여야 후보·해석에 잡혀 실제로 전송할 수 있다(SPEC 587).
+    if (created.candidate !== null && created.worktreeId !== null && group !== null) {
+      await groups.linkWorktree(groupId, created.worktreeId, created.candidate.detail);
+      // 방금 만든 워크트리가 스냅샷에 들어와야 후보·해석에 잡힌다.
+      await orca.refresh();
+      push({ type: 'orca', snapshot: orca.get() });
+      push({ type: 'status', status: await statusOf() });
+    }
+    return created;
   });
 
   // ── 그룹·워크트리 ─────────────────────────────────────────────

@@ -68,6 +68,7 @@ test('createRef 는 워크트리가 만들어지면 후보를 돌려준다', asy
   const result = await createRef(orca as never, { kind: 'worktree', handle: 'web', repo: 'proj-1', base: 'main' })
   assert.deepEqual(result, {
     candidate: { kind: 'worktree', handle: 'web', label: 'web', detail: 'C:/wt/new' },
+    worktreeId: 'new',
     error: null,
   })
 })

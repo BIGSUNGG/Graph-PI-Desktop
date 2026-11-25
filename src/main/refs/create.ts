@@ -13,7 +13,12 @@ export type CreateRefInput = {
   base: string;
 }
 
-export type CreateRefResult = { candidate: RefCandidate | null; error: string | null }
+export type CreateRefResult = {
+  candidate: RefCandidate | null;
+  /** 만들어진 워크트리 id. 실패·비워크트리면 null — 그룹 연결에만 쓴다. */
+  worktreeId: string | null;
+  error: string | null;
+};
 
 /** 그룹 스냅샷에서 워크트리를 만들 때 쓸 repo·base 를 고른다. */
 export function refTarget(
@@ -33,10 +38,10 @@ export async function createRef(
   input: CreateRefInput,
 ): Promise<CreateRefResult> {
   if (input.kind !== 'worktree') {
-    return { candidate: null, error: '워크트리 참조만 만들 수 있습니다' }
+    return { candidate: null, worktreeId: null, error: '워크트리 참조만 만들 수 있습니다' }
   }
   if (input.repo === null) {
-    return { candidate: null, error: '저장소를 알 수 없어 워크트리를 만들 수 없습니다' }
+    return { candidate: null, worktreeId: null, error: '저장소를 알 수 없어 워크트리를 만들 수 없습니다' }
   }
   const created = await orca.createWorktree({
     repo: input.repo,
@@ -45,9 +50,9 @@ export async function createRef(
     base: input.base,
     parentWorktreeId: null,
   })
-  if (!created.ok) return { candidate: null, error: created.error }
+  if (!created.ok) return { candidate: null, worktreeId: null, error: created.error }
   const tree = created.result
-  if (tree === null) return { candidate: null, error: '워크트리 생성 결과를 읽지 못했습니다' }
+  if (tree === null) return { candidate: null, worktreeId: null, error: '워크트리 생성 결과를 읽지 못했습니다' }
   return {
     candidate: {
       kind: 'worktree',
@@ -55,6 +60,7 @@ export async function createRef(
       label: tree.displayName === '' ? input.handle : tree.displayName,
       detail: tree.path,
     },
+    worktreeId: tree.id,
     error: null,
   }
 }
