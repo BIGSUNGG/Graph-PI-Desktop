@@ -110,7 +110,7 @@
         "src/renderer/src/shell/Sidebar.tsx"
       ],
       "status": "partial",
-      "note": "보드 선 5종·계보 구현, 채팅 목록은 평면·인스펙터 계보 트리 없음",
+      "note": "보드 선 5종·계보 방향은 구현·테스트됨. 채팅 목록과 인스펙터에 계보 트리 뷰가 없어 부분 완료.",
       "auditedAt": "2026-11-24"
     },
     {
@@ -139,7 +139,7 @@
         "src/renderer/src/views/InspectorView.tsx"
       ],
       "status": "partial",
-      "note": "워크트리 항상 펼침, 보드/인스펙터 인라인 채팅 없음",
+      "note": "워크트리는 항상 펼쳐진다. 보드·인스펙터 인라인 채팅(세션 카드에서 바로 대화)은 미구현.",
       "auditedAt": "2026-11-24"
     },
     {
@@ -220,7 +220,7 @@
         "scripts/smoke-orca.mjs"
       ],
       "status": "partial",
-      "note": "launch→노드 경로 있으나 sessionId 미반환·90초 휴리스틱, 스모크는 pi -p 직접",
+      "note": "launch→세션 노드 경로는 smoke-chat 8단계로 실측했지만, launch 응답이 sessionId 를 돌려주지 않고 파일 스캔(90초 창)으로 나타난다. 실 Orca PTY 를 앱 화면에서 확인하는 관찰은 아직.",
       "auditedAt": "2026-11-24"
     },
     {
@@ -287,7 +287,7 @@
         "src/shared/contract/harness.ts"
       ],
       "status": "partial",
-      "note": "허브가 남긴 command 레코드를 확인 없이 실행하고 결과를 같은 id 로 append 한다(워크트리 삭제·세션 터미널 종료·이름 별칭). commands.test.ts 7건 통과. 실제 허브 세션에서 요청→보드 반영까지는 아직 관찰하지 않았다.",
+      "note": "command 레코드 실행은 commands.test.ts 7건으로 검증. 실제 허브 세션이 남긴 command 가 보드에 반영되는 관찰은 아직.",
       "auditedAt": "2026-11-24"
     },
     {
@@ -416,7 +416,7 @@
         "src/renderer/src/chat/QuestionCards.tsx"
       ],
       "status": "partial",
-      "note": "구현: 답변 기록 후 질문 세션을 재개한다(터미널 있으면 sendPrompt, 없으면 같은 cwd 로 launchPi). 관찰 증거(실 PTY)는 아직 없음.",
+      "note": "답변 후 재개 로직은 구현·단위 테스트. 실 PTY 에서 재개 프롬프트가 전달되는 관찰은 아직(smoke 확장 필요).",
       "auditedAt": "2026-11-24"
     },
     {
@@ -810,7 +810,7 @@
         "src/shared/contract/harness.ts"
       ],
       "status": "partial",
-      "note": "판정 술어만 있고 감사 세션 런타임·worktreeState 채움 없음",
+      "note": "auditWriteRefused·pinCommit 판정 술어와 테스트만 있다. 감사 세션 런타임(쓰기 도구 거부·테스트 명령 실행·worktreeState 비교 후 error verdict)은 미구현.",
       "auditedAt": "2026-11-24"
     },
     {
@@ -992,7 +992,7 @@
         "src/main/ipc.ts"
       ],
       "status": "partial",
-      "note": "Manual 프리셋 생성·지시 미전달, 허브 구조 자율 결정 미관찰",
+      "note": "Manual 프리셋 문구·첫 프롬프트 대기 문장은 구현. 허브가 구조를 스스로 정하는 장면은 시나리오 관찰 필요.",
       "auditedAt": "2026-11-24"
     },
     {
@@ -1007,7 +1007,7 @@
         "packages/harness/src/cli.ts"
       ],
       "status": "partial",
-      "note": "시작 조건 판정만 있고 순서 구동 실행기·시나리오 없음",
+      "note": "감사 순서 판정(자식 감사→상위→그룹)은 정책 테스트로 고정. 실제 Feature 그룹에서 그 순서가 일어나는 관찰은 미완.",
       "auditedAt": "2026-11-24"
     },
     {
