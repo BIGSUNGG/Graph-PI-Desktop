@@ -6,10 +6,12 @@ import type { ReactElement } from 'react';
 import type { PiSession } from '../../../shared/contract/index.ts';
 import { clockOf, shortModel, tokenK } from '../board/layout.ts';
 import { useDispatch, useVisibleWorktrees } from '../state/hooks.ts';
-import { isExternalSession } from '../state/selectors.ts';
+import { isExternalSession, lineageDepth } from '../state/selectors.ts';
 
 export function SessionList(props: { sessions: PiSession[]; selectedId: string | null }): ReactElement {
   const actions = useDispatch();
+  // 계보를 평면 목록에 깊이로 드러낸다(수용기준 7).
+  const depth = lineageDepth(props.sessions);
   const worktrees = useVisibleWorktrees();
   /** 수용기준 11: Orca 가 관리하지 않는 경로의 세션은 목록에서도 `외부` 라벨을 단다. */
   return (
@@ -22,6 +24,8 @@ export function SessionList(props: { sessions: PiSession[]; selectedId: string |
               type="button"
               className={`chat-item ${session.state}${active ? ' is-active' : ''}`}
               title={session.title}
+              data-depth={String(depth.get(session.id) ?? 0)}
+              style={{ paddingLeft: 10 + 12 * (depth.get(session.id) ?? 0) }}
               onClick={() => {
                 actions.select({ kind: 'session', sessionId: session.id });
               }}

@@ -372,3 +372,33 @@ test('auditsForSession: 자식 Goal 이 있으면 세션 Audit 대신 상위 감
     ['a-parent'],
   )
 })
+
+/** 수용기준 7: 세션 계보가 트리 깊이로 드러난다. */
+test('lineageDepth 는 부모 사슬을 세고 순환에서 멈춘다', needsModule, () => {
+  const mk = (id: string, parent: string | null): PiSession => ({
+    id,
+    groupId: 'g',
+    title: id,
+    worktreeId: null,
+    model: null,
+    state: 'idle',
+    startedAt: '2026-11-24T00:00:00.000Z',
+    lastActivityAt: '2026-11-24T00:00:00.000Z',
+    usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+    parentSessionId: parent,
+    isAudit: false,
+    isHub: false,
+    filePath: null,
+    pendingLaunch: false,
+  })
+
+  const depth = selectors().lineageDepth([mk('root', null), mk('child', 'root'), mk('grand', 'child')]);
+  assert.equal(depth.get('root'), 0);
+  assert.equal(depth.get('child'), 1);
+  assert.equal(depth.get('grand'), 2);
+
+  // 순환해도 멈춘다(무한 루프 방지).
+  const cyclic = selectors().lineageDepth([mk('a', 'b'), mk('b', 'a')]);
+  assert.equal(cyclic.get('a'), 1);
+  assert.equal(cyclic.get('b'), 1);
+});

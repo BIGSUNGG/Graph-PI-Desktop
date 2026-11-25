@@ -607,3 +607,28 @@ export function isExternalSession(
   }
   return true;
 }
+
+/**
+ * 세션 계보 깊이(수용기준 7). `parentSessionId` 사슬을 따라 루트=0 부터 센다.
+ * 순환이나 끊긴 부모는 루트로 취급해 무한 루프를 막는다.
+ */
+export function lineageDepth(sessions: readonly PiSession[]): Map<string, number> {
+  const byId = new Map(sessions.map((session) => [session.id, session]));
+  const depth = new Map<string, number>();
+
+  for (const session of sessions) {
+    let current = session;
+    let steps = 0;
+    const seen = new Set<string>([session.id]);
+    while (current.parentSessionId !== null) {
+      const parent = byId.get(current.parentSessionId);
+      if (parent === undefined || seen.has(parent.id)) break;
+      seen.add(parent.id);
+      current = parent;
+      steps += 1;
+    }
+    depth.set(session.id, steps);
+  }
+
+  return depth;
+}
