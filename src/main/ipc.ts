@@ -41,6 +41,7 @@ import { groupStateFile, groupsDir } from './paths.ts';
 import { orcaBin } from './orca/cli.ts';
 import { planHub, samePath } from './pi/hub.ts';
 import { runCommands } from './harness/commands.ts';
+import { RESUME_PROMPT, resumeSession } from './harness/resume.ts';
 import { planDelivery } from './pi/messages.ts';
 import { buildCandidates } from './refs/candidates.ts';
 import { createRef, refTarget } from './refs/create.ts';
@@ -644,17 +645,16 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
     if (question.sessionId === null) return;
     const live = await pi.sessions(groupId, rootsOf(groupId));
     const session = live.sessions.find((entry) => entry.id === question.sessionId) ?? null;
-    const prompt = '질문에 답변이 기록되었습니다. 기록된 답을 기준으로 계속 진행하세요.';
-
     const terminalId = session === null ? null : terminalIdFor(groupId, session);
-    if (terminalId !== null) {
-      await orca.sendPrompt(terminalId, prompt);
+    if (session !== null && terminalId !== null) {
+      // 앱과 실측 스크립트가 같은 문구·경로를 쓰도록 헬퍼로 모았다(수용기준 26).
+      await resumeSession(orca, { session, terminalId });
       return;
     }
 
     const cwd = session?.worktreeId ?? '';
     if (cwd === '') return;
-    const launched = await orca.launchPi({ cwd, prompt, model: session?.model ?? null });
+    const launched = await orca.launchPi({ cwd, prompt: RESUME_PROMPT, model: session?.model ?? null });
     if (launched.ok && launched.result.terminalId !== null) {
       await rememberTerminal(groupId, cwd, launched.result.terminalId);
     }

@@ -72,3 +72,5 @@ node packages/harness/src/cli.ts todo --group demo --title "확인" --state open
 - [[10-architecture/mvp-app-and-harness]]
 - [[20-decisions/ADR-0007-electron-mock-parity-app]]
 - [[30-specs/SPEC-mvp-acceptance]]
+
+| `npm run smoke:resume` | 질문 답변 후 재개 실측 — 코드가 아니라 실제 PTY 로 확인한다 | `node scripts/smoke-resume.mjs` |

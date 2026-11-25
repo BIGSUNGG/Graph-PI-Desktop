@@ -415,11 +415,12 @@
       "requirement": "목업 선택 질문을 받은 세션이 `질문 대기`로 강조되고 답이 전달되어 재개된다",
       "proof": "e2e",
       "evidence": [
-        "src/main/ipc.ts",
-        "src/renderer/src/chat/QuestionCards.tsx"
+        "scripts/smoke-resume.mjs",
+        "src/main/harness/resume.ts",
+        "src/main/ipc.ts"
       ],
-      "status": "partial",
-      "note": "답변 후 재개 로직은 구현·단위 테스트. 실 PTY 에서 재개 프롬프트가 전달되는 관찰은 아직(smoke 확장 필요).",
+      "status": "done",
+      "note": "실측: scripts/smoke-resume.mjs 가 Orca 워크트리+PTY 세션을 띄운 뒤 앱과 같은 resumeSession 으로 재개 프롬프트를 보내고, 세션 파일에 user 메시지로 남는 것을 확인했다(PASS steps=7). ipc 의 resumeAfterAnswer 도 같은 헬퍼를 쓴다.",
       "auditedAt": "2026-11-24"
     },
     {
