@@ -264,11 +264,11 @@
       "requirement": "Feature·Loop 는 첫 프롬프트가 필수이고 Manual 은 비워도 생성된다",
       "proof": "e2e",
       "evidence": [
-        "src/renderer/src/dialogs/GroupCreateDialog.tsx",
-        "src/shared/contract/index.ts"
+        "e2e/group-create.spec.ts",
+        "src/renderer/src/dialogs/GroupCreateDialog.tsx"
       ],
-      "status": "partial",
-      "note": "required 플래그로 Feature·Loop 제출 검증, 버튼 비활성 아님·E2E 없음",
+      "status": "done",
+      "note": "Feature·Loop 는 프롬프트가 비면 생성 버튼이 비활성이고 안내가 뜨며, Manual 은 비워도 활성이다(e2e 1건).",
       "auditedAt": "2026-11-24"
     },
     {
