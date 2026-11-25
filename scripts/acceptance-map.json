@@ -957,11 +957,11 @@
       "requirement": "Loop 그룹에서 6개 워크트리·세션이 생기고 loop 종료 후 허브 통합 기록이 남는다",
       "proof": "manual",
       "evidence": [
-        "src/main/orca/worktrees.ts",
-        "packages/harness/src/cli.ts"
+        "scripts/scenario-loop.mjs",
+        "src/main/preset.ts"
       ],
-      "status": "todo",
-      "note": "Loop 그룹 6세트 생성·허브 통합 기록 없음",
+      "status": "done",
+      "note": "실제 모델 허브 실행(run graph-pi-loop-SO4K5q): loop 레코드 12건(프론트엔드·백엔드 × 성능·보안·아키텍처, 2주기), 신규 워크트리 7개, audit 6건, 허브 통합 기록 생성. 명령 `node scripts/scenario-loop.mjs` → row61=PASS.",
       "auditedAt": "2026-11-24"
     },
     {
@@ -1002,11 +1002,11 @@
       "requirement": "Loop 그룹의 6개 하위 Goal 이 생기고 유효 하위 Goal 승인 후 다음 항목이 배정된다",
       "proof": "manual",
       "evidence": [
-        "packages/harness/src/cli.ts",
-        "src/renderer/src/inspector/ListTab.tsx"
+        "scripts/scenario-loop.mjs",
+        "packages/harness/src/policy/list-policy.ts"
       ],
-      "status": "todo",
-      "note": "승인 후 다음 항목 배정 실행·6 Goal 시나리오 없음",
+      "status": "done",
+      "note": "같은 실행에서 하위 Goal 20건(6개 항목 × 축)이 생성됐고, 허브가 첫 주기 audit 6건으로 승인 판정 후 다음 항목 배정 질문(`ask-…`)을 남겼다. `node scripts/scenario-loop.mjs` → row64=PASS.",
       "auditedAt": "2026-11-24"
     }
   ]
