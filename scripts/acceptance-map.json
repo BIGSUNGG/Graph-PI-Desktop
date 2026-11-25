@@ -329,11 +329,12 @@
       "requirement": "모르는 레코드 타입이 섞여도 열람되고 경고 1건만 표시된다",
       "proof": "e2e",
       "evidence": [
-        "src/main/pi/session-file.ts",
+        "e2e/warning.spec.ts",
+        "src/main/pi/session-file.test.ts",
         "src/renderer/src/chat/MessageStream.tsx"
       ],
-      "status": "partial",
-      "note": "unknown-record-type 경고 1건 표시, 미지 타입 픽스처·E2E 없음",
+      "status": "done",
+      "note": "모르는 레코드 두 종류가 섞여도 경고 1건만 배너로 표시되고 본문은 그대로 열람된다(e2e 1건 + 파서 테스트 4건).",
       "auditedAt": "2026-11-24"
     },
     {
