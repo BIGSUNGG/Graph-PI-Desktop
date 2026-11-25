@@ -28,6 +28,7 @@ import {
   type SlotState,
 } from '../state/selectors.ts';
 import { SlotBadges } from '../state/slot-badges.tsx';
+import { DIALOG_EVENT } from '../dialogs/DialogHost.tsx';
 import { ViewSwitch } from './ViewSwitch.tsx';
 
 /** 워크트리 점 색은 소속 세션 상태 집계에서 나온다(mock/index.html:1065-1067). */
@@ -71,6 +72,20 @@ export function Sidebar(props: { onCreateGroup: () => void }): ReactElement {
           </span>
           {worktree.dirty ? <span className="wt-dirty">미커밋</span> : null}
           <span className="wt-chev">▾</span>
+        </button>
+        <button
+          className="wt-del"
+          type="button"
+          title="워크트리 삭제"
+          aria-label={`${worktree.repo} · ${worktree.branch} 워크트리 삭제`}
+          onClick={() => {
+            // 삭제는 반드시 확인 다이얼로그를 거친다(SPEC G2, graph-pi-ade 198).
+            window.dispatchEvent(
+              new CustomEvent(DIALOG_EVENT, { detail: { kind: 'worktree-delete', worktreeId: worktree.id } }),
+            );
+          }}
+        >
+          ×
         </button>
         <div className="wt-sess">
           {rows.length === 0 ? (

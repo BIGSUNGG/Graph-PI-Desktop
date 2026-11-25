@@ -602,3 +602,9 @@
   .board-session-card{fill:rgb(255 255 255 / .02);stroke:var(--input-line);stroke-width:1;pointer-events:none}
   .node:hover .board-session-card{stroke:var(--muted)}
   .node.is-sel .board-session-card{fill:rgb(255 255 255 / .05);stroke:var(--text)}
+
+/* 사이드바 워크트리 삭제 트리거(SPEC G2, graph-pi-ade 198). 확인 없이는 지우지 않는다. */
+.wt-item{position:relative}
+.wt-del{position:absolute;top:6px;right:8px;z-index:1;width:20px;height:20px;padding:0;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--muted);font:inherit;font-size:13px;line-height:1;cursor:pointer;opacity:0}
+.wt-item:hover .wt-del,.wt-del:focus-visible{opacity:1}
+.wt-del:hover{color:var(--danger);border-color:var(--danger)}
