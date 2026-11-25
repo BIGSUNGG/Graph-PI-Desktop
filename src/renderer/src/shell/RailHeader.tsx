@@ -14,7 +14,8 @@ import { useApp, useDispatch, useSelectedGroup } from '../state/hooks.ts';
 const DRAG_REGION = { WebkitAppRegion: 'drag' } as unknown as CSSProperties;
 
 export function RailHeader(): ReactElement {
-  const { status } = useApp();
+  const { status, settings } = useApp();
+  const actions = useDispatch();
   const group = useSelectedGroup();
   const orca = status === null ? 'unknown' : status.orca;
 
@@ -27,6 +28,17 @@ export function RailHeader(): ReactElement {
       </div>
       <div className="tb-mid" />
       <div className="tb-right">
+        <button
+          className="tb-bg"
+          type="button"
+          aria-pressed={settings.background}
+          title="보드 배경 그라디언트"
+          onClick={() => {
+            actions.setBackground(!settings.background);
+          }}
+        >
+          배경
+        </button>
         <span className={pillClass(orca)} title={status === null ? undefined : status.orcaBin}>
           <span className="d" />
           {orcaLabel(orca)}

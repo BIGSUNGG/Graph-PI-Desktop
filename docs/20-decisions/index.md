@@ -30,3 +30,4 @@ tags: []
 
 상위: [[INDEX]]
 | [[ADR-0009-hub-command-channel]] | 허브의 보드 조작(삭제·이름 변경)을 하네스 command 레코드로 전달하고 앱이 실행 |
+| [[20-decisions/ADR-0010-board-background-gradient]] | 보드 배경은 CSS 그라디언트로 칠하고 `.graph-wrap` 에만 적용, 설정 토글로 켜고 끈다 |

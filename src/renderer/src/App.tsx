@@ -138,6 +138,7 @@ function BoardChat(): ReactElement | null {
 
 /** 목업 보드: 배지 범례 → `.board`(그래프 + 오른쪽 인스펙터) 2열(mock/index.html:633-641). */
 function BoardView(): ReactElement {
+  const { settings } = useApp();
   return (
     <>
       <div className="slot-legend">
@@ -157,7 +158,7 @@ function BoardView(): ReactElement {
         <span className="pri">강조: 감사 문제 &gt; 차단·정지 &gt; 질문 &gt; 진행 &gt; 완료</span>
       </div>
       <div className="board">
-        <div className="graph-wrap">
+        <div className={settings.background ? 'graph-wrap has-bg' : 'graph-wrap'}>
           <GraphCanvas />
           <BoardChat />
         </div>

@@ -54,6 +54,7 @@ export type AppActions = {
   setInspectorTab(tab: InspectorTab): void;
   setListFilter(filter: ListFilter): void;
   setInspectorHeight(px: number): void;
+  setBackground(on: boolean): void;
   dismissBanner(): void;
   refreshOrca(): void;
   loadSessions(groupId: string): void;
@@ -244,6 +245,10 @@ export function AppProvider(props: { children: ReactNode }): ReactElement {
         const height = Math.min(INSPECTOR_MAX_HEIGHT, Math.max(INSPECTOR_MIN_HEIGHT, Math.round(px)));
         dispatch({ type: 'patchSettings', patch: { inspectorHeight: height } });
         persistSettings({ inspectorHeight: height });
+      },
+      setBackground: (on) => {
+        dispatch({ type: 'patchSettings', patch: { background: on } });
+        persistSettings({ background: on });
       },
       dismissBanner: () => {
         dispatch({ type: 'banner', banner: null });

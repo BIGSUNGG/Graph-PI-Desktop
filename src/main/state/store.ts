@@ -84,6 +84,8 @@ function sanitizeSettings(input: unknown): Settings {
     listFilter: oneOf(record['listFilter'], LIST_FILTERS) ?? DEFAULT_SETTINGS.listFilter,
     inspectorTab: oneOf(record['inspectorTab'], INSPECTOR_TABS) ?? DEFAULT_SETTINGS.inspectorTab,
     inspectorHeight: heightOf(record['inspectorHeight']),
+    background:
+      typeof record['background'] === 'boolean' ? record['background'] : DEFAULT_SETTINGS.background,
   };
 }
 

@@ -86,6 +86,8 @@ export type Settings = {
   inspectorTab: InspectorTab;
   /** 보드 하단 인스펙터 높이(px). */
   inspectorHeight: number;
+  /** 보드 캔버스 배경 그라디언트. 켜면 `.graph-wrap.has-bg` 가 칠해진다. */
+  background: boolean;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -94,6 +96,7 @@ export const DEFAULT_SETTINGS: Settings = {
   listFilter: 'all',
   inspectorTab: 'goal',
   inspectorHeight: 260,
+  background: true,
 };
 
 /** 목업 `MOCK.presets`(:15-19). 그룹 생성 다이얼로그의 3분기. */

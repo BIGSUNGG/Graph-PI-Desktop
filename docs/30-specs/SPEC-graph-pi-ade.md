@@ -140,6 +140,7 @@ Pi 세션이 어디서 돌고 무엇을 했는지 한 화면에서 파악하고,
 ### 저장하는 것
 
 - 사용자가 마지막으로 보던 워크스페이스와 화면.
+- 보드 캔버스 배경 그라디언트 표시 여부(`background`, 기본 켜짐). 타이틀바 토글로 바꾸고 앱 로컬 설정에만 저장한다([[ADR-0010-board-background-gradient]]).
 - 세션 본문 검색 인덱스(세션 ID, 메시지 위치, 텍스트). 원본 세션 파일은 읽기만 하고 수정하지 않는다.
 - 워크트리 그룹 정의(이름, 소속 워크트리, 순서, 부모 저장소 경로, 허브 세션 ID). 앱 로컬 설정으로만 저장하고 Orca 에는 쓰지 않는다.
 - 인덱스는 앱 데이터 폴더의 SQLite 한 파일에 두고 FTS5 색인을 쓴다. 세션이 늘면 증분으로 갱신한다.
@@ -210,6 +211,7 @@ Pi 세션이 어디서 돌고 무엇을 했는지 한 화면에서 파악하고,
 
 - [[ADR-0001-standalone-ade-over-orca-plugin]]
 - [[ADR-0002-pi-session-jsonl-data-source]]
+- [[ADR-0010-board-background-gradient]]
 - [[orca-cli-and-pi-sessions]]
 - [[30-specs/SPEC-hub-orchestration]]
 - [[30-specs/index]]
