@@ -66,3 +66,21 @@ test('거부된 감사는 Goal 을 active 로 되돌리고 보완 항목을 대�
   assert.equal(complement?.state, 'queued');
   assert.equal(complement?.parentGoalId, null);
 });
+
+test('audit skip 은 사유와 주체를 남기고, 사유 없이는 거부된다', async () => {
+  const data = mkdtempSync(join(tmpdir(), 'harness-audit-'));
+  const goalId = idOf(run(data, ['goal', '--group', 'g1', '--writer', 'hub', '--objective', '생략 감사', '--check', '테스트']), 'goal');
+
+  assert.throws(() => {
+    run(data, ['audit', 'skip', '--group', 'g1', '--writer', 'hub', '--goal', goalId]);
+  }, /감사를 생략하려면/);
+
+  const out = run(data, ['audit', 'skip', '--group', 'g1', '--writer', 'hub', '--goal', goalId, '--reason', '하위 Goal 없음', '--by', 'hub']);
+  const auditId = idOf(out, 'audit');
+
+  const audits = (await snapshot(data)).audits;
+  const skipped = audits.find((audit) => audit.id === auditId);
+  assert.equal(skipped?.state, 'skipped');
+  assert.equal(skipped?.skipReason, '하위 Goal 없음');
+  assert.equal(skipped?.skippedBy, 'hub');
+});

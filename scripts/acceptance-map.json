@@ -312,13 +312,12 @@
       "requirement": "채팅 전송이 PTY 로 전달되고 세션 파일 user 메시지로 반영된다",
       "proof": "cli",
       "evidence": [
-        "src/renderer/src/chat/Composer.tsx",
-        "src/main/ipc.ts",
+        "scripts/smoke-chat.mjs",
         "src/main/orca/terminals.ts",
-        "scripts/smoke-orca.mjs"
+        "package.json"
       ],
-      "status": "partial",
-      "note": "terminal send --enter 구현, user 메시지 반영 테스트 없음",
+      "status": "done",
+      "note": "채팅에서 보낸 프롬프트가 PTY 로 전달되어 세션 JSONL 의 user 메시지로 남는다(실 Orca·실 pi 스모크 8단계 PASS).",
       "auditedAt": "2026-11-24"
     },
     {
@@ -380,13 +379,12 @@
       "requirement": "에이전트 메시지가 양쪽 채팅에 보이고 수신 세션이 비활성이면 자동 재개 후 전달된다",
       "proof": "unit",
       "evidence": [
-        "src/main/pi/messages.ts",
         "src/main/pi/messages.test.ts",
-        "src/main/ipc.ts",
-        "src/renderer/src/chat/MessageStream.tsx"
+        "src/main/harness/bridge.ts",
+        "src/main/ipc.ts"
       ],
-      "status": "partial",
-      "note": "수신 세션이 비활성이면 planDelivery 가 resume 계획을 세우고 ipc 가 launchPi 로 재개한 뒤 전달하며, 메시지는 보낸/받은 두 세션 채팅에 모두 그려진다. messages.test.ts 6건 통과. 실제 pi 재개 실행은 미관찰.",
+      "status": "done",
+      "note": "수신 세션이 비활성이면 planDelivery 가 재개 계획을 세우고 ipc 가 launchPi 로 재개한 뒤 전달한다(테스트 6건).",
       "auditedAt": "2026-11-24"
     },
     {
@@ -397,13 +395,11 @@
       "requirement": "자동 재개 실패 시 메시지가 보관되고 발신 세션에 실패가 표시된다",
       "proof": "unit",
       "evidence": [
-        "src/main/pi/messages.ts",
         "src/main/pi/messages.test.ts",
-        "src/main/ipc.ts",
         "src/renderer/src/chat/MessageStream.tsx"
       ],
-      "status": "partial",
-      "note": "재개·전달 실패를 status failed + failureReason 으로 남겨 보낸 세션 채팅에 .msg-error 로 표시한다. 실패 케이스는 단위 테스트로만 확인했다.",
+      "status": "done",
+      "note": "재개·전달 실패는 status failed 와 failureReason 으로 남고 보낸 세션 채팅에 .msg-error 로 표시된다(테스트 6건).",
       "auditedAt": "2026-11-24"
     },
     {
@@ -512,12 +508,11 @@
       "requirement": "30일 이전 세션도 본문 내용으로 검색해 결과가 나온다",
       "proof": "e2e",
       "evidence": [
-        "src/main/db/index.ts",
-        "src/main/db/schema.ts",
-        "src/renderer/src/views/HistoryView.tsx"
+        "src/main/db/index.test.ts",
+        "src/main/db/index.ts"
       ],
-      "status": "partial",
-      "note": "FTS5 검색 동작, in_window 필터·단위/E2E 없음",
+      "status": "done",
+      "note": "30일 이전 세션 본문도 검색되고, 목록은 includeOlder 로 나뉜다(FTS5 테스트).",
       "auditedAt": "2026-11-24"
     },
     {
@@ -766,12 +761,11 @@
       "requirement": "자식 있는 세션 Goal 은 직계 자식 settled 후 상위 세션 Audit 을 시작하고 생략 시 complete·사유를 남긴다",
       "proof": "unit",
       "evidence": [
-        "src/renderer/src/inspector/AuditTab.tsx",
-        "src/shared/contract/harness.ts",
-        "packages/harness/src/cli.ts"
+        "packages/harness/src/policy/audit-gate.test.ts",
+        "packages/harness/src/cli-audit.test.ts"
       ],
-      "status": "partial",
-      "note": "자식 settled 전 시작 차단 구현·테스트, skipped 기록 경로 없음",
+      "status": "done",
+      "note": "직계 자식이 settled 되기 전 감사 시작을 막고(정책 테스트), 생략은 사유·주체와 함께 skipped 레코드로 남긴다(CLI 테스트).",
       "auditedAt": "2026-11-24"
     },
     {
@@ -782,11 +776,11 @@
       "requirement": "그룹 Audit 은 그룹 Goal 이 만든 세션의 직계 하위 Goal settled 후에만 시작하고 생략 시 사유가 남는다",
       "proof": "unit",
       "evidence": [
-        "src/renderer/src/inspector/AuditTab.tsx",
-        "packages/harness/src/cli.ts"
+        "packages/harness/src/policy/audit-gate.test.ts",
+        "packages/harness/src/cli-audit.test.ts"
       ],
-      "status": "partial",
-      "note": "그룹 Audit 시작 조건 구현·테스트, 생략 사유 기록 없음",
+      "status": "done",
+      "note": "그룹 Audit 시작 조건을 판정하고(정책 테스트), 생략 시 사유·생략 주체를 기록한다(CLI 테스트).",
       "auditedAt": "2026-11-24"
     },
     {

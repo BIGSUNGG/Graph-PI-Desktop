@@ -150,10 +150,11 @@ function auditStamp(args: Args): {
   const pinned = pinCommit(String(revision), one(args, 'commit') ?? '');
   const gates = gateFlags(args);
   const starting = args.positionals[0] === 'start';
+  const skipping = args.positionals[0] === 'skip';
 
   return {
-    state: starting ? 'running' : 'finished',
-    verdict: starting ? null : gates.length > 0 ? auditVerdict(gates) : verdictFlag(args),
+    state: starting ? 'running' : skipping ? 'skipped' : 'finished',
+    verdict: starting || skipping ? null : gates.length > 0 ? auditVerdict(gates) : verdictFlag(args),
     // 감사 시작 시 커밋 해시를 고정한다(§10.4) — 감사 중 변경 판정의 기준값이다.
     commitHash: pinned.commit === '' ? null : pinned.commit,
     revision,
@@ -265,9 +266,9 @@ function build(args: Args, envelope: { groupId: string; seq: number; writer: str
         scope: (one(args, 'scope') ?? 'session') as AuditRecord['scope'],
         auditSessionId: one(args, 'audit-session'),
         state: stamp.state,
-        skipReason: null,
-        skippedBy: null,
-        skippedAt: null,
+        skipReason: stamp.state === 'skipped' ? (one(args, 'reason') ?? '') : null,
+        skippedBy: stamp.state === 'skipped' ? (one(args, 'by') ?? args.positionals[0] ?? null) : null,
+        skippedAt: stamp.state === 'skipped' ? now : null,
         verdict: stamp.verdict,
         commitHash: stamp.commitHash,
         worktreeState: null,
@@ -717,6 +718,11 @@ async function run(argv: string[]): Promise<number> {
     if (started !== 0) return started;
     // 감사가 시작되면 대상 Goal 은 읽기 전용 `auditing` 이 된다(SPEC-hub §51, §10.4).
     return await goalBeginAuditing(ctx);
+  }
+  // 생략된 감사도 사유와 생략 주체를 남긴다(§48, §611).
+  if (args.command === 'audit' && sub === 'skip') {
+    if (one(ctx.args, 'reason') === null) return fail('감사를 생략하려면 --reason "<사유>" 가 필요합니다');
+    return await appendBuilt(ctx);
   }
   // verdict 를 바로 받는 한 번짜리 `audit` 기록도 Goal 전이까지 연결한다(§52, §53).
   if (args.command === 'audit' && sub === null) return await auditDirect(ctx);
