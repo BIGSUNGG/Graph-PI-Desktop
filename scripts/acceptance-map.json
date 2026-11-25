@@ -897,11 +897,10 @@
       "proof": "unit",
       "evidence": [
         "src/renderer/src/inspector/LoopTab.tsx",
-        "packages/harness/src/cli.ts",
-        "src/shared/contract/harness.ts"
+        "packages/harness/src/cli-audit.test.ts"
       ],
-      "status": "partial",
-      "note": "측정값·회차·상한 표시+loopOutcome 테스트, 런타임 미연결",
+      "status": "done",
+      "note": "Loop 는 측정값·회차·상한을 표시하고, loop measure 가 값을 기록하며 상한 도달 시 멈춘다(CLI 테스트·LoopTab).",
       "auditedAt": "2026-11-24"
     },
     {
@@ -912,12 +911,11 @@
       "requirement": "목표 도달 시 paused(audit)→승인 후 done, 상한 도달 시 stopped + Goal paused(loop_bounds)",
       "proof": "unit",
       "evidence": [
-        "packages/harness/src/cli.ts",
-        "src/renderer/src/inspector/LoopTab.tsx",
-        "src/renderer/src/inspector/GoalTab.tsx"
+        "packages/harness/src/policy/loop-policy.ts",
+        "packages/harness/src/cli-audit.test.ts"
       ],
-      "status": "partial",
-      "note": "onLoopOutcome 매핑 테스트, CLI/앱이 Goal 전이를 하지 않음",
+      "status": "done",
+      "note": "onLoopOutcome 이 Loop·Goal 을 함께 전이시키고(감사 대기=standby, 상한=loop_bounds) CLI 가 두 레코드를 덧붙인다.",
       "auditedAt": "2026-11-24"
     },
     {

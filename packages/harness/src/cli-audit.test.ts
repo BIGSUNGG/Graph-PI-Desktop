@@ -84,3 +84,24 @@ test('audit skip 은 사유와 주체를 남기고, 사유 없이는 거부된�
   assert.equal(skipped?.skipReason, '하위 Goal 없음');
   assert.equal(skipped?.skippedBy, 'hub');
 });
+
+test('Loop 상한에 닿으면 Loop 와 Goal 이 함께 멈춘다', async () => {
+  const data = mkdtempSync(join(tmpdir(), 'harness-loop-'));
+  const goalId = idOf(run(data, ['goal', '--group', 'g1', '--writer', 'hub', '--objective', '상한 목표', '--check', '테스트']), 'goal');
+  const loopId = idOf(
+    run(data, ['loop', '--group', 'g1', '--writer', 'hub', '--goal', goalId, '--target', '에러 0', '--measure', 'npm test', '--max', '1']),
+    'loop',
+  );
+
+  const measured = run(data, ['loop', 'measure', '--group', 'g1', '--writer', 'hub', '--loop', loopId, '--value', '3']);
+  assert.match(measured, /outcome=bounds/);
+  assert.match(measured, /status=paused pause=loop_bounds/);
+
+  const shown = await snapshot(data);
+  const loop = shown.loops.find((candidate) => candidate.id === loopId);
+  assert.equal(loop?.status, 'stopped');
+  assert.equal(loop?.pauseKind, 'bounds');
+  const goal = shown.goals.find((candidate) => candidate.id === goalId);
+  assert.equal(goal?.status, 'paused');
+  assert.equal(goal?.pauseReason, 'loop_bounds');
+});

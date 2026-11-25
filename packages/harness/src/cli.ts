@@ -625,7 +625,7 @@ function boundStopReason(code: 'max' | 'time' | 'tokens' | null): LoopStopReason
  * 이미 감사 대기·중지된 Loop 는 측정값만 기록하고 전이를 반복하지 않는다.
  */
 async function loopMeasure(ctx: Ctx): Promise<number> {
-  const loopId = one(ctx.args, 'loop-id') ?? one(ctx.args, 'id');
+  const loopId = one(ctx.args, 'loop') ?? one(ctx.args, 'loop-id') ?? one(ctx.args, 'id');
   const goalId = one(ctx.args, 'goal');
   if (loopId === null && goalId === null) return fail('--loop 또는 --goal 값이 필요합니다');
   if (one(ctx.args, 'value') === null) return fail('--value 값이 필요합니다');
@@ -659,6 +659,22 @@ async function loopMeasure(ctx: Ctx): Promise<number> {
     );
 
     // 완료·중단된 Goal 은 전이시키지 않으므로 바뀐 경우에만 덧붙인다.
+    if (transition.goal !== goal) {
+      const goalSeq = await appendNext(ctx.store, ctx.groupId, transition.goal);
+      process.stdout.write(
+        `ok goal ${transition.goal.id} seq=${goalSeq} status=${transition.goal.status} pause=${transition.goal.pauseReason ?? 'none'}\n`,
+      );
+    }
+    return 0;
+  }
+
+  // 상한 도달도 Goal 을 멈춘다 — Loop 만 세우고 Goal 을 계속 돌리면 작업자가 남아 있는 상태가 된다(§57).
+  if (bound.reached && goal !== null) {
+    const transition = onLoopOutcome(measured.record, 'bounds', goal);
+    const loopSeq = await appendNext(ctx.store, ctx.groupId, transition.loop);
+    process.stdout.write(
+      `ok loop ${transition.loop.id} seq=${loopSeq} status=${transition.loop.status} outcome=bounds\n`,
+    );
     if (transition.goal !== goal) {
       const goalSeq = await appendNext(ctx.store, ctx.groupId, transition.goal);
       process.stdout.write(
