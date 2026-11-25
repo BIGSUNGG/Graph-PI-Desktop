@@ -916,11 +916,11 @@
       "requirement": "Feature 그룹에서 허브가 명세 질문을 보내고 답변 전에는 해당 워크트리를 만들지 않는다",
       "proof": "manual",
       "evidence": [
-        "packages/harness/src/cli.ts",
-        "src/main/orca/agents.ts"
+        "scripts/scenario-hub.mjs",
+        "src/main/preset.ts"
       ],
-      "status": "todo",
-      "note": "허브 명세 질문·워크트리 보류 흐름 없음(실 모델 시나리오 미실행)",
+      "status": "done",
+      "note": "실제 모델(deepseek-v4.1-flash) 허브 세션 2회 실행으로 관찰: 1단계 질문 4건·워크트리 0개, 답변 후 2단계 워크트리 3개·목업 선택 질문 1건. 명령 `node scripts/scenario-hub.mjs` 가 row58/row59 PASS 출력. 대화 기록은 worklog 2026-11-24 \"허브 시나리오 관찰\".",
       "auditedAt": "2026-11-24"
     },
     {
@@ -931,11 +931,11 @@
       "requirement": "명세 답변 후 백엔드·프론트 워크트리와 세션이 생기고 프론트 목업 질문이 앱에 표시된다",
       "proof": "manual",
       "evidence": [
-        "src/main/orca/worktrees.ts",
-        "src/main/orca/agents.ts"
+        "scripts/scenario-hub.mjs",
+        "src/main/preset.ts"
       ],
-      "status": "todo",
-      "note": "명세 후 백엔드·프론트 자동 생성 없음",
+      "status": "done",
+      "note": "실제 모델 허브 실행 관찰(run graph-pi-scenario-BjSUko): 답변 후 워크트리 3개 생성 + 목업 선택 질문 1건(pending) 기록. 명령 `node scripts/scenario-hub.mjs` 의 2단계 판정. 프리셋 지시 보강 후 재현됨(2026-11-24).",
       "auditedAt": "2026-11-24"
     },
     {
@@ -946,11 +946,12 @@
       "requirement": "API 중계 메시지가 양쪽 채팅에 `에이전트` 라벨로 남는다",
       "proof": "manual",
       "evidence": [
-        "packages/harness/src/cli.ts",
-        "src/renderer/src/chat/MessageStream.tsx"
+        "scripts/scenario-hub.mjs",
+        "src/renderer/src/chat/MessageStream.tsx",
+        "src/main/ipc.ts"
       ],
-      "status": "todo",
-      "note": "중계 메시지 '에이전트' 라벨 표시 없음",
+      "status": "done",
+      "note": "실제 모델 허브 실행 관찰(run graph-pi-scenario-DmNw22): message 레코드 2건이 서로 다른 두 세션(toSessionId 2개)에 남았고 본문에 백엔드 API 계약이 담겼다. 앱은 이 레코드를 양쪽 채팅에 에이전트 라벨로 그린다(MessageStream 의 AgentMessageRow, 단위 테스트 messages.test.ts).",
       "auditedAt": "2026-11-24"
     },
     {
