@@ -25,7 +25,14 @@ import { AuditTab } from '../inspector/AuditTab.tsx';
 import { GoalTab } from '../inspector/GoalTab.tsx';
 import { ListTab } from '../inspector/ListTab.tsx';
 import { LoopTab } from '../inspector/LoopTab.tsx';
-import { sessionSlotKinds, useApp, useDispatch, useSelectedGroup, useSessions } from '../state/hooks.ts';
+import {
+  sessionSlotKinds,
+  useApp,
+  useDispatch,
+  useSelectedGroup,
+  useSessions,
+  useVisibleWorktrees,
+} from '../state/hooks.ts';
 import {
   auditGate,
   auditsForGroup,
@@ -37,6 +44,7 @@ import {
   sessionSlots,
 } from '../state/selectors.ts';
 import { SlotBadges } from '../state/slot-badges.tsx';
+import { InlineChat } from '../chat/InlineChat.tsx';
 
 const TAB_LABEL: Record<InspectorTab, string> = { goal: 'Goal', list: 'List', loop: 'Loop', audit: 'Audit' };
 const TAB_ORDER: readonly InspectorTab[] = ['goal', 'list', 'loop', 'audit'];
@@ -46,6 +54,8 @@ export function InspectorView(): ReactElement {
   const actions = useDispatch();
   const group = useSelectedGroup();
   const sessions = useSessions(group?.id ?? null);
+  // 인라인 대화는 외부 세션을 거부해야 하므로 워크트리 목록이 필요하다(수용기준 9).
+  const worktrees = useVisibleWorktrees();
 
   const selectedSessionId = selection.kind === 'session' ? selection.sessionId : null;
   // 세션을 고르면 그 세션 스코프, 아니면 그룹(허브) 스코프.
@@ -123,6 +133,7 @@ export function InspectorView(): ReactElement {
           </span>
         )}
       </p>
+      {session === null ? null : <InlineChat session={session} worktrees={worktrees} />}
       <div className="sup-tabs insp-tabs" role="tablist" aria-label="인스펙터 탭">
         {TAB_ORDER.map((tab) => (
           <button

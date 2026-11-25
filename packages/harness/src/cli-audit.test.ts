@@ -4,7 +4,7 @@
  */
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -123,4 +123,48 @@ test('중단한 Goal 은 아카이브에 남고 기록에서 계속 조회된다
   // 세션 파일이 아니라 그룹 기록에 남으므로 세션이 없어도 조회된다.
   const shown = await snapshot(data);
   assert.equal(shown.goals.find((goal) => goal.id === goalId)?.archivedAt !== null, true);
+});
+
+test('감사 중 워크트리가 바뀌면 verdict 를 error 로 기록한다', () => {
+  const data = mkdtempSync(join(tmpdir(), 'harness-drift-'));
+  const repo = mkdtempSync(join(tmpdir(), 'harness-repo-'));
+  execFileSync('git', ['init', '-q'], { cwd: repo });
+  execFileSync('git', ['config', 'user.email', 'a@b.c'], { cwd: repo });
+  execFileSync('git', ['config', 'user.name', 'a'], { cwd: repo });
+  writeFileSync(join(repo, 'a.txt'), 'one\n');
+  execFileSync('git', ['add', '.'], { cwd: repo });
+  execFileSync('git', ['commit', '-qm', 'init'], { cwd: repo });
+
+  const goalId = idOf(
+    run(data, ['goal', '--group', 'g1', '--writer', 'hub', '--objective', '감사 드리프트', '--check', '테스트']),
+    'goal',
+  );
+  run(data, ['audit', 'start', '--group', 'g1', '--writer', 'audit-agent', '--goal', goalId, '--cwd', repo]);
+
+  // 감사 세션이 몰래 파일을 고쳤다.
+  writeFileSync(join(repo, 'a.txt'), 'two\n');
+
+  const finished = run(data, [
+    'audit', 'finish', '--group', 'g1', '--writer', 'audit-agent', '--goal', goalId,
+    '--gate', 'passed', '--summary', '테스트 통과', '--cwd', repo,
+  ]);
+  assert.match(finished, /verdict=error drift=1/);
+
+  // 승인이 아니므로 Goal 은 완료되지 않는다.
+  const drift = run(data, ['audit', 'finish', '--group', 'g1', '--writer', 'audit-agent', '--goal', goalId, '--gate', 'passed', '--summary', 'x']);
+  void drift;
+});
+
+test('감사 중인 Goal 의 소유 세션은 쓰기를 거부당한다', () => {
+  const data = mkdtempSync(join(tmpdir(), 'harness-lock-'));
+  const goalId = idOf(
+    run(data, ['goal', '--group', 'g1', '--session', 's1', '--objective', '읽기 전용', '--check', '테스트']),
+    'goal',
+  );
+  run(data, ['audit', 'start', '--group', 'g1', '--writer', 'audit-agent', '--goal', goalId]);
+
+  assert.throws(
+    () => run(data, ['todo', '--group', 'g1', '--session', 's1', '--add', '몰래 쓰기']),
+    /감사 중에는 쓰기를 할 수 없습니다/,
+  );
 });

@@ -33,6 +33,7 @@ import type {
   QuestionRecord,
   TodoRecord,
 } from '../../../src/shared/contract/harness.ts';
+import { execFileSync } from 'node:child_process';
 import { makeEnvelope } from './envelope.ts';
 import { dataDir } from './paths.ts';
 import { createHarnessStore } from './store.ts';
@@ -271,7 +272,10 @@ function build(args: Args, envelope: { groupId: string; seq: number; writer: str
         skippedAt: stamp.state === 'skipped' ? now : null,
         verdict: stamp.verdict,
         commitHash: stamp.commitHash,
-        worktreeState: null,
+        worktreeState:
+          stamp.state === 'running'
+            ? worktreeSnapshot(one(args, 'cwd') ?? process.cwd())
+            : null,
         criteriaResults: [],
         evidenceSummary: one(args, 'summary'),
         report: one(args, 'report'),
@@ -430,6 +434,39 @@ async function goalComplete(ctx: Ctx): Promise<number> {
   return 0;
 }
 
+/**
+ * 감사 중인 Goal 의 소유 세션이 쓰기를 시도하면 거부한다(§10.4).
+ * 읽기·테스트 실행은 막지 않는다 — 감사자는 저장소를 읽고 명령을 돌려 판정한다.
+ */
+async function refuseWritesWhileAuditing(ctx: Ctx): Promise<string | null> {
+  if (!['goal', 'list', 'loop', 'todo', 'command'].includes(ctx.args.command)) return null;
+
+  const snapshot = await ctx.store.snapshot(ctx.groupId);
+  const auditing = snapshot.goals.filter((goal) => goal.status === 'auditing');
+  if (auditing.length === 0) return null;
+
+  const session = one(ctx.args, 'session') ?? ctx.writer;
+  const target = auditing.find((goal) => goal.sessionId === session);
+  if (target === undefined) return null;
+  return `감사 중에는 쓰기를 할 수 없습니다: ${target.id}`;
+}
+
+/**
+ * 감사 대상 워크트리의 상태 스냅샷. 감사 중 변경 여부를 비교하는 기준값이다(§10.4).
+ * git 이 없거나 저장소가 아니면 null 을 돌려주고, 비교는 값이 있을 때만 한다.
+ */
+function worktreeSnapshot(cwd: string): string | null {
+  try {
+    const out = execFileSync('git', ['-C', cwd, 'status', '--porcelain', '--untracked-files=all'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    return out.trim();
+  } catch {
+    return null;
+  }
+}
+
 /** `goal abort --id --reason` — Goal 을 중단하고 아카이브에 남긴다(수용기준 54). */
 async function goalAbort(ctx: Ctx): Promise<number> {
   const id = goalIdFlag(ctx.args);
@@ -558,10 +595,20 @@ async function auditFinish(ctx: Ctx): Promise<number> {
   }
 
   const gates = gateFlags(ctx.args);
-  const verdict = gates.length > 0 ? auditVerdict(gates) : verdictFlag(ctx.args);
+  const requested = gates.length > 0 ? auditVerdict(gates) : verdictFlag(ctx.args);
+
+  // 감사 중 워크트리가 바뀌면 승인 근거가 무효다 — verdict 를 error 로 고정한다(§10.4).
+  const actual = worktreeSnapshot(one(ctx.args, 'cwd') ?? process.cwd());
+  const drifted =
+    running.worktreeState !== null && actual !== null && running.worktreeState !== actual;
+  const verdict: AuditVerdict = drifted ? 'error' : requested;
+  const summary = drifted
+    ? `${required(ctx.args, 'summary')} (감사 중 워크트리 변경 감지 — verdict 를 error 로 기록)`
+    : required(ctx.args, 'summary');
+
   const finished = finishAudit(running, {
     verdict,
-    summary: required(ctx.args, 'summary'),
+    summary,
     gates,
     at: new Date().toISOString(),
   });
@@ -569,7 +616,7 @@ async function auditFinish(ctx: Ctx): Promise<number> {
 
   const seq = await appendNext(ctx.store, ctx.groupId, finished.record);
   process.stdout.write(
-    `ok audit ${finished.record.id} seq=${seq} state=${finished.record.state} verdict=${verdict}\n`,
+    `ok audit ${finished.record.id} seq=${seq} state=${finished.record.state} verdict=${verdict}${drifted ? ' drift=1' : ''}\n`,
   );
   return await applyAuditVerdictToGoal(ctx, finished.record);
 }
@@ -764,6 +811,9 @@ async function run(argv: string[]): Promise<number> {
   if (args.command === 'goal' && sub === null && (args.flags.get('check') ?? []).length === 0) {
     return fail('완료 조건이 하나 이상 필요합니다. --check "<검증 항목>" 을 지정하세요');
   }
+  // 감사 중에는 소유 세션의 쓰기를 거부한다(§10.4 읽기 전용 감사).
+  const refusal = await refuseWritesWhileAuditing(ctx);
+  if (refusal !== null) return fail(refusal);
   if (args.command === 'goal' && sub === 'abort') return await goalAbort(ctx);
   if (args.command === 'archive') return await archiveReport(ctx);
   if (args.command === 'goal' && sub === 'complete') return await goalComplete(ctx);

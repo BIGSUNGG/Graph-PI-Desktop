@@ -10,10 +10,11 @@
 import type { ReactElement } from 'react';
 import type { ViewId } from '../../shared/contract/index.ts';
 import { AppProvider } from './state/app-store.tsx';
-import { useApp } from './state/hooks.ts';
+import { useApp, useSelectedGroup, useSessions, useVisibleWorktrees } from './state/hooks.ts';
 import { AppBanner, RailHeader } from './shell/RailHeader.tsx';
 import { Sidebar } from './shell/Sidebar.tsx';
 import { GraphCanvas } from './board/GraphCanvas.tsx';
+import { InlineChat } from './chat/InlineChat.tsx';
 import { DialogHost, openDialog } from './dialogs/DialogHost.tsx';
 import { ChatView } from './views/ChatView.tsx';
 import { HistoryView } from './views/HistoryView.tsx';
@@ -115,6 +116,26 @@ function Shell(): ReactElement {
   );
 }
 
+/**
+ * 보드 인라인 대화(수용기준 9). 보드에서 세션을 고른 뒤 화면을 옮기지 않고 그 세션에 보낸다.
+ * 인스펙터와 같은 `InlineChat` 을 쓰고, 선택이 세션이 아니면 그리지 않는다.
+ */
+function BoardChat(): ReactElement | null {
+  const { selection } = useApp();
+  const group = useSelectedGroup();
+  const sessions = useSessions(group?.id ?? null);
+  const worktrees = useVisibleWorktrees();
+  if (selection.kind !== 'session') return null;
+
+  const session = sessions.find((item) => item.id === selection.sessionId);
+  if (session === undefined) return null;
+  return (
+    <div className="board-chat">
+      <InlineChat session={session} worktrees={worktrees} />
+    </div>
+  );
+}
+
 /** 목업 보드: 배지 범례 → `.board`(그래프 + 오른쪽 인스펙터) 2열(mock/index.html:633-641). */
 function BoardView(): ReactElement {
   return (
@@ -138,6 +159,7 @@ function BoardView(): ReactElement {
       <div className="board">
         <div className="graph-wrap">
           <GraphCanvas />
+          <BoardChat />
         </div>
         <InspectorView />
       </div>

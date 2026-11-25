@@ -608,3 +608,16 @@
 .wt-del{position:absolute;top:6px;right:8px;z-index:1;width:20px;height:20px;padding:0;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--muted);font:inherit;font-size:13px;line-height:1;cursor:pointer;opacity:0}
 .wt-item:hover .wt-del,.wt-del:focus-visible{opacity:1}
 .wt-del:hover{color:var(--danger);border-color:var(--danger)}
+
+/* 인스펙터 인라인 대화(수용기준 9) */
+.insp-chat { display: flex; gap: 6px; align-items: flex-end; padding: 0 12px 10px; }
+.insp-chat-input {
+  flex: 1; min-height: 40px; max-height: 96px; resize: vertical;
+  background: var(--bg-2); color: var(--fg); border: 1px solid var(--line);
+  border-radius: 8px; padding: 6px 8px; font: inherit; font-size: 12px;
+}
+.insp-chat .warn { width: 100%; }
+
+/* 보드 인라인 대화(수용기준 9) — 그래프 아래 한 줄 */
+.board-chat { border-top: 1px solid var(--line); }
+.board-chat .insp-chat { padding: 8px 12px; }
