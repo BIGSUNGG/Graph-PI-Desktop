@@ -42,12 +42,10 @@
       "requirement": "Orca CLI 실패 시 배너가 뜨고 마지막 성공 값이 유지된다",
       "proof": "unit",
       "evidence": [
-        "src/main/orca/poller.ts",
-        "src/main/orca/cli.ts",
-        "scripts/smoke-orca.mjs"
+        "src/main/orca/poller.test.ts"
       ],
-      "status": "partial",
-      "note": "poller mergeOnFailure·stale·배너 구현, poller 단위 테스트 없음",
+      "status": "done",
+      "note": "성공/예외/도달 실패 세 경우 모두 직전 성공 값을 유지하고 stale 로 표시한다(5 테스트). 배너는 e2e/banner.spec.ts 가 확인한다.",
       "auditedAt": "2026-11-24"
     },
     {
