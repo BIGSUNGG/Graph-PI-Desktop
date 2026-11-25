@@ -76,3 +76,5 @@ node packages/harness/src/cli.ts todo --group demo --title "확인" --state open
 | `npm run smoke:resume` | 질문 답변 후 재개 실측 — 코드가 아니라 실제 PTY 로 확인한다 | `node scripts/smoke-resume.mjs` |
 
 | `GP_LIVE=1 npx playwright test e2e/live-pty.spec.ts` | 실제 Orca PTY 세션이 앱 보드 노드로 나타나는지 실측(느림, 기본 skip) | `GP_LIVE=1 npx playwright test e2e/live-pty.spec.ts` |
+
+| `npm run scenario:audit-order` | 감사 순서(자식 감사·완료 → 상위 감사) 런타임 관찰 | `node scripts/scenario-audit-order.mjs` |

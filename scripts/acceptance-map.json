@@ -1008,11 +1008,12 @@
       "requirement": "하위 Goal 세션 Audit → 자식 있는 세션 상위 Audit → 그룹 Audit/생략 순서로 진행된다",
       "proof": "manual",
       "evidence": [
-        "src/renderer/src/inspector/AuditTab.tsx",
+        "scripts/scenario-audit-order.mjs",
+        "packages/harness/src/policy/audit-policy.ts",
         "packages/harness/src/cli.ts"
       ],
-      "status": "partial",
-      "note": "감사 순서 판정(자식 감사→상위→그룹)은 정책 테스트로 고정. 실제 Feature 그룹에서 그 순서가 일어나는 관찰은 미완.",
+      "status": "done",
+      "note": "런타임 관찰(scripts/scenario-audit-order.mjs, steps=7 FAIL 0): 자식 감사 전 상위 감사는 \"직계 자식 Goal 2개가 아직 승인·생략되지 않아\" 로 거부되고, 자식 A 승인·완료 / B 거부→재작업→승인·완료 뒤에야 상위 감사가 승인됐다.",
       "auditedAt": "2026-11-24"
     },
     {

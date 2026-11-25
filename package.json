@@ -19,7 +19,8 @@
     "check:acceptance": "node scripts/check-acceptance.mjs",
     "smoke:chat": "node scripts/smoke-chat.mjs",
     "scenario:audit-chain": "node scripts/scenario-audit-chain.mjs",
-    "smoke:resume": "node scripts/smoke-resume.mjs"
+    "smoke:resume": "node scripts/smoke-resume.mjs",
+    "scenario:audit-order": "node scripts/scenario-audit-order.mjs"
   },
   "dependencies": {
     "react": "19.3.1",
