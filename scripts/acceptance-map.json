@@ -827,11 +827,11 @@
       "requirement": "auditing 중 소유 세션의 새 작업이 거부되고 Audit 은 시작 시 커밋 해시를 고정한다",
       "proof": "unit",
       "evidence": [
-        "src/shared/contract/harness.ts",
+        "packages/harness/src/cli-audit.test.ts",
         "packages/harness/src/cli.ts"
       ],
-      "status": "partial",
-      "note": "커밋 해시 고정 있으나 Goal→auditing 전이 없음",
+      "status": "done",
+      "note": "audit start 가 대상 Goal 을 auditing 으로 옮기고 revision 을 고정한다(CLI 통합 테스트 2건 중 1건).",
       "auditedAt": "2026-11-24"
     },
     {
@@ -842,11 +842,11 @@
       "requirement": "Audit 거부 시 active 로 돌아가 실패 조건이 표시되고 상한이 남은 Loop 는 계속된다",
       "proof": "unit",
       "evidence": [
-        "packages/harness/src/cli.ts",
-        "src/renderer/src/inspector/GoalTab.tsx"
+        "packages/harness/src/cli-audit.test.ts",
+        "packages/harness/src/policy/audit-policy.ts"
       ],
-      "status": "partial",
-      "note": "실패·계속 표시 있으나 거부 시 Goal active 복귀 전이 없음",
+      "status": "done",
+      "note": "거부된 감사는 Goal 을 active 로 되돌리고 실패 조건을 미통과로 표시하며, 원 항목은 두고 보완 항목을 대기로 추가한다.",
       "auditedAt": "2026-11-24"
     },
     {
@@ -857,11 +857,11 @@
       "requirement": "Audit 불가능은 aborted, 감사 오류는 paused 로 표시된다",
       "proof": "unit",
       "evidence": [
-        "packages/harness/src/cli.ts",
-        "src/shared/contract/harness.ts"
+        "packages/harness/src/policy/audit-gate.test.ts",
+        "packages/harness/src/policy/audit-policy.ts"
       ],
-      "status": "partial",
-      "note": "verdict→Goal 상태 전이 코드 없음(문구만)",
+      "status": "done",
+      "note": "verdict→Goal 전이(승인=active 유지, 거부=active, 불가능=aborted, 오류=paused)를 applyAuditVerdict 가 수행하고 테스트로 고정한다.",
       "auditedAt": "2026-11-24"
     },
     {

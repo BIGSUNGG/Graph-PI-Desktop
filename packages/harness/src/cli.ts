@@ -41,7 +41,15 @@ import { completeGoal } from './state/goal.ts';
 import type { LoopResult } from './state/loop.ts';
 import { recordMeasurement, stopLoop } from './state/loop.ts';
 import { finishAudit } from './state/audit.ts';
-import { auditMayStart, auditVerdict, applyAuditVerdict, pinCommit, requiresGroupAudit } from './policy/audit-policy.ts';
+import {
+  auditMayStart,
+  auditVerdict,
+  applyAuditVerdict,
+  complementItemFor,
+  needsComplement,
+  pinCommit,
+  requiresGroupAudit,
+} from './policy/audit-policy.ts';
 import { bumpGoalRevision, canCompleteGoal } from './policy/goal-policy.ts';
 import { freezeChildGoals } from './policy/list-policy.ts';
 import { advanceAfterGoal } from './policy/list-run.ts';
@@ -477,6 +485,20 @@ async function auditStartGate(ctx: Ctx): Promise<{ ok: boolean; reason: string }
 /**
  * `audit finish` — 진행 중 감사 기록에 verdict 를 남긴다. 없으면 한 번에 기록하는 기존 경로로 돌아간다.
  */
+/** `audit start` 직후 Goal 을 `auditing` 으로 옮긴다. 이미 그 상태면 다시 쓰지 않는다. */
+async function goalBeginAuditing(ctx: Ctx): Promise<number> {
+  const id = one(ctx.args, 'goal');
+  if (id === null) return 0;
+  const snapshot = await ctx.store.snapshot(ctx.groupId);
+  const goal = snapshot.goals.find((candidate) => candidate.id === id);
+  if (goal === undefined || goal.status === 'auditing') return 0;
+
+  const seq = await appendNext(ctx.store, ctx.groupId, { ...goal, status: 'auditing' });
+  process.stdout.write(`ok goal ${goal.id} seq=${seq} status=auditing
+`);
+  return 0;
+}
+
 async function auditFinish(ctx: Ctx): Promise<number> {
   const id = required(ctx.args, 'goal');
   const snapshot = await ctx.store.snapshot(ctx.groupId);
@@ -537,6 +559,19 @@ async function applyAuditVerdictToGoal(ctx: Ctx, audit: AuditRecord): Promise<nu
   process.stdout.write(
     `ok goal ${next.id} seq=${seq} status=${next.status} pause=${next.pauseReason ?? 'none'} verdict=${auditVerdictValue}\n`,
   );
+
+  // 거부는 다음 작업 대상이 남는다는 뜻이다 — 원 항목은 그대로 두고 보완 항목을 대기로 넣는다(§10.4, 611행).
+  if (!needsComplement(audit)) return 0;
+  const owner =
+    snapshot.listItems.find((item) => item.id === goal.parentListItemId) ??
+    snapshot.listItems.find((item) => item.childGoalIds.includes(goal.id)) ??
+    null;
+  if (owner === null) return 0;
+  const complement = complementItemFor(owner, audit.evidenceSummary ?? audit.report ?? '', new Date().toISOString(), {
+    id: `item-${Date.now().toString(36)}`,
+  });
+  const itemSeq = await appendNext(ctx.store, ctx.groupId, complement);
+  process.stdout.write(`ok list ${complement.id} seq=${itemSeq} state=${complement.state} complement=${owner.id}\n`);
   return 0;
 }
 
@@ -678,6 +713,10 @@ async function run(argv: string[]): Promise<number> {
   if (args.command === 'audit' && sub === 'start') {
     const gate = await auditStartGate(ctx);
     if (!gate.ok) return fail(gate.reason);
+    const started = await appendBuilt(ctx);
+    if (started !== 0) return started;
+    // 감사가 시작되면 대상 Goal 은 읽기 전용 `auditing` 이 된다(SPEC-hub §51, §10.4).
+    return await goalBeginAuditing(ctx);
   }
   // verdict 를 바로 받는 한 번짜리 `audit` 기록도 Goal 전이까지 연결한다(§52, §53).
   if (args.command === 'audit' && sub === null) return await auditDirect(ctx);
