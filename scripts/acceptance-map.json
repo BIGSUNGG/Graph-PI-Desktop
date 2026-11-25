@@ -218,12 +218,12 @@
       "requirement": "새 세션 시작 시 Orca PTY 세션이 생기고 보드에 나타난다",
       "proof": "cli",
       "evidence": [
+        "e2e/live-pty.spec.ts",
         "src/main/orca/agents.ts",
-        "src/main/ipc.ts",
-        "scripts/smoke-orca.mjs"
+        "src/main/pi/index.ts"
       ],
-      "status": "partial",
-      "note": "launch→세션 노드 경로는 smoke-chat 8단계로 실측했지만, launch 응답이 sessionId 를 돌려주지 않고 파일 스캔(90초 창)으로 나타난다. 실 Orca PTY 를 앱 화면에서 확인하는 관찰은 아직.",
+      "status": "done",
+      "note": "실측(GP_LIVE=1): 임시 레포에 진짜 Orca 워크트리를 만들고 startPiAgent 로 PTY 세션을 띄운 뒤, 실제 Orca 를 보는 앱을 열어 #view-board .node[data-session] 이 그려지는 것을 확인했다(1 passed, 1.3m). 픽스처 없는 관찰이다.",
       "auditedAt": "2026-11-24"
     },
     {
