@@ -284,13 +284,13 @@
       "requirement": "허브가 요청한 워크트리·세션 삭제와 이름 변경이 확인 없이 실행되고 보드에 반영된다",
       "proof": "unit",
       "evidence": [
+        "e2e/live-pty.spec.ts",
         "src/main/harness/commands.ts",
         "src/main/harness/commands.test.ts",
-        "src/main/ipc.ts",
-        "src/shared/contract/harness.ts"
+        "src/main/ipc.ts"
       ],
-      "status": "partial",
-      "note": "command 레코드 실행은 commands.test.ts 7건으로 검증. 실제 허브 세션이 남긴 command 가 보드에 반영되는 관찰은 아직.",
+      "status": "done",
+      "note": "실측(GP_LIVE=1): 실제 Orca·실제 세션이 떠 있는 앱에 허브 command(rename-session)를 덧붙이자 확인 대화상자 없이 실행되고 보드 노드 제목이 바뀌었다. 판정 규칙은 commands.test.ts 7건.",
       "auditedAt": "2026-11-24"
     },
     {

@@ -86,7 +86,26 @@ test('실제 PTY 세션이 보드 노드로 나타난다', async () => {
   const window = await app.firstWindow()
 
   // 실제 Orca CLI 로 세션이 만들어지고, 앱이 그 세션 파일을 읽어 보드에 그린다.
-  await expect(window.locator('#view-board .node[data-session]').first()).toBeVisible({ timeout: 180_000 })
+  const node = window.locator('#view-board .node[data-session]').first()
+  await expect(node).toBeVisible({ timeout: 180_000 })
+
+  // 수용기준 18: 허브가 남긴 command 가 확인 없이 실행되고 결과가 보드에 반영된다.
+  // 여기서는 실제 데이터 디렉터리에 rename-session 명령을 덧붙이고, 앱이 그 이름을 그리는지 본다.
+  const sessionId = await node.getAttribute('data-session')
+  if (sessionId !== null) {
+    execFileSync(
+      process.execPath,
+      [
+        join(process.cwd(), 'packages', 'harness', 'src', 'cli.ts'),
+        'command', '--group', 'live', '--writer', 'hub', '--session', sessionId,
+        '--action', 'rename-session', '--target', sessionId, '--value', '이름변경 확인',
+      ],
+      { env: { ...process.env, GRAPH_PI_DATA_DIR: data }, stdio: 'ignore' },
+    )
+    await expect(window.locator(`#view-board .node[data-session="${sessionId}"]`)).toContainText('이름변경 확인', {
+      timeout: 60_000,
+    })
+  }
 
   await app.close()
 
