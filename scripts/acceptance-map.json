@@ -496,12 +496,12 @@
       "requirement": "Run·Task·Worker·Gate 조회 전용이고 Run 의 goal 은 `목적`으로 표기된다",
       "proof": "cli",
       "evidence": [
-        "src/main/orca/orchestration.ts",
+        "e2e/orchestration.spec.ts",
         "src/renderer/src/views/OrchestrationView.tsx",
-        "scripts/smoke-orca.mjs"
+        "src/shared/contract/orca.ts"
       ],
-      "status": "partial",
-      "note": "조회 4종·'목적' 라벨 완비, 화면 표기 검증 없음",
+      "status": "done",
+      "note": "Run 의 goal 은 화면에서 목적으로 표시되고, 화면에는 상태를 바꾸는 버튼이 없다(e2e 에서 button 0개 단언).",
       "auditedAt": "2026-11-24"
     },
     {

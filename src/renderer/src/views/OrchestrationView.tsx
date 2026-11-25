@@ -109,7 +109,9 @@ export function OrchestrationView(): ReactElement {
                       {task.id} · {task.title}
                     </div>
                     <div className="deps">
-                      {task.dependsOn.length === 0 ? 'deps 없음' : `deps ${task.dependsOn.join(', ')}`}
+                      {(task.dependsOn ?? []).length === 0
+                        ? 'deps 없음'
+                        : `deps ${(task.dependsOn ?? []).join(', ')}`}
                     </div>
                   </div>
                 </div>
