@@ -114,5 +114,15 @@ test('20세션 보드가 예산 안에 그려지고 화면 전환도 끊기지 �
   console.log(`perf: 화면 왕복 재그리기 ${redraw}ms (노드 ${nodes}개)`)
   expect(redraw).toBeLessThan(REDRAW_BUDGET_MS)
 
+  // 수용기준 10: 허브가 가장 위에 전폭으로 서고, 자식 세션은 그 아래 루트 컬럼에 놓인다.
+  const hubBox = await page.locator('#view-board .node[data-session="perf-hub"]').boundingBox()
+  const childBox = await page.locator('#view-board .node[data-session]:not([data-session="perf-hub"])').first().boundingBox()
+  expect(hubBox).not.toBeNull()
+  expect(childBox).not.toBeNull()
+  if (hubBox === null || childBox === null) throw new Error('보드 노드 위치를 읽지 못했습니다')
+  expect(hubBox.y).toBeLessThan(childBox.y)
+  expect(hubBox.width).toBeGreaterThanOrEqual(childBox.width)
+  expect(hubBox.x).toBeLessThanOrEqual(childBox.x)
+
   await app.close()
 })

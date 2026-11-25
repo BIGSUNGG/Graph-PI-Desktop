@@ -140,7 +140,7 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
       const pending = snapshot.messages.filter((message) => message.status === 'pending');
       if (pending.length === 0) return;
 
-      const live = await pi.sessions(groupId, rootsOf(groupId));
+      const live = await pi.sessions(groupId, rootsOf(groupId), groups.get(groupId)?.hubSessionId ?? null);
       // 같은 배치에서 같은 세션을 두 번 재개하면 Pi 프로세스가 중복된다 — 재개한 세션은 실행 중으로 본다.
       let known = live.sessions;
       let seq = nextSeq(snapshot);
@@ -345,7 +345,7 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
   };
 
   const rememberSessions = async (groupId: string): Promise<void> => {
-    const result = await pi.sessions(groupId, rootsOf(groupId));
+    const result = await pi.sessions(groupId, rootsOf(groupId), groups.get(groupId)?.hubSessionId ?? null);
     for (const session of result.sessions) {
       sessions.set(session.id, { groupId, worktreeId: session.worktreeId });
     }
@@ -474,7 +474,7 @@ export function registerIpc(deps: IpcDeps): { dispose: () => void } {
   // ── Pi 세션 ───────────────────────────────────────────────────
   handle('pi:sessions', async ({ groupId }) => {
     await rememberSessions(groupId);
-    return pi.sessions(groupId, rootsOf(groupId));
+    return pi.sessions(groupId, rootsOf(groupId), groups.get(groupId)?.hubSessionId ?? null);
   });
 
   handle('pi:messages', async ({ sessionId, limit }) => {

@@ -150,12 +150,13 @@
       "requirement": "허브 전폭 카드가 최상단, 루트·하위 워크트리 카드가 계층 순서",
       "proof": "e2e",
       "evidence": [
+        "e2e/board-order.spec.ts",
         "src/renderer/src/board/layout.ts",
-        "src/renderer/src/board/NodeCard.tsx",
-        "src/renderer/src/board/GraphCanvas.tsx"
+        "src/main/ipc.ts",
+        "src/main/pi/index.ts"
       ],
-      "status": "partial",
-      "note": "허브 전폭·루트 컬럼 계층 배치 구현, 계층 순서 E2E 없음",
+      "status": "done",
+      "note": "허브 카드는 보드 최상단 전폭, 워크트리 컬럼은 그 아래. 허브 판별은 그룹의 hubSessionId 를 pi.sessions(primarySessionId) 로 넘겨야 성립한다(누락 시 허브가 일반 세션 행으로 떨어짐).",
       "auditedAt": "2026-11-24"
     },
     {

@@ -18,7 +18,11 @@ export type PiService = {
   stop(): void;
   /** PTY 실행 영수증을 등록해 JSONL 이 생기기 전에도 노드를 그린다(A2). */
   noteLaunch(launch: PendingLaunch): void;
-  sessions(groupId: string, roots: string[]): Promise<{ sessions: PiSession[]; warnings: PiWarning[] }>;
+  sessions(
+    groupId: string,
+    roots: string[],
+    hubSessionId?: string | null,
+  ): Promise<{ sessions: PiSession[]; warnings: PiWarning[] }>;
   messages(sessionId: string): Promise<{ messages: PiMessage[]; warnings: PiWarning[] }>;
   files(): SessionFileInfo[];
 };
@@ -56,12 +60,13 @@ export function createPiService(opts: { root?: string } = {}): PiService {
     files(): SessionFileInfo[] {
       return lastScan;
     },
-    async sessions(groupId, roots) {
+    async sessions(groupId, roots, hubSessionId = null) {
       const files = await watcher.scan();
       refreshIndex(files);
       // groupId 를 넘기지 않으면 lineage 가 groupId 를 매칭된 경로로 채운다.
       // 렌더러는 `session.groupId === 그룹 id` 로 보드를 거르므로 그룹 id 를 명시한다.
-      const sessions = groupSessions(files, { groupId, groupRoots: roots });
+      // 허브 세션은 그룹이 지정한 id 로 판별한다(primarySessionId). 없으면 보드에 허브 카드가 서지 않는다.
+      const sessions = groupSessions(files, { groupId, groupRoots: roots, primarySessionId: hubSessionId });
       const warnings: PiWarning[] = [];
 
       // 보드 노드는 모델·토큰·마지막 활동을 보여야 한다(6행). 메타데이터에는 없으므로 파일에서 채운다.
